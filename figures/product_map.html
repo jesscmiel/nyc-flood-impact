@@ -146,21 +146,85 @@ details.about summary { cursor:pointer; font-weight:700; color:var(--ink-soft); 
   font:600 .74rem Sora,sans-serif; border-radius:999px; color:var(--ink-soft);
 }
 .footer-note {
-  position:absolute; z-index:1000; left:12px; bottom:12px; max-width:min(440px,90%);
+  position:absolute; z-index:1000; left:12px; bottom:92px; max-width:min(440px,90%);
   background:rgba(255,255,255,.94); border:1px solid var(--line); padding:8px 10px;
   font-size:.72rem; color:var(--muted); border-radius:10px;
 }
+.seg.three { grid-template-columns:1fr 1fr 1fr; border-radius:14px; }
+.seg.three button { border-radius:10px; padding:10px 6px; font-size:.72rem; }
+.chain {
+  display:grid; grid-template-columns:1fr auto 1fr auto 1fr; gap:4px; align-items:center;
+  margin-top:8px; font-size:.72rem; font-weight:700; color:var(--accent-deep);
+}
+.chain span.step {
+  text-align:center; padding:8px 4px; border-radius:10px; background:var(--accent-soft);
+  border:1px solid #b7dce0; line-height:1.2;
+}
+.chain span.step.dim { opacity:.45; background:var(--chip); border-color:var(--line-soft); color:var(--muted); }
+.chain .arrow { color:#8aa0ae; font-weight:700; }
+.transport {
+  display:grid; grid-template-columns:auto 1fr auto; gap:8px; align-items:center;
+}
+.transport .btn-icon {
+  width:42px; height:42px; border-radius:12px; border:1px solid var(--line);
+  background:#fff; font:700 1rem Sora,sans-serif; cursor:pointer; color:var(--accent-deep);
+}
+.transport .btn-icon.playing { background:var(--accent-soft); border-color:var(--accent); }
+.tick-row { display:flex; justify-content:space-between; margin-top:4px; font-size:.68rem; color:var(--muted); font-variant-numeric:tabular-nums; }
+.honesty {
+  margin-top:8px; padding:8px 10px; border-radius:10px; font-size:.74rem; line-height:1.4;
+  background:#f4f7f9; border:1px dashed #b7c6d0; color:#3d5260;
+}
+.radar-hud {
+  position:absolute; z-index:1100; left:50%; bottom:14px; transform:translateX(-50%);
+  width:min(720px, calc(100% - 24px));
+  display:grid; grid-template-columns:auto 1fr auto; gap:12px; align-items:center;
+  padding:10px 14px; border-radius:16px;
+  background:rgba(11,22,32,.88); color:#e8f2f5; backdrop-filter:blur(10px);
+  box-shadow:0 12px 40px rgba(11,22,32,.28); border:1px solid rgba(255,255,255,.08);
+}
+.radar-hud .play {
+  width:44px; height:44px; border-radius:12px; border:0; cursor:pointer;
+  background:#12a3b0; color:#042227; font:700 .95rem Sora,sans-serif;
+}
+.radar-hud .meta { display:flex; flex-direction:column; gap:2px; min-width:0; }
+.radar-hud .clock { font:700 .95rem Sora,sans-serif; letter-spacing:-.02em; }
+.radar-hud .sub { font-size:.72rem; opacity:.78; }
+.radar-hud .legend {
+  display:flex; flex-direction:column; gap:4px; align-items:flex-end; font-size:.68rem; opacity:.9;
+}
+.radar-hud .bar {
+  width:110px; height:8px; border-radius:999px;
+  background:linear-gradient(90deg,#9ecae1,#2171b5,#08306b);
+}
+.radar-hud .bar.susc { background:linear-gradient(90deg,#fff7bc,#fec44f,#d95f0e,#7f2704); }
+.mode-hint { font-size:.76rem; color:var(--muted); margin-top:8px; line-height:1.35; }
 </style>
 </head>
 <body>
 <aside>
   <div class="brand">
     <div class="brand-mark">NYC Flood Impact</div>
-    <div class="brand-tag">Event replay for Earth2 precip, pluvial screening, and observed context.</div>
+    <div class="brand-tag">Radar-style storm replay that moves in time — coupled to flood susceptibility.</div>
   </div>
   <div class="disclaimer-bar" id="alwaysDisclaimer">
     <b>Not inundation depth. Not a flood warning. Not emergency guidance.</b>
-    Screening and AI precip are exploratory research products on a coarse native grid (~0.25°). Overlays are land-masked to the coastline.
+    Earth2 frames are coarse AI 6h precip (~0.25°) — <b>not NEXRAD reflectivity</b>. Susceptibility is a separate screening heatmap. Overlays are land-masked.
+  </div>
+
+  <div class="panel">
+    <h2>Product mode</h2>
+    <div class="seg three" role="group" aria-label="Product mode">
+      <button type="button" class="active" id="productStorm" data-mode="storm">Storm</button>
+      <button type="button" id="productSusc" data-mode="susceptibility">Susceptibility</button>
+      <button type="button" id="productCoupled" data-mode="coupled">Coupled</button>
+    </div>
+    <div class="chain" aria-hidden="true">
+      <span class="step" id="chainPrecip">Precip</span><span class="arrow">→</span>
+      <span class="step dim" id="chainSusc">Susceptibility</span><span class="arrow">→</span>
+      <span class="step dim" id="chainInfra">Infra</span>
+    </div>
+    <p class="mode-hint" id="modeHint">Storm mode: animate Earth2 precip like a radar loop. Susceptibility stays off until you switch modes.</p>
   </div>
 
   <div class="panel">
@@ -178,14 +242,26 @@ details.about summary { cursor:pointer; font-weight:700; color:var(--ink-soft); 
   </div>
 
   <div class="panel">
-    <h2>Valid time</h2>
-    <input id="leadSlider" type="range" min="0" max="3" value="1" step="1" aria-label="Lead time">
+    <h2>Storm clock</h2>
+    <div class="transport">
+      <button type="button" class="btn-icon" id="playBtn" aria-label="Play storm loop" title="Play / pause">▶</button>
+      <div>
+        <input id="leadSlider" type="range" min="0" max="3" value="0" step="1" aria-label="Storm valid time">
+        <div class="tick-row" id="tickRow"></div>
+      </div>
+      <select id="playSpeed" aria-label="Loop speed" style="width:auto;min-width:72px;padding:8px">
+        <option value="1400">Slow</option>
+        <option value="900" selected>Med</option>
+        <option value="550">Fast</option>
+      </select>
+    </div>
     <div class="metrics">
       <div class="metric"><span>Clock (UTC)</span><span class="readout" id="clockReadout">—</span></div>
       <div class="metric"><span>Lead</span><span class="readout" id="leadReadout">—</span></div>
       <div class="metric"><span>Earth2 6h max</span><span class="readout" id="e2Readout">—</span></div>
       <div class="metric"><span>MRMS QPE 6h max</span><span class="readout" id="mrmsReadout">—</span></div>
     </div>
+    <div class="honesty">Loop steps are <b>6h accumulation frames</b> (4 leads for Ida) — a radar-style transport over a coarse AI storm, not 5-minute NEXRAD sweeps.</div>
   </div>
 
   <div class="panel">
@@ -205,33 +281,34 @@ details.about summary { cursor:pointer; font-weight:700; color:var(--ink-soft); 
   </div>
 
   <div class="panel">
-    <h2>Presets</h2>
+    <h2>Quick overlays</h2>
     <div class="btn-row">
-      <button type="button" class="btn" id="presetRain">Rainfall</button>
-      <button type="button" class="btn" id="presetScreen">Screening</button>
+      <button type="button" class="btn" id="presetRain">Storm only</button>
+      <button type="button" class="btn" id="presetScreen">Susceptibility</button>
+      <button type="button" class="btn" id="presetCoupled">Coupled stack</button>
       <button type="button" class="btn" id="presetContext">Context</button>
-      <button type="button" class="btn" id="presetClear">Clear overlays</button>
+      <button type="button" class="btn" id="presetClear">Clear</button>
     </div>
   </div>
 
   <div class="panel">
     <h2>Layers</h2>
     <div class="layer-grid">
-      <div class="group-label">Rainfall</div>
+      <div class="group-label">Storm precip</div>
       <label class="layer-btn"><input id="lyE2" type="checkbox" checked><span class="dot" style="background:#1d6fb8"></span>Earth2 6h</label>
       <label class="layer-btn"><input id="lyMrms" type="checkbox"><span class="dot" style="background:#0f766e"></span>MRMS QPE 6h</label>
       <label class="layer-btn"><input id="lyE2Tot" type="checkbox"><span class="dot" style="background:#0b4f8a"></span>Earth2 total</label>
       <label class="layer-btn"><input id="lyDiff" type="checkbox"><span class="dot" style="background:#b45309"></span>Diff E2−MRMS</label>
       <label class="layer-btn"><input id="lyEns" type="checkbox" disabled><span class="dot" style="background:#64748b"></span>Ensemble</label>
 
-      <div class="group-label">Screening</div>
-      <label class="layer-btn"><input id="lyPluvial" type="checkbox" checked><span class="dot" style="background:#c2410c"></span>Pluvial</label>
+      <div class="group-label">Susceptibility (separate)</div>
+      <label class="layer-btn"><input id="lyPluvial" type="checkbox"><span class="dot" style="background:#c2410c"></span>Heatmap</label>
       <label class="layer-btn"><input id="lyBuilt" type="checkbox"><span class="dot" style="background:#475569"></span>Built surface</label>
-      <label class="layer-btn"><input id="lyHot" type="checkbox" checked><span class="dot" style="background:#dc2626"></span>Hotspot roads</label>
+      <label class="layer-btn"><input id="lyHot" type="checkbox"><span class="dot" style="background:#dc2626"></span>Hotspot roads</label>
 
-      <div class="group-label">Observations</div>
-      <label class="layer-btn"><input id="ly311" type="checkbox" checked><span class="dot" style="background:#e11d48"></span>311 reports</label>
-      <label class="layer-btn"><input id="lySta" type="checkbox" checked><span class="dot" style="background:#0f766e"></span>Stations</label>
+      <div class="group-label">Infrastructure / obs</div>
+      <label class="layer-btn"><input id="ly311" type="checkbox"><span class="dot" style="background:#e11d48"></span>311 reports</label>
+      <label class="layer-btn"><input id="lySta" type="checkbox"><span class="dot" style="background:#0f766e"></span>Stations</label>
       <label class="layer-btn"><input id="lyRoads" type="checkbox"><span class="dot" style="background:#64748b"></span>Roads</label>
 
       <div class="group-label">Context</div>
@@ -252,8 +329,9 @@ details.about summary { cursor:pointer; font-weight:700; color:var(--ink-soft); 
     <details class="about" open>
       <summary>What this is / isn’t</summary>
       <p>
-        <b>Earth2 precip</b> = FCN + PrecipitationAFNO 6h accumulations.<br>
-        <b>Pluvial screening</b> = USGS ~10&nbsp;m terrain + NLCD/built proxy — not depth.<br>
+        <b>Storm loop</b> = Earth2 FCN + PrecipitationAFNO 6h frames (radar-style transport; not NEXRAD).<br>
+        <b>Susceptibility heatmap</b> = separate pluvial screening (terrain + NLCD) — not mixed into precip by default.<br>
+        <b>Coupled mode</b> = precip → susceptibility → infrastructure overlays together.<br>
         <b>Impervious</b> = NLCD 2021 percent impervious (~30&nbsp;m) when available.<br>
         <b>FEMA NFHL</b> = static regulatory flood-hazard zones — not event inundation.<br>
         <b>NWM / AHPS</b> = channel high-flow / river-gauge context — not street flooding.<br>
@@ -266,9 +344,20 @@ details.about summary { cursor:pointer; font-weight:700; color:var(--ink-soft); 
 </aside>
 
 <div id="mapStage" class="map-stage single">
-  <div class="map-pane"><div class="pane-label" id="leftLabel">Earth2</div><div id="mapLeft" class="map-el"></div></div>
+  <div class="map-pane"><div class="pane-label" id="leftLabel">Storm · Earth2</div><div id="mapLeft" class="map-el"></div></div>
   <div class="map-pane" id="rightPane" hidden><div class="pane-label">MRMS QPE</div><div id="mapRight" class="map-el"></div></div>
-  <div class="footer-note">Shareable URL updates as you change lead/layers/mode/extent. Prototype only.</div>
+  <div class="footer-note">Prototype only. AI precip loop ≠ live radar. Susceptibility is screening, not flood depth.</div>
+  <div class="radar-hud" id="radarHud">
+    <button type="button" class="play" id="hudPlay" aria-label="Play storm loop">▶</button>
+    <div class="meta">
+      <div class="clock" id="hudClock">—</div>
+      <div class="sub" id="hudSub">Storm frame · land-masked · nearest ~0.25°</div>
+    </div>
+    <div class="legend">
+      <span id="hudLegendLabel">Precip (mm / 6h)</span>
+      <div class="bar" id="hudLegendBar"></div>
+    </div>
+  </div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -342,8 +431,16 @@ const hotspot = manifest.disruption?.hotspot_png ? L.imageOverlay(assets + manif
 const ensLayer = (ens && ens.available && ens.png) ? L.imageOverlay(assets + ens.png, precipBounds, { opacity: 0.55 }) : null;
 let roadsLayer=null, disruptLayer=null, stationsLayer=null, drainNodes=null, drainEdges=null;
 const reports = L.markerClusterGroup({ showCoverageOnHover:false });
-if (pluvialLayer) pluvialLayer.addTo(mapLeft);
+let productMode = "storm";
+let playing = false;
+let playTimer = null;
+// Storm mode default: precip on, susceptibility off (separate viz).
 if (activeE2) activeE2.addTo(mapLeft);
+
+(function buildTicks() {
+  const row = document.getElementById("tickRow");
+  row.innerHTML = frames.map(f => `<span>+${f.lead_hours}h</span>`).join("");
+})();
 
 function fitExtent() {
   // View-only: do NOT setBounds on raster overlays (that was the scaling bug).
@@ -355,6 +452,8 @@ function fitExtent() {
 
 function setLead(i) {
   if (!frames.length) return;
+  i = Math.max(0, Math.min(frames.length - 1, i));
+  document.getElementById("leadSlider").value = String(i);
   const f = frames[i];
   if (activeE2 && mapLeft.hasLayer(activeE2)) mapLeft.removeLayer(activeE2);
   activeE2 = e2Layers[i];
@@ -369,11 +468,65 @@ function setLead(i) {
     if (document.getElementById("lyDiff").checked && !compareMode) activeDiff.addTo(mapLeft);
     document.getElementById("mrmsReadout").textContent = manifest.mrms_qpe.frames[i].max_mm.toFixed(1) + " mm";
   } else document.getElementById("mrmsReadout").textContent = "n/a";
-  document.getElementById("clockReadout").textContent = f.valid_time.replace("T", " ");
+  const clock = f.valid_time.replace("T", " ");
+  document.getElementById("clockReadout").textContent = clock;
   document.getElementById("leadReadout").textContent = "+" + f.lead_hours + " h";
   document.getElementById("e2Readout").textContent = f.max_mm.toFixed(1) + " mm";
-  document.getElementById("leftLabel").textContent = compareMode ? ("Earth2 · " + f.valid_time.replace("T"," ")) : "Earth2";
+  document.getElementById("hudClock").textContent = clock + " UTC";
+  document.getElementById("hudSub").textContent = productMode === "susceptibility"
+    ? "Susceptibility heatmap · terrain + NLCD screening (not depth)"
+    : ("Lead +" + f.lead_hours + "h · Earth2 6h max " + f.max_mm.toFixed(1) + " mm · not NEXRAD");
+  const labelBase = productMode === "susceptibility" ? "Susceptibility" : (productMode === "coupled" ? "Coupled" : "Storm");
+  document.getElementById("leftLabel").textContent = compareMode
+    ? ("Earth2 · " + clock)
+    : (labelBase + (document.getElementById("lyE2").checked ? " · Earth2" : ""));
   writeUrl();
+}
+
+function setPlaying(on) {
+  playing = on;
+  document.getElementById("playBtn").textContent = on ? "❚❚" : "▶";
+  document.getElementById("hudPlay").textContent = on ? "❚❚" : "▶";
+  document.getElementById("playBtn").classList.toggle("playing", on);
+  if (playTimer) { clearInterval(playTimer); playTimer = null; }
+  if (!on) return;
+  const ms = +document.getElementById("playSpeed").value || 900;
+  playTimer = setInterval(() => {
+    const cur = +document.getElementById("leadSlider").value;
+    const next = (cur + 1) % frames.length;
+    setLead(next);
+  }, ms);
+}
+
+function applyProductMode(mode) {
+  productMode = mode;
+  ["productStorm","productSusc","productCoupled"].forEach(id => {
+    const el = document.getElementById(id);
+    el.classList.toggle("active", el.dataset.mode === mode);
+  });
+  document.getElementById("chainPrecip").classList.toggle("dim", mode === "susceptibility");
+  document.getElementById("chainSusc").classList.toggle("dim", mode === "storm");
+  document.getElementById("chainInfra").classList.toggle("dim", mode !== "coupled");
+  const bar = document.getElementById("hudLegendBar");
+  const legend = document.getElementById("hudLegendLabel");
+  if (mode === "susceptibility") {
+    bar.classList.add("susc");
+    legend.textContent = "Susceptibility (screening)";
+    document.getElementById("modeHint").textContent = "Susceptibility mode: flood screening heatmap only — separate from the storm loop. Not inundation depth.";
+    setLayerChecks(["lyPluvial"]);
+    setPlaying(false);
+  } else if (mode === "coupled") {
+    bar.classList.remove("susc");
+    legend.textContent = "Precip + susceptibility";
+    document.getElementById("modeHint").textContent = "Coupled: animate precip while showing susceptibility and infrastructure context (precip → screening → infra).";
+    setLayerChecks(["lyE2","lyPluvial","lyHot","lySta","lyRoads"]);
+  } else {
+    bar.classList.remove("susc");
+    legend.textContent = "Precip (mm / 6h)";
+    document.getElementById("modeHint").textContent = "Storm mode: animate Earth2 precip like a radar loop. Susceptibility stays off until you switch modes.";
+    setLayerChecks(["lyE2"]);
+  }
+  setLead(+document.getElementById("leadSlider").value);
 }
 
 function setCompare(on) {
@@ -406,6 +559,8 @@ function writeUrl() {
     extent: document.getElementById("extentSelect").value,
     lead: document.getElementById("leadSlider").value,
     mode: compareMode ? "compare" : "single",
+    product: productMode,
+    playing: playing ? "1" : "0",
     resample: document.getElementById("resampleSelect").value,
     layers: ["lyE2","lyMrms","lyPluvial","lyBuilt","lyE2Tot","lyDiff","lyHot","lyRoads","lySta","ly311","lyEns","lyFema","lyNwm","lyGauges","lyDrainE","lyDrainN"].filter(id => document.getElementById(id).checked).join(",")
   });
@@ -414,7 +569,7 @@ function writeUrl() {
 
 function readUrl() {
   const raw = location.hash.replace(/^#/, "");
-  if (!raw) return;
+  if (!raw) return {};
   const p = new URLSearchParams(raw);
   if (p.get("event")) document.getElementById("eventSelect").value = p.get("event");
   if (p.get("extent")) document.getElementById("extentSelect").value = p.get("extent");
@@ -425,6 +580,7 @@ function readUrl() {
     const el = document.getElementById(id); if (el) el.checked = layers.includes(id);
   });
   if (p.get("mode") === "compare") setCompare(true);
+  return { product: p.get("product"), playing: p.get("playing") === "1", hasLayers: Boolean(layers[0]) };
 }
 
 // validation panel
@@ -450,7 +606,10 @@ if (ens && ens.available) {
   document.getElementById("gridNote").textContent += " Ensemble band: not loaded (run multi-member forecast to enable).";
 }
 
-document.getElementById("leadSlider").addEventListener("input", e => setLead(+e.target.value));
+document.getElementById("leadSlider").addEventListener("input", e => {
+  setPlaying(false);
+  setLead(+e.target.value);
+});
 document.getElementById("modeSingle").onclick = () => setCompare(false);
 document.getElementById("modeCompare").onclick = () => setCompare(true);
 document.getElementById("extentSelect").onchange = fitExtent;
@@ -466,6 +625,12 @@ document.getElementById("resampleSelect").onchange = () => {
   });
   writeUrl();
 };
+document.getElementById("playBtn").onclick = () => setPlaying(!playing);
+document.getElementById("hudPlay").onclick = () => setPlaying(!playing);
+document.getElementById("playSpeed").onchange = () => { if (playing) setPlaying(true); };
+document.getElementById("productStorm").onclick = () => applyProductMode("storm");
+document.getElementById("productSusc").onclick = () => applyProductMode("susceptibility");
+document.getElementById("productCoupled").onclick = () => applyProductMode("coupled");
 
 const LAYER_IDS = ["lyE2","lyMrms","lyPluvial","lyBuilt","lyE2Tot","lyDiff","lyHot","lyRoads","lySta","ly311","lyEns","lyFema","lyNwm","lyGauges","lyDrainE","lyDrainN"];
 function setLayerChecks(onIds) {
@@ -479,8 +644,9 @@ function setLayerChecks(onIds) {
     }
   });
 }
-document.getElementById("presetRain").onclick = () => setLayerChecks(["lyE2","lyMrms","ly311"]);
-document.getElementById("presetScreen").onclick = () => setLayerChecks(["lyPluvial","lyBuilt","lyHot","ly311"]);
+document.getElementById("presetRain").onclick = () => applyProductMode("storm");
+document.getElementById("presetScreen").onclick = () => applyProductMode("susceptibility");
+document.getElementById("presetCoupled").onclick = () => applyProductMode("coupled");
 document.getElementById("presetContext").onclick = () => setLayerChecks(["lyFema","lyNwm","lyGauges","lyDrainE","lyDrainN","lySta"]);
 document.getElementById("presetClear").onclick = () => setLayerChecks([]);
 
@@ -606,9 +772,23 @@ fetch(assets + (manifest.reports?.geojson || "observed_311.geojson")).then(r=>r.
   if (document.getElementById("ly311").checked) reports.addTo(mapLeft);
 });
 
-readUrl();
+const urlState = readUrl() || {};
 fitExtent();
-setLead(+document.getElementById("leadSlider").value);
+if (urlState.product && ["storm","susceptibility","coupled"].includes(urlState.product)) {
+  if (urlState.hasLayers) {
+    productMode = urlState.product;
+    ["productStorm","productSusc","productCoupled"].forEach(id => {
+      const el = document.getElementById(id);
+      el.classList.toggle("active", el.dataset.mode === productMode);
+    });
+    setLead(+document.getElementById("leadSlider").value);
+  } else {
+    applyProductMode(urlState.product);
+  }
+} else {
+  applyProductMode("storm");
+}
+if (urlState.playing) setPlaying(true);
 document.querySelectorAll(".leaflet-image-layer").forEach(el => { el.style.imageRendering = (document.getElementById("resampleSelect").value === "nearest") ? "pixelated" : "auto"; });
 </script>
 </body>
