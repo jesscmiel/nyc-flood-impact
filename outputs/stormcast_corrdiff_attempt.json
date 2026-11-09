@@ -1,0 +1,38 @@
+{
+  "generated_at": "2026-11-09T18:10:01.114162+00:00",
+  "policy": "No fake downscaling. Real model output only; otherwise blocked with reason.",
+  "attempts": {
+    "corrdiff": {
+      "model": "CorrDiffEra5Hrrr",
+      "target_time": "2021-09-01T18:00:00",
+      "domain": "NYC / South Queens crop of CONUS HRRR grid",
+      "status": "blocked",
+      "cuda": true,
+      "device_name": "NVIDIA GeForce RTX 4090",
+      "package": "CorrDiffEra5Hrrr.load_default_package()",
+      "error_type": "OptionalDependencyError",
+      "error": "Optional dependency import error",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/jesscmiel/projects/nyc-flood-impact/scripts/try_stormcast_corrdiff.py\", line 36, in _attempt_corrdiff\n    model = CorrDiffEra5Hrrr.load_model(\n        package,\n    ...<2 lines>...\n        distilled_model=True,\n    )\n  File \"/home/jesscmiel/projects/earth2studio/earth2studio/utils/imports.py\", line 181, in _wrapper\n    _check_deps(f\"{obj.__module__}.{obj.__name__}\")\n    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/jesscmiel/projects/earth2studio/earth2studio/utils/imports.py\", line 158, in _check_deps\n    raise OptionalDependencyError(\n    ...<5 lines>...\n    )\nearth2studio.utils.imports.OptionalDependencyError: Optional dependency import error\n",
+      "blocker_summary": "OptionalDependencyError: earth2studio extra 'corrdiff-era5-hrrr' requires natten. `uv sync --extra corrdiff-era5-hrrr` failed building natten 0.21.7 (cmake compile non-zero for CUDA arch 89)."
+    },
+    "stormcast": {
+      "model": "StormCastCONUS",
+      "target_init": "2021-09-01T12:00:00",
+      "domain": "CONUS HRRR / NYC subset if supported",
+      "status": "blocked",
+      "cuda": true,
+      "device_name": "NVIDIA GeForce RTX 4090",
+      "loaded": true,
+      "error_type": "ImportError",
+      "error": "\nMissing optional dependency: natten\n\nnatten is required for this feature.\n\nInstallation:\n  pip install \"nvidia-physicsnemo[cu12,natten-cu12]\" or pip install \"nvidia-physicsnemo[cu13,natten-cu13]\"\n\nDocumentation: https://natten.org/install/",
+      "traceback": "~~~~~^^^^^^^^^^^^^^^^^\n  File \"/home/jesscmiel/projects/earth2studio/.venv/lib/python3.13/site-packages/torch/nn/modules/module.py\", line 1789, in _call_impl\n    return forward_call(*args, **kwargs)\n  File \"/home/jesscmiel/projects/earth2studio/.venv/lib/python3.13/site-packages/physicsnemo/diffusion/preconditioners/preconditioners.py\", line 516, in forward\n    F_x = self.model(\n        c_in * x,\n    ...<2 lines>...\n        **model_kwargs,\n    )\n  File \"/home/jesscmiel/projects/earth2studio/.venv/lib/python3.13/site-packages/torch/nn/modules/module.py\", line 1778, in _wrapped_call_impl\n    return self._call_impl(*args, **kwargs)\n           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^\n  File \"/home/jesscmiel/projects/earth2studio/.venv/lib/python3.13/site-packages/torch/nn/modules/module.py\", line 1789, in _call_impl\n    return forward_call(*args, **kwargs)\n  File \"/home/jesscmiel/projects/earth2studio/.venv/lib/python3.13/site-packages/physicsnemo/diffusion/utils/model_wrappers.py\", line 261, in forward\n    return self.model(x, t, condition=cond_vec, **model_kwargs)\n           ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/jesscmiel/projects/earth2studio/.venv/lib/python3.13/site-packages/torch/nn/modules/module.py\", line 1778, in _wrapped_call_impl\n    return self._call_impl(*args, **kwargs)\n           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^\n  File \"/home/jesscmiel/projects/earth2studio/.venv/lib/python3.13/site-packages/torch/nn/modules/module.py\", line 1789, in _call_impl\n    return forward_call(*args, **kwargs)\n  File \"/home/jesscmiel/projects/earth2studio/.venv/lib/python3.13/site-packages/physicsnemo/models/dit/dit.py\", line 617, in forward\n    x = block(\n        x,\n    ...<2 lines>...\n        attn_kwargs=block_attn_kwargs,\n    )  # (B, L, D)\n  File \"/home/jesscmiel/projects/earth2studio/.venv/lib/python3.13/site-packages/torch/nn/modules/module.py\", line 1778, in _wrapped_call_impl\n    return self._call_impl(*args, **kwargs)\n           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^\n  File \"/home/jesscmiel/projects/earth2studio/.venv/lib/python3.13/site-packages/torch/nn/modules/module.py\", line 1789, in _call_impl\n    return forward_call(*args, **kwargs)\n  File \"/home/jesscmiel/projects/earth2studio/.venv/lib/python3.13/site-packages/physicsnemo/nn/module/dit_layers.py\", line 925, in forward\n    attention_output = self.attention(\n        modulated_attn_input,\n        **(attn_kwargs or {}),\n    )\n  File \"/home/jesscmiel/projects/earth2studio/.venv/lib/python3.13/site-packages/torch/nn/modules/module.py\", line 1778, in _wrapped_call_impl\n    return self._call_impl(*args, **kwargs)\n           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^\n  File \"/home/jesscmiel/projects/earth2studio/.venv/lib/python3.13/site-packages/torch/nn/modules/module.py\", line 1789, in _call_impl\n    return forward_call(*args, **kwargs)\n  File \"/home/jesscmiel/projects/earth2studio/.venv/lib/python3.13/site-packages/physicsnemo/nn/module/dit_layers.py\", line 539, in forward\n    x = _na2d_func(q, k, v, kernel_size=self.attn_kernel, **self.na2d_kwargs)\n  File \"/home/jesscmiel/projects/earth2studio/.venv/lib/python3.13/site-packages/physicsnemo/nn/functional/natten.py\", line 126, in na2d\n    return _natten.functional.na2d(q, k, v, kernel_size, dilation=dilation, **kwargs)\n           ^^^^^^^^^^^^^^^^^^\n  File \"/home/jesscmiel/projects/earth2studio/.venv/lib/python3.13/site-packages/physicsnemo/core/version_check.py\", line 745, in __getattr__\n    module = self._get_module()\n  File \"/home/jesscmiel/projects/earth2studio/.venv/lib/python3.13/site-packages/physicsnemo/core/version_check.py\", line 712, in _get_module\n    raise ImportError(\n        f\"\\n{c.RED}{c.BOLD}Missing optional dependency: {module_name}{c.RESET}\\n\\n{hint}\"\n    )\nImportError: \nMissing optional dependency: natten\n\nnatten is required for this feature.\n\nInstallation:\n  pip install \"nvidia-physicsnemo[cu12,natten-cu12]\" or pip install \"nvidia-physicsnemo[cu13,natten-cu13]\"\n\nDocumentation: https://natten.org/install/\n",
+      "blocker_summary": "Model weights/package load succeeded on RTX 4090, but forward pass requires natten (Neighborhood Attention). Same natten build failure blocks inference. Install hint: pip/uv install nvidia-physicsnemo[cu12,natten-cu12] once a compatible natten wheel exists."
+    }
+  },
+  "natten_install_attempt": {
+    "command": "uv sync --extra corrdiff-era5-hrrr",
+    "result": "failed",
+    "detail": "CalledProcessError building natten 0.21.7 via cmake (-DNATTEN_CUDA_ARCH_LIST=89-real)"
+  },
+  "recommendation": "Keep hooks; do not bilinear-fake resolution. Retry when a prebuilt natten wheel for torch/cu12/py3.13/sm_89 is available, or use a PhysicsNeMo env with natten preinstalled."
+}

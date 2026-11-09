@@ -1,89 +1,70 @@
-# Hydrology & resolution options (honest assessment)
+# Hydrology & resolution options (living)
 
 **App:** https://github.com/jesscmiel/nyc-flood-impact  
-**Machine:** earth2-nyc · RTX 4090 (24 GB) · Earth2Studio as dependency only  
+**Machine:** earth2-nyc · RTX 4090 (24 GB) · Earth2Studio dependency only  
 
 ## Short answers
 
-1. **Can we add “real hydrology” for a real flood susceptibility model?**  
-   Yes for **relative flood susceptibility / pluvial screening** (terrain + built surface + optional rainfall exposure).  
-   **No** (not yet) for **calibrated inundation depths or street-flood warnings** — that needs a calibrated NYC sewer/drainage model (SWMM INP + gages) we do not have.
-
-2. **Is higher-resolution data available?**  
-   **Yes**, already partly on disk and/or publicly fetchable — but native Earth2 FCN precip stays ~0.25°. Higher-res precip needs StormCast/CorrDiff (or stick with MRMS ~1 km as the observed reference).
+1. **Real hydrology / susceptibility:** Relative **pluvial screening** is in place (USGS ~10 m terrain + **NLCD 2021 ~30 m impervious**). Calibrated **inundation depths** remain blocked without a NYC SWMM INP.
+2. **Higher-res precip:** MRMS QPE ~1 km is the observed reference. StormCast / CorrDiff **attempted on this GPU** but **blocked on `natten`** (see below). No fake downscaling shipped.
 
 ---
 
-## Susceptibility vs inundation (definitions)
+## Status of the three approved next steps
 
-| Term | Meaning | What we can claim |
+| Step | Status | Notes |
 | --- | --- | --- |
-| **Terrain / pluvial screening** | Relative index: low/flat land + built/impervious → more street-flood *susceptibility* | Yes — exploratory product layers |
-| **Event exposure screening** | Screening × storm rainfall intensity (MRMS or Earth2) | Yes — still not depth |
-| **Flood susceptibility model** | Static or quasi-static ranking of locations | Partial — uncalibrated heuristic |
-| **Inundation / flood depth** | Water depth / extent from hydrology or hydraulics | **No** without SWMM/HEC-RAS + calibration |
-| **Flood warning** | Operational NWS-style alert | **Never** in this prototype |
+| 1. Real NLCD ~30 m impervious + rebuild pluvial | **Done** | Fetched via MRLC WCS; demo constant raster replaced; pluvial formula `0.55*terrain + 0.45*NLCD`; map rebuilt |
+| 2. StormCast and/or CorrDiff for Ida NYC | **Blocked** | RTX 4090 present; StormCastCONUS **weights load**; both StormCast forward and CorrDiffEra5Hrrr require **`natten`**. `uv sync --extra corrdiff-era5-hrrr` failed building natten 0.21.7 (cmake, CUDA arch 89). Report: `outputs/stormcast_corrdiff_attempt.json` |
+| 3. FEMA NFHL and/or NWM context overlays | **Done (MVP)** | FEMA SFHA polygons + NWM high-flow reaches + AHPS river gauges on product map, labeled **static/context — not event inundation** |
 
 ---
 
-## What we have today
+## Susceptibility vs inundation
 
-| Layer | Status on this machine | Resolution | Honesty |
-| --- | --- | --- | --- |
-| Earth2 FCN + PrecipitationAFNO | Ran for Ida | ~0.25° native (~25 km) | Underestimates Ida vs MRMS |
-| MRMS MultiSensor QPE | Cached for Ida leads | ~1 km | Observed precip reference |
-| USGS 3DEP DEM | `data/raw/terrain/dem_usgs_1_3_arcsec.tif` | ~10 m (1/3″) | Real |
-| Terrain screening | `terrain_screening_10m.tif` | ~10 m | Terrain-only index |
-| Impervious GeoTIFF | `impervious_surface.tif` | Coarse **demo** (near-constant ~0.55) | **Rejected** by improved pluvial builder |
-| Built-surface proxy | OSM highways → raster | ~30 m product grid | Road corridor proxy, not NLCD |
-| Pluvial screening | Rebuilt: terrain + built proxy | ~30 m display / DEM-derived | Screening only |
-| SWMM | Code scaffold in `swmm.py` | n/a | **Blocked** — no calibrated NYC INP |
-| StormCast / CorrDiff | Importable in E2S venv | km-scale regional | Weights/conditioning not run here |
+| Term | Claimable? |
+| --- | --- |
+| Pluvial / terrain screening | Yes — relative index |
+| NLCD impervious | Yes — land cover input |
+| FEMA NFHL | Yes — static regulatory context |
+| NWM / AHPS | Yes — channel / gauge context |
+| StormCast / CorrDiff precip | Not yet — blocked on natten |
+| SWMM street depths | No — missing calibrated NYC INP |
+| Flood warnings | Never in this prototype |
 
 ---
 
-## Higher-res data that exists (public / on-machine)
+## Exact StormCast / CorrDiff blockers
 
-### Precipitation
-- **MRMS QPE (~1 km, hourly)** — already used; best observed precip for validation.
-- **HRRR / RAP** — ~3 km; good IC/conditioning for StormCast paths.
-- **StormCast / StormCastCONUS** (Earth2Studio) — generative convection-allowing regional precip; needs PhysicsNeMo weights + conditioning data source (often HRRR). Feasible on RTX 4090 for limited domains/leads; **not free** in setup time.
-- **CorrDiff\*** diagnostics (e.g. `CorrDiff`, `CorrDiffEra5Hrrr`) — downscale global → regional; also weight/runtime dependent. Prefer real model output over bilinear “fake resolution.”
+```text
+CorrDiffEra5Hrrr.load_model → OptionalDependencyError
+  needs earth2studio extra `corrdiff-era5-hrrr`
+  root cause: ImportError: No module named 'natten'
 
-### Terrain / land cover / hydro
-- **USGS 3DEP DEM** — already clipped for South Queens (~10 m).
-- **NLCD percent impervious (~30 m)** — real product at MRLC; **not yet downloaded** (previous file was a demo placeholder). Next fetch target.
-- **NYC Open Data** — catch basins, 311, buildings/planimetrics (building footprints → better impervious than roads alone).
-- **NWM (National Water Model)** — streamflow / land-surface; useful for riverine context, weak for NYC street pluvial without urban routing.
-- **FEMA NFHL** — regulatory flood hazard zones (static); good context overlay, not event inundation.
-- **SWMM** — needs agency-calibrated NYC drainage INP + rain gage map; scaffold only until that exists.
+StormCastCONUS.load_model → succeeds on RTX 4090
+StormCastCONUS forward → ImportError: Missing optional dependency: natten
+  hint: pip install "nvidia-physicsnemo[cu12,natten-cu12]"
 
----
+uv sync --extra corrdiff-era5-hrrr → FAILED
+  natten 0.21.7 source build: cmake returned non-zero
+  (-DNATTEN_CUDA_ARCH_LIST=89-real)
+```
 
-## Feasibility on this GPU machine
+**Policy:** leave hooks + JSON report; do **not** bilinear-fake higher-res precip.
 
-| Path | Feasible? | Notes |
-| --- | --- | --- |
-| Better pluvial from DEM + OSM/NLCD | **Yes (done / next)** | DEM already local; OSM roads used; NLCD still to fetch |
-| MRMS 1 km as “higher-res precip” vs Earth2 | **Yes (done)** | Observation, not a forecast downscaler |
-| StormCastCONUS / CorrDiff for Ida | **Maybe** | RTX 4090 OK; needs weights download, HRRR conditioning, NYC domain check |
-| Calibrated SWMM depths | **Blocked** | Missing INP — do not invent depths |
-| Full citywide 1 m DEM + buildings raster | **Heavy** | Possible offline; larger I/O than current prototype |
+Retry when a prebuilt `natten` wheel matches this torch / CUDA 12 / py3.13 / sm_89 stack.
 
 ---
 
-## Recommended next implementable steps (priority)
+## Data now on disk / in map
 
-1. **Done this pass:** Reject demo impervious; rebuild pluvial with USGS terrain screening + OSM road built-surface proxy; denser product grid; map layer for built proxy.  
-2. **Next (small):** Fetch real **NLCD 30 m impervious** for the study bbox and swap it in for the road proxy (keep proxy as fallback).  
-3. **Next (medium):** Optional **event exposure** layer = pluvial × normalized MRMS (or Earth2) — still labeled screening.  
-4. **Next (medium/large):** Spike **StormCast** or **CorrDiffEra5Hrrr** on Ida with E2S venv; only ship if outputs are real model fields.  
-5. **Blocked:** SWMM depth maps until a calibrated NYC INP is supplied.
+- `data/raw/landcover/nlcd_2021_impervious_south_queens.tif` (+ refreshed `impervious_surface.tif` as 0–1)
+- `data/raw/context/fema_nfhl_south_queens.geojson` (full pull); map uses SFHA subset
+- `figures/product_assets/nwm_high_flow.geojson`, `nwm_ahps_gauges.geojson`
+- Scripts: `fetch_nlcd_impervious.py`, `fetch_context_overlays.py`, `try_stormcast_corrdiff.py`
 
----
+## Screenshots
 
-## What we will not claim
-
-- Street flood depths, basement water levels, or “will flood / won’t flood” decisions  
-- That bilinear resampling or road density is physical downscaling  
-- That susceptibility equals FEMA risk or NWS warnings  
+- `media/product-ui.png`
+- `media/hydrology-context.png`
+- `media/validation-panel.png`

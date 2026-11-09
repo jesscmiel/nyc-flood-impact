@@ -1,0 +1,11 @@
+{
+"type": "FeatureCollection",
+"name": "flood_reports",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "impact_flag": 1 }, "geometry": { "type": "Point", "coordinates": [ -73.83, 40.645 ] } },
+{ "type": "Feature", "properties": { "impact_flag": 1 }, "geometry": { "type": "Point", "coordinates": [ -73.86, 40.635 ] } },
+{ "type": "Feature", "properties": { "impact_flag": 1 }, "geometry": { "type": "Point", "coordinates": [ -73.79, 40.628 ] } },
+{ "type": "Feature", "properties": { "impact_flag": 0 }, "geometry": { "type": "Point", "coordinates": [ -73.91, 40.61 ] } }
+]
+}

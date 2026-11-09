@@ -1,0 +1,6 @@
+{
+  "label": "NWM medium-range max high-flow magnitude (context)",
+  "disclaimer": "National Water Model channel high-flow magnitude context. Not street inundation / not event flood depth.",
+  "n_features": 9,
+  "source": "NOAA maps.water.noaa.gov NWM MRF high flow magnitude"
+}

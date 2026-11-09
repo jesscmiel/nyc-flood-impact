@@ -134,6 +134,9 @@ button.active {{ border-color:var(--accent); background:#e7f4f8; color:var(--acc
     <label class="row"><span><span class="swatch" style="background:#0f766e"></span>Stations</span><input id="lySta" type="checkbox" checked></label>
     <label class="row"><span><span class="swatch" style="background:#e11d48"></span>311 reports</span><input id="ly311" type="checkbox" checked></label>
     <label class="row"><span><span class="swatch" style="background:#6366f1"></span>Ensemble band (if present)</span><input id="lyEns" type="checkbox" disabled></label>
+    <label class="row"><span><span class="swatch" style="background:#1d4ed8"></span>FEMA NFHL zones (static)</span><input id="lyFema" type="checkbox"></label>
+    <label class="row"><span><span class="swatch" style="background:#0ea5e9"></span>NWM high-flow reaches (context)</span><input id="lyNwm" type="checkbox"></label>
+    <label class="row"><span><span class="swatch" style="background:#0369a1"></span>AHPS river gauges (context)</span><input id="lyGauges" type="checkbox"></label>
   </section>
 
   <section>
@@ -147,7 +150,9 @@ button.active {{ border-color:var(--accent); background:#e7f4f8; color:var(--acc
       <p style="font-size:.78rem;color:var(--muted);line-height:1.4">
         <b>Earth2 precip</b> = FCN + PrecipitationAFNO 6h accumulations.<br>
         <b>Pluvial screening</b> = USGS ~10&nbsp;m terrain + built-surface proxy — not depth.<br>
-        <b>Built-surface proxy</b> = OSM road corridors (demo NLCD rejected).<br>
+        <b>Impervious</b> = NLCD 2021 percent impervious (~30&nbsp;m) when available.<br>
+        <b>FEMA NFHL</b> = static regulatory flood-hazard zones — not event inundation.<br>
+        <b>NWM / AHPS</b> = channel high-flow / river-gauge context — not street flooding.<br>
         <b>MRMS QPE</b> = observed rainfall estimate (~1&nbsp;km; not BREF).<br>
         <b>311</b> = complaints, not surveyed floods.<br>
         No SWMM depths without a calibrated NYC sewer INP (scaffold only).
@@ -294,7 +299,7 @@ function writeUrl() {{
     lead: document.getElementById("leadSlider").value,
     mode: compareMode ? "compare" : "single",
     resample: document.getElementById("resampleSelect").value,
-    layers: ["lyE2","lyMrms","lyPluvial","lyBuilt","lyE2Tot","lyDiff","lyHot","lyRoads","lySta","ly311","lyEns"].filter(id => document.getElementById(id).checked).join(",")
+    layers: ["lyE2","lyMrms","lyPluvial","lyBuilt","lyE2Tot","lyDiff","lyHot","lyRoads","lySta","ly311","lyEns","lyFema","lyNwm","lyGauges"].filter(id => document.getElementById(id).checked).join(",")
   }});
   history.replaceState(null, "", "#" + params.toString());
 }}
@@ -308,7 +313,7 @@ function readUrl() {{
   if (p.get("lead") != null) document.getElementById("leadSlider").value = p.get("lead");
   if (p.get("resample")) document.getElementById("resampleSelect").value = p.get("resample");
   const layers = (p.get("layers") || "").split(",");
-  if (layers[0]) ["lyE2","lyMrms","lyPluvial","lyBuilt","lyE2Tot","lyDiff","lyHot","lyRoads","lySta","ly311","lyEns"].forEach(id => {{
+  if (layers[0]) ["lyE2","lyMrms","lyPluvial","lyBuilt","lyE2Tot","lyDiff","lyHot","lyRoads","lySta","ly311","lyEns","lyFema","lyNwm","lyGauges"].forEach(id => {{
     const el = document.getElementById(id); if (el) el.checked = layers.includes(id);
   }});
   if (p.get("mode") === "compare") setCompare(true);
@@ -367,6 +372,51 @@ bind("lyBuilt", builtLayer);
 bind("lyE2Tot", e2Total);
 bind("lyHot", hotspot);
 bind("lyEns", ensLayer);
+
+let femaLayer=null, nwmLayer=null, gaugesLayer=null;
+fetch(assets + "fema_nfhl.geojson").then(r => r.ok ? r.json() : null).then(geo => {{
+  if (!geo) return;
+  femaLayer = L.geoJSON(geo, {{
+    style: f => {{
+      const z = (f.properties && f.properties.FLD_ZONE) || "";
+      const sfha = (f.properties && f.properties.SFHA_TF) === "T";
+      return {{
+        color: sfha ? "#1d4ed8" : "#93c5fd",
+        weight: 1,
+        fillColor: sfha ? "#3b82f6" : "#bfdbfe",
+        fillOpacity: sfha ? 0.28 : 0.12,
+      }};
+    }},
+    onEachFeature: (f,l) => l.bindTooltip(
+      "FEMA " + ((f.properties&&f.properties.FLD_ZONE)||"?") +
+      " · static NFHL context (not event inundation)"
+    )
+  }});
+  bind("lyFema", femaLayer);
+  if (document.getElementById("lyFema").checked) femaLayer.addTo(mapLeft);
+}}).catch(() => {{}});
+fetch(assets + "nwm_high_flow.geojson").then(r => r.ok ? r.json() : null).then(geo => {{
+  if (!geo) return;
+  nwmLayer = L.geoJSON(geo, {{
+    style: {{ color:"#0ea5e9", weight:3, opacity:0.85 }},
+    onEachFeature: (f,l) => l.bindTooltip("NWM high-flow reach · context only (not street flood)")
+  }});
+  bind("lyNwm", nwmLayer);
+  if (document.getElementById("lyNwm").checked) nwmLayer.addTo(mapLeft);
+}}).catch(() => {{}});
+fetch(assets + "nwm_ahps_gauges.geojson").then(r => r.ok ? r.json() : null).then(geo => {{
+  if (!geo) return;
+  gaugesLayer = L.geoJSON(geo, {{
+    pointToLayer: (f,ll) => L.circleMarker(ll, {{ radius:5, color:"#0369a1", fillColor:"#38bdf8", fillOpacity:0.9, weight:1 }}),
+    onEachFeature: (f,l) => {{
+      const p = f.properties || {{}};
+      l.bindTooltip((p.location || p.gaugelid || "AHPS gauge") + " · river context (not street flood)");
+    }}
+  }});
+  bind("lyGauges", gaugesLayer);
+  if (document.getElementById("lyGauges").checked) gaugesLayer.addTo(mapLeft);
+}}).catch(() => {{}});
+
 document.getElementById("lyE2").onchange = e => {{ if (e.target.checked) activeE2.addTo(mapLeft); else mapLeft.removeLayer(activeE2); writeUrl(); }};
 document.getElementById("lyMrms").onchange = e => {{
   if (compareMode) return;

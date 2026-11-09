@@ -22,7 +22,7 @@ Worker tip: point Cursor `--worker-dir` at `/home/jesscmiel/projects/nyc-flood-i
 | Track | Status | What’s in the repo |
 | --- | --- | --- |
 | **1 Precip credibility** | Partial | Coarse-grid UI notice; bilinear vs nearest display; 2-member ensemble spread layer wired. StormCast/CorrDiff documented as next hooks — **no fake downscaling** / no StormCast run this pass. |
-| **2 Real hydrology** | Partial | Pluvial screening uses USGS ~10&nbsp;m terrain + OSM road **built-surface proxy** (demo NLCD constant raster rejected). Still screening, not depth. SWMM scaffold (`swmm.py`) blocked on calibrated NYC INP. See Project store `docs/hydrology-resolution-options.md`. |
+| **2 Real hydrology** | Partial | Pluvial screening = USGS ~10&nbsp;m terrain + **NLCD 2021 ~30&nbsp;m impervious**. FEMA SFHA + NWM/AHPS context overlays (static/context labels). StormCast/CorrDiff **blocked on `natten`**. SWMM still needs NYC INP. See `docs/hydrology-resolution-options.md`. |
 | **3 Product UI** | Done (MVP) | Event picker (Ida + placeholder), South Queens / citywide extent, clock valid times, `#` URL state, mobile stack layout, sticky disclaimers → `figures/product_map.html`. |
 | **4 Ops path** | Done (MVP) | `scripts/run_live_pipeline.py` + `make live-ida` / `make live`. Freshness notes; exposure scores only — never flood warnings. Auth/hosting deferred. |
 | **5 Validation** | Done (MVP) | `scripts/run_validation_report.py` → `outputs/validation_product.json` + map panel (Earth2 vs MRMS vs 311). |

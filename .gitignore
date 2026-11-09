@@ -27,12 +27,22 @@ __pycache__/
 !/figures/product_assets/**
 !/figures/product-ui.png
 !/figures/validation-panel.png
+!/figures/hydrology-context.png
 !/data/forecasts/
 !/data/forecasts/.gitkeep
 !/data/forecasts/nyc_precip_ida_20210901T12.nc
 !/data/forecasts/nyc_precip_ida_ens2.nc
+!/data/raw/
+!/data/raw/landcover/
+!/data/raw/landcover/nlcd_2021_impervious_south_queens.tif
+!/data/raw/landcover/impervious_surface.tif
+!/data/raw/context/
+!/data/raw/context/**
 !/outputs/
 !/outputs/validation_product.json
+!/outputs/higher_res_precip_hooks.json
+!/outputs/higher_res_precip_hooks_e2s.json
+!/outputs/stormcast_corrdiff_attempt.json
 
 # Editor
 .vscode/

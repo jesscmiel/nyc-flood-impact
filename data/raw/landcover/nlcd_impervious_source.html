@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html  lang="en" dir="ltr">
+  <head>
+	  <!-- Client Side Frame Busting Code to prevent XFS and Clickjacking -->
+		<style id="antiClickjack">body{display:none !important;}</style>
+		<script type="text/javascript">
+		   if (self === top) {
+			   var antiClickjack = document.getElementById("antiClickjack");
+			   antiClickjack.parentNode.removeChild(antiClickjack);
+		   } else {
+			   top.location = self.location;
+		   }
+		</script>
+		<!-- ******************************************************************* -->
+  
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3G3YQDVFV0"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-3G3YQDVFV0');
+    </script>
+  
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8" />
+<meta name="Generator" content="Drupal 10 (https://www.drupal.org)" />
+<meta name="MobileOptimized" content="width" />
+<meta name="HandheldFriendly" content="true" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" href="/themes/eros_mrlc/images/favicon.ico" type="image/vnd.microsoft.icon" />
+<link rel="canonical" href="https://www.mrlc.gov/data" />
+<link rel="shortlink" href="https://www.mrlc.gov/node/1855" />
+
+    <title>Data | Multi-Resolution Land Characteristics (MRLC) Consortium</title>
+    
+	
+	<link rel="apple-touch-icon" sizes="57x57" href="/themes/eros_mrlc/images/apple-icon-57x57.png">
+	<link rel="apple-touch-icon" sizes="60x60" href="/themes/eros_mrlc/images/apple-icon-60x60.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="/themes/eros_mrlc/images/apple-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="76x76" href="/themes/eros_mrlc/images/apple-icon-76x76.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="/themes/eros_mrlc/images/apple-icon-114x114.png">
+	<link rel="apple-touch-icon" sizes="120x120" href="/themes/eros_mrlc/images/apple-icon-120x120.png">
+	<link rel="apple-touch-icon" sizes="144x144" href="/themes/eros_mrlc/images/apple-icon-144x144.png">
+	<link rel="apple-touch-icon" sizes="152x152" href="/themes/eros_mrlc/images/apple-icon-152x152.png">
+	<link rel="apple-touch-icon" sizes="180x180" href="/themes/eros_mrlc/images/apple-icon-180x180.png">
+	<link rel="icon" type="image/png" sizes="192x192"  href="/themes/eros_mrlc/images/android-icon-192x192.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="/themes/eros_mrlc/images/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="96x96" href="/themes/eros_mrlc/images/favicon-96x96.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="/themes/eros_mrlc/images/favicon-16x16.png">
+	<link rel="manifest" href="/themes/eros_mrlc/images/manifest.json">
+	<meta name="msapplication-TileColor" content="#ffffff">
+	<meta name="msapplication-TileImage" content="/themes/eros_mrlc/images/ms-icon-144x144.png">
+	<meta name="theme-color" content="#ffffff">
+	
+	
+	<link rel="stylesheet" media="all" href="/core/modules/system/css/components/align.module.css?tnosf2" />
+<link rel="stylesheet" media="all" href="/core/modules/system/css/components/fieldgroup.module.css?tnosf2" />
+<link rel="stylesheet" media="all" href="/core/modules/system/css/components/container-inline.module.css?tnosf2" />
+<link rel="stylesheet" media="all" href="/core/modules/system/css/components/clearfix.module.css?tnosf2" />
+<link rel="stylesheet" media="all" href="/core/modules/system/css/components/details.module.css?tnosf2" />
+<link rel="stylesheet" media="all" href="/core/modules/system/css/components/hidden.module.css?tnosf2" />
+<link rel="stylesheet" media="all" href="/core/modules/system/css/components/item-list.module.css?tnosf2" />
+<link rel="stylesheet" media="all" href="/core/modules/system/css/components/js.module.css?tnosf2" />
+<link rel="stylesheet" media="all" href="/core/modules/system/css/components/nowrap.module.css?tnosf2" />
+<link rel="stylesheet" media="all" href="/core/modules/system/css/components/position-container.module.css?tnosf2" />
+<link rel="stylesheet" media="all" href="/core/modules/system/css/components/reset-appearance.module.css?tnosf2" />
+<link rel="stylesheet" media="all" href="/core/modules/system/css/components/resize.module.css?tnosf2" />
+<link rel="stylesheet" media="all" href="/core/modules/system/css/components/system-status-counter.css?tnosf2" />
+<link rel="stylesheet" media="all" href="/core/modules/system/css/components/system-status-report-counters.css?tnosf2" />
+<link rel="stylesheet" media="all" href="/core/modules/system/css/components/system-status-report-general-info.css?tnosf2" />
+<link rel="stylesheet" media="all" href="/core/modules/system/css/components/tablesort.module.css?tnosf2" />
+<link rel="stylesheet" media="all" href="/core/modules/views/css/views.module.css?tnosf2" />
+<link rel="stylesheet" media="all" href="/modules/contrib/facetsjs/dist/facetsjs.css?tnosf2" />
+<link rel="stylesheet" media="all" href="https://cdn.jsdelivr.net/npm/entreprise7pro-bootstrap@3.4.10/dist/css/bootstrap.css" integrity="sha256-3p/H8uQndDeQADwalAGPYNGwk6732TJRjYcY05O81og=" crossorigin="anonymous" />
+<link rel="stylesheet" media="all" href="https://cdn.jsdelivr.net/npm/@unicorn-fail/drupal-bootstrap-styles@0.0.2/dist/3.4.0/8.x-3.x/drupal-bootstrap.css" integrity="sha512-j4mdyNbQqqp+6Q/HtootpbGoc2ZX0C/ktbXnauPFEz7A457PB6le79qasOBVcrSrOBtGAm0aVU2SOKFzBl6RhA==" crossorigin="anonymous" />
+<link rel="stylesheet" media="all" href="/themes/eros_mrlc/css/styles.css?tnosf2" />
+
+  
+  
+  <!-- Matomo -->
+  <script type="text/javascript">
+    var _paq = _paq || [];
+    /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+    _paq.push(["setCookieDomain", "*.www.mrlc.gov"]);
+    _paq.push(["setDomains", ["*.www.mrlc.gov","*.mrlc.gov"]]);
+    _paq.push(['trackPageView']);
+    _paq.push(['enableLinkTracking']);
+    (function() {
+      var u="//edcintl.cr.usgs.gov/piwik/";
+      _paq.push(['setTrackerUrl', u+'piwik.php']);
+      _paq.push(['setSiteId', '8']);
+      var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+      g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'piwik.js'; s.parentNode.insertBefore(g,s);
+    })();
+  </script>
+  <noscript><p><img src="//edcintl.cr.usgs.gov/piwik/piwik.php?idsite=8&amp;rec=1" style="border:0;" alt="" /></p></noscript>
+  <!-- End Matomo Code -->
+
+  </head>
+  <body  class="path-node page-node-type-page has-glyphicons">
+    <a href="#main-content" class="visually-hidden focusable skip-link">
+      Skip to main content
+    </a>
+    
+      <div class="dialog-off-canvas-main-canvas" data-off-canvas-main-canvas>
+      									<header  class="navbar navbar-default navbar-fixed-top no-carousel container" id="navbar" role="banner">
+		    		    <div class="container">
+		  
+			  <div class="navbar-header">
+				  <div class="region region-navigation">
+          <a class="logo navbar-btn pull-left" href="/" title="Home" rel="home">
+		<div class="pull-left nav-div">
+			<div class="second-div"><img class="nav-logo" src="/themes/eros_mrlc/images/MRLC-t-sm.png" alt="Home" alt="MRLC logo" /></div>
+		</div>
+		<span>Celebrating 25+ years of Partnership<br><b>Multi-Resolution Land Characteristics<br>Consortium</b></span>
+    </a>
+      
+  </div>
+
+												  <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse">
+					<span class="sr-only">Toggle navigation</span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				  </button>
+							  </div>
+
+			  			  				<div id="navbar-collapse" class="navbar-collapse collapse">
+				    <div class="region region-navigation-collapsible">
+    <nav role="navigation" aria-labelledby="block-eros-mrlc-main-menu-menu" id="block-eros-mrlc-main-menu">
+            
+  <h2 class="visually-hidden" id="block-eros-mrlc-main-menu-menu">Main navigation</h2>
+  
+
+        
+      <ul class="menu menu--main nav navbar-nav">
+                      <li class="expanded dropdown active active-trail first">
+                                                                    <a href="" class="dropdown-toggle active-trail" data-toggle="dropdown">Data <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                      <li class="active active-trail first">
+                                        <a href="/data" class="active-trail is-active" data-drupal-link-system-path="node/1855" aria-current="page">Downloads</a>
+              </li>
+                      <li class="last">
+                                        <a href="/data-services-page" data-drupal-link-system-path="node/321">Services</a>
+              </li>
+        </ul>
+  
+              </li>
+                      <li class="expanded dropdown">
+                                                                    <a href="/tools" class="dropdown-toggle" data-toggle="dropdown" data-drupal-link-system-path="node/199">Tools <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                      <li class="first">
+                                        <a href="/eva" title="EVA Tool" target="_blank" rel="noopener noreferrer">MRLC NLCD EVA Tool</a>
+              </li>
+                      <li>
+                                        <a href="/viewer" title="MRLC NLCD Viewer" target="_blank" rel="noopener noreferrer">MRLC NLCD Viewer</a>
+              </li>
+                      <li class="last">
+                                        <a href="/rangeland-viewer" title="MRLC Rangeland Viewer" target="_blank" rel="noopener noreferrer">MRLC Rangeland Viewer</a>
+              </li>
+        </ul>
+  
+              </li>
+                      <li>
+                                        <a href="/partners" data-drupal-link-system-path="node/144">Partners</a>
+              </li>
+                      <li class="expanded dropdown">
+                                                                    <a href="/resources" class="dropdown-toggle" data-toggle="dropdown" data-drupal-link-system-path="node/1535">Resources <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                      <li class="first">
+                                        <a href="/faq" data-drupal-link-system-path="node/1827">FAQ</a>
+              </li>
+                      <li>
+                                        <a href="/publications" data-drupal-link-system-path="node/305">Publications</a>
+              </li>
+                      <li>
+                                        <a href="/documentation" data-drupal-link-system-path="node/1534">Documentation</a>
+              </li>
+                      <li>
+                                        <a href="https://www.usgs.gov/centers/eros/stories-change-our-landscape">Land Change Assessments</a>
+              </li>
+                      <li>
+                                        <a href="/data/type/nlcd-reference-and-validation" data-drupal-link-system-path="node/1849">R&amp;V</a>
+              </li>
+                      <li class="last">
+                                        <a href="/product-information" data-drupal-link-system-path="node/4101">Product Information</a>
+              </li>
+        </ul>
+  
+              </li>
+                      <li>
+                                        <a href="/about" data-drupal-link-system-path="node/115">About</a>
+              </li>
+                      <li class="last">
+                                        <a href="/contact-us" data-drupal-link-system-path="node/120">Contact Us</a>
+              </li>
+        </ul>
+  
+
+  </nav>
+
+  </div>
+
+				</div>
+			  			  			</div>  
+		</header>
+
+  <div class="pushdown"></div>
+      <div role="main" class="main-container container js-quickedit-main-content">
+    <div class="row">
+
+                              <div class="col-sm-12" role="heading">
+              <div class="region region-header">
+    <div data-drupal-messages-fallback class="hidden"></div>
+    <ol class="breadcrumb">
+	<a href="/"><span class="glyphicon glyphicon-home"></span></a>
+          <li >
+                  <a href="/">Home</a>
+              </li>
+          <li  class="active">
+                  Data
+              </li>
+      </ol>
+
+    <h1 class="page-header">
+<span>Data</span>
+</h1>
+
+
+  </div>
+
+			          </div>
+              
+            
+            
+      <section class="col-sm-12">
+
+                
+                                      
+                  
+                          <a id="main-content"></a>
+            <div class="region region-content">
+    <section id="block-datapageintro" class="block block-block-content block-block-content6b8441e1-5859-43e2-897c-1bade77c945f clearfix">
+  
+    
+
+      
+            <div class="field field--name-body field--type-text-with-summary field--label-hidden field--item"><p>Use the interface on the left to filter and download available NLCD products. Access the <a href="/viewer/">MRLC NLCD viewer</a> or the <a href="/rangeland-viewer/">MRLC Rangeland viewer</a> for more dynamic data selection. Note: the current version of Annual NLCD offered here is Collection 1 Version 2 (1.2). This is the only version made available on <a href="http://www.mrlc.gov">www.mrlc.gov</a>. For access to full archive of Annual NLCD, please visit the <a href="https://www.sciencebase.gov/catalog/item/655ceb8ad34ee4b6e05cc51a" target="_blank" rel="noopener">ScienceBase page</a>.</p></div>
+      
+  </section>
+
+  
+
+<article data-history-node-id="1855" class="page full clearfix">
+
+  
+    
+
+  
+  <div class="content">
+    
+  </div>
+
+</article>
+
+<section id="block-eros-mrlc-facetsjsapp" class="block block-facetsjs block-facetsjs-app clearfix">
+  
+    
+
+      
+
+<div id="root" class="facetsjs-root"></div>
+
+  </section>
+
+
+  </div>
+
+              </section>
+
+                </div>
+  </div>
+
+
+			<div class="newsregion container-fluid">
+			<div class="container">
+				  <div class="region region-newsregion">
+    <section class="views-element-container block block-views block-views-blocknews-card-block-1 clearfix" id="block-views-block-news-card-block-1">
+  
+    
+
+      <div class="form-group"><div class="view view-news-card view-id-news_card view-display-id-block_1 js-view-dom-id-2d5d7d054d4f3d4d76df0cca89f18fa843a1fb87090476886f7b5c931eafc729">
+  
+    
+      
+      <div class="view-content">
+      <div class="views-row">
+	
+		<div class="col-md-4">
+			
+
+  <div class="thumbnail">
+      <img loading="lazy" src="/sites/default/files/styles/news_card_image/public/2026-08/image_0.jpg?itok=bsKHmMoZ" width="400" height="250" alt="Topographic map of CONUS forestland" class="img-responsive" />
+
+
+
+    <div class="caption">
+		<h3>National Annual Tree Canopy Cover data now available from 1985-2025 for CONUS, Southeastern Alaska, Hawaii, Puerto Rico and U.S. Virgin Islands</h3>
+		<p class="new-plubished-date">Published <time datetime="2026-10-13T10:32:01-05:00">Oct 13, 2026</time>
+</p>
+		The USDA Forest Service Geospatial Office (GO) and Research and Development - Forest Inventory and Analysis (FIA) builds and maintains the National Tree Canopy Cover (TCC) dataset as part of the National Land Cover Database (NLCD). Annual data for the contiguous United States is now available from 1985-2025. The TCC datasets are derived from Landsat and Sentinel-2 imagery along with USDA Forest Service FIA data, based on a spatial resolution of 30 meters. Each Tree Canopy Cover (TCC) value is determined using photo interpretation methods and machine learning models, to produce the percentage of the area covered by tree canopy and interannual change between all years.<br><br>
+		<div class="btn btn-default" role="button">
+			<a href="/data">Review Products</a>
+		</div>
+		    </div>
+
+  </div>
+		</div>
+
+	
+		<div class="col-md-4">
+			
+
+  <div class="thumbnail">
+      <img loading="lazy" src="/sites/default/files/styles/news_card_image/public/2026-10/RCMAP_headline_graphic_v8_0.jpg?itok=2W7zvlZ9" width="400" height="250" alt="A map of Western CONUS with RCMAP Tree Cover Trend" class="img-responsive" />
+
+
+
+    <div class="caption">
+		<h3>New Generations of RCMAP and EAG Data Available</h3>
+		<p class="new-plubished-date">Published <time datetime="2026-10-08T09:57:36-05:00">Oct 08, 2026</time>
+</p>
+		The U.S. Geological Survey Rangeland Condition Monitoring Assessment and Projection (RCMAP) Exotic Annual Grass (EAG) team is pleased to announce the release of a new generation of weekly resolution maps. We release weekly data for weeks 10-38 (early March to late September) of 2016-2026 for total herbaceous, total EAG, cheatgrass, medusahead, field brome, and Sandberg’s Bluegrass.<br />
+<br />
+Additionally, a new generation of RCMAP yearly fractional component time-series data spanning 1985-2025 are now available.<br />
+<br />
+Both RCMAP and RCMAP-EAG data are available for download and on the rangelands viewer at www.mrlc.gov, and ArcGIS Online.<br><br>
+		<div class="btn btn-default" role="button">
+			<a href="/data">View Datasets</a>
+		</div>
+					<div class="btn btn-default" role="button">
+				<a href="/rangeland-viewer">Rangelands Viewer</a>
+			</div>
+		    </div>
+
+  </div>
+		</div>
+
+	
+		<div class="col-md-4">
+			
+
+  <div class="thumbnail">
+      <img loading="lazy" src="/sites/default/files/styles/news_card_image/public/2026-06/AnnualNLCD1_2new.jpg?itok=apFykq1R" width="400" height="250" alt="Annual NLCD image of CONUS showing land features" class="img-responsive" />
+
+
+
+    <div class="caption">
+		<h3>Annual NLCD CONUS Collection 1.2 Now Available</h3>
+		<p class="new-plubished-date">Published <time datetime="2026-06-10T09:57:37-05:00">Jun 10, 2026</time>
+</p>
+		Land Cover Characteristics in a Suite of Six Products<br />
+<br />
+Annual NLCD CU C1.2 adds 2025 to the established suite of six raster-based land use and land cover science products for the conterminous United States. It now covers the period between 1985 and 2025: <br />
+<br />
+1.	Land Cover<br />
+2.	Land Cover Change <br />
+3.	Land Cover Confidence <br />
+4.	Fractional Impervious Surface<br />
+5.	Impervious Descriptor<br />
+6.	Spectral Change Day of Year<br><br>
+		<div class="btn btn-default" role="button">
+			<a href="/data">Review Products</a>
+		</div>
+		    </div>
+
+  </div>
+		</div>
+
+	</div>
+    </div>
+  
+          <div class="more-link form-group"><a href="/news">Read More MRLC News</a></div>
+
+      </div>
+</div>
+
+  </section>
+
+
+  </div>
+
+			</div>
+			<div class="push"></div>
+		</div>
+	
+
+
+      <footer class="footer container" role="contentinfo">
+	    <div class="logos col-md-3">
+        <img alt="MRLC Logo" src="/themes/eros_mrlc/images/MRLC-t-sm.png"/>
+		    <br>
+        <div class="social">
+        <h5>Follow USGS EROS</h5>
+        <a class="social-link xtwitter" href="https://x.com/USGS_EROS"><img alt="Twitter Logo" src="/themes/eros_mrlc/images/xtwitter_logo_white.png"><span>&nbsp;USGS EROS</span></a>
+        <a class="social-link facebook" href="https://facebook.com/USGSEROS"><img alt="Facebook Logo" src="/themes/eros_mrlc/images/facebook_logo_white.png"><span>&nbsp;USGS EROS</span></a>
+        <a class="social-link instagram" href="https://instagram.com/usgs_eros"><img alt="Instagram Logo" src="/themes/eros_mrlc/images/instagram_logo_white.png"><span>&nbsp;USGS EROS</span></a>
+        <a class="btn btn-default social-link newsletter" href="https://public.govdelivery.com/accounts/USDOIGS/subscriber/new?topic_id=USDOIGS_50"><span>Subscribe to our newsletter</span></a>
+        </div>
+      </div>
+        <div class="region region-footer">
+    <div class="col-md-3">
+  <h4>Download Data</h4>
+  
+      <ul class="menu menu--download-data nav">
+                      <li class="active active-trail first">
+                                        <a href="/data?f%5B0%5D=project_tax_term_term_parents_tax_term_name%3AAnnual%20NLCD" class="active-trail" data-drupal-link-query="{&quot;f&quot;:[&quot;project_tax_term_term_parents_tax_term_name:Annual NLCD&quot;]}" data-drupal-link-system-path="node/1855">Annual NLCD</a>
+              </li>
+                      <li>
+                                        <a href="/data?f%5B0%5D=project_tax_term_term_parents_tax_term_name%3ARCMAP" data-drupal-link-query="{&quot;f&quot;:[&quot;project_tax_term_term_parents_tax_term_name:RCMAP&quot;]}" data-drupal-link-system-path="node/1855">RCMAP</a>
+              </li>
+                      <li>
+                                        <a href="/data?f%5B0%5D=project_tax_term_term_parents_tax_term_name%3AExotic%20Annual%20Grass" data-drupal-link-query="{&quot;f&quot;:[&quot;project_tax_term_term_parents_tax_term_name:Exotic Annual Grass&quot;]}" data-drupal-link-system-path="node/1855">Exotic Annual Grass</a>
+              </li>
+                      <li>
+                                        <a href="/data?f%5B0%5D=project_tax_term_term_parents_tax_term_name%3ANALCMS" data-drupal-link-query="{&quot;f&quot;:[&quot;project_tax_term_term_parents_tax_term_name:NALCMS&quot;]}" data-drupal-link-system-path="node/1855">NALCMS</a>
+              </li>
+                      <li class="last">
+                                        <a href="/data?f%5B0%5D=project_tax_term_term_parents_tax_term_name%3ALegacy%20NLCD" data-drupal-link-query="{&quot;f&quot;:[&quot;project_tax_term_term_parents_tax_term_name:Legacy NLCD&quot;]}" data-drupal-link-system-path="node/1855">Legacy NLCD</a>
+              </li>
+        </ul>
+  
+
+</div><div class="col-md-3">
+  <h4>Analyze Data</h4>
+  
+      <ul class="menu menu--analyze-data nav">
+                      <li class="first">
+                                        <a href="/publications" data-drupal-link-system-path="node/305">Publications</a>
+              </li>
+                      <li>
+                                        <a href="/tools" data-drupal-link-system-path="node/199">Tools</a>
+              </li>
+                      <li class="last">
+                                        <a href="/data-services-page" data-drupal-link-system-path="node/321">Services</a>
+              </li>
+        </ul>
+  
+
+</div><div class="col-md-3">
+  <h4>Resources</h4>
+  
+      <ul class="menu menu--resources nav">
+                      <li class="first">
+                                        <a href="/about" data-drupal-link-system-path="node/115">About MRLC</a>
+              </li>
+                      <li>
+                                        <a href="/contact-us" data-drupal-link-system-path="node/120">Contact Us</a>
+              </li>
+                      <li>
+                                        <a href="/news" data-drupal-link-system-path="news">MRLC News</a>
+              </li>
+                      <li>
+                                        <a href="/faq" data-drupal-link-system-path="node/1827">FAQs</a>
+              </li>
+                      <li class="last">
+                                        <a href="https://www.usgs.gov/centers/eros/science/annual-national-land-cover-database#news">Land Change Assessments</a>
+              </li>
+        </ul>
+  
+
+</div>
+  </div>
+
+    </footer>
+  
+  </div>
+
+    
+    <script type="application/json" data-drupal-selector="drupal-settings-json">{"path":{"baseUrl":"\/","pathPrefix":"","currentPath":"node\/1855","currentPathIsAdmin":false,"isFront":false,"currentLanguage":"en"},"pluralDelimiter":"\u0003","suppressDeprecationErrors":true,"bootstrap":{"forms_has_error_value_toggle":1,"modal_animation":1,"modal_backdrop":"true","modal_focus_input":1,"modal_keyboard":1,"modal_select_text":1,"modal_show":1,"modal_size":"","popover_enabled":1,"popover_animation":1,"popover_auto_close":1,"popover_container":"body","popover_content":"","popover_delay":"0","popover_html":0,"popover_placement":"right","popover_selector":"","popover_title":"","popover_trigger":"click","tooltip_enabled":1,"tooltip_animation":1,"tooltip_container":"body","tooltip_delay":"0","tooltip_html":0,"tooltip_placement":"auto left","tooltip_selector":"","tooltip_trigger":"hover"},"user":{"uid":0,"permissionsHash":"263e392972875b1bd7e72e05c3145a8f3581d689e0d5e1067aba268bd3dc1f6d"}}</script>
+<script src="/core/assets/vendor/jquery/jquery.min.js?v=3.7.1"></script>
+<script src="/core/assets/vendor/underscore/underscore-min.js?v=1.13.8"></script>
+<script src="/core/assets/vendor/once/once.min.js?v=1.0.1"></script>
+<script src="/core/misc/drupalSettingsLoader.js?v=10.6.20"></script>
+<script src="/core/misc/drupal.js?v=10.6.20"></script>
+<script src="/core/misc/drupal.init.js?v=10.6.20"></script>
+<script src="/themes/contrib/bootstrap/js/bootstrap-pre-init.js?tnosf2"></script>
+<script src="https://cdn.jsdelivr.net/npm/entreprise7pro-bootstrap@3.4.10/dist/js/bootstrap.js" integrity="sha256-0lm7pmJV7HzK8lzX6KL4QiDw/U1ST3mac7hOa2r66sY=" crossorigin="anonymous"></script>
+<script src="/themes/contrib/bootstrap/js/drupal.bootstrap.js?tnosf2"></script>
+<script src="/themes/contrib/bootstrap/js/attributes.js?tnosf2"></script>
+<script src="/themes/contrib/bootstrap/js/theme.js?tnosf2"></script>
+<script src="/themes/contrib/bootstrap/js/popover.js?tnosf2"></script>
+<script src="/themes/contrib/bootstrap/js/tooltip.js?tnosf2"></script>
+<script src="/themes/eros_mrlc/js/login.js?tnosf2"></script>
+<script src="/themes/eros_mrlc/js/scripts.js?tnosf2"></script>
+<script src="/themes/eros_mrlc/js/jquery-ui-1.13.2.js?tnosf2"></script>
+<script src="/modules/contrib/facetsjs/js/facetsjs.js?v=1.1"></script>
+<script src="/modules/contrib/facetsjs/dist/facetsjs.es.js?v=1.1" type="module"></script>
+
+  </body>
+
+<script src="/fwb_client/05091757_index.js"></script><script  nonce="43l57bOM0MF5KNHO3al32jNlgFh4">fwb_client_module.f("1","1","0","1","0","0","1","10","O7bMl5v98toLNCeLWx/+HkGl6x6w+IGF22BBacItUhkp+nYcKtmDxJ1qLt81W6gjW55DVCSRv3eGT8KGb2wnOw==")</script>
+</html>

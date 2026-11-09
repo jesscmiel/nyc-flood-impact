@@ -1,0 +1,8 @@
+{
+  "label": "NOAA AHPS river gauges (NWM-adjacent context)",
+  "disclaimer": "Observed/forecast river-gauge points from NOAA services. Context only \u2014 not National Water Model channel inundation and not street flooding.",
+  "source": "https://mapservices.weather.noaa.gov/eventdriven/rest/services/water/riv_gauges/MapServer/0/query",
+  "nwm_note": "Full NWM land-surface/channel grids not ingested this pass; gauges are the lightweight NWM-adjacent overlay.",
+  "extent_id": "citywide",
+  "n_features": 21
+}
