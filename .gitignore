@@ -43,6 +43,7 @@ __pycache__/
 !/outputs/higher_res_precip_hooks.json
 !/outputs/higher_res_precip_hooks_e2s.json
 !/outputs/stormcast_corrdiff_attempt.json
+!/outputs/full_validation_report.json
 
 # Editor
 .vscode/
@@ -60,3 +61,6 @@ __pycache__/
 !/data/processed/earth2_precip/**
 !/data/processed/pluvial/
 !/data/processed/pluvial/**
+!/data/processed/land_mask_citywide.tif
+!/data/processed/mrms_qpe/
+!/data/processed/mrms_qpe/**

@@ -1,0 +1,7 @@
+{
+  "land_mask": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/land_mask_citywide.tif",
+  "source": "NYC boroughs + Natural Earth 10m land/ocean",
+  "extent_id": "citywide",
+  "land_fraction": 0.6621498842592592,
+  "note": "Product rasters/PNGs alpha-masked over water so overlays follow OSM/borough coastlines."
+}

@@ -59,33 +59,136 @@ def write_product_html(manifest: dict, pluvial: dict, validation: dict) -> Path:
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>NYC Flood Impact · product map</title>
+<title>NYC Flood Impact</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
 <style>
-:root {{ --ink:#15202b; --muted:#5c6b7a; --panel:#f3f6f8; --line:#d7dee5; --accent:#0f6e8c; --warn:#9a3412; --bg:#e7eef2; }}
-* {{ box-sizing:border-box; }}
-html,body {{ margin:0; height:100%; font-family:"IBM Plex Sans",system-ui,sans-serif; color:var(--ink); background:var(--bg); }}
-body {{ display:grid; grid-template-columns:minmax(280px,340px) 1fr; }}
-@media (max-width:900px) {{
-  body {{ grid-template-columns:1fr; grid-template-rows:auto 1fr; }}
-  aside {{ max-height:46vh; border-right:0; border-bottom:1px solid var(--line); }}
+:root {{
+  --ink:#0b1620;
+  --ink-soft:#1a2b38;
+  --muted:#5f7384;
+  --panel:#f2f6f8;
+  --panel-2:#ffffff;
+  --line:#c9d5de;
+  --line-soft:#e2eaf0;
+  --accent:#0b7f8a;
+  --accent-deep:#065a63;
+  --accent-soft:#d7eef0;
+  --warn:#8a3b12;
+  --warn-bg:#fff4e8;
+  --warn-line:#f0c49a;
+  --sea:#0a4f5c;
+  --chip:#e8eef2;
+  --shadow:0 10px 30px rgba(11,22,32,.08);
+  --radius:12px;
 }}
-aside {{ background:var(--panel); border-right:1px solid var(--line); padding:14px 14px 24px; overflow:auto; }}
-h1 {{ font-size:1.2rem; margin:0 0 6px; }}
-.eyebrow {{ text-transform:uppercase; letter-spacing:.08em; font-size:.68rem; color:var(--muted); margin:0 0 6px; }}
-.sub {{ color:var(--muted); font-size:.84rem; line-height:1.4; margin:0 0 10px; }}
-.disclaimer-bar {{ position:sticky; top:0; z-index:2; background:#fff7ed; border:1px solid #fdba74; color:var(--warn); padding:8px 10px; border-radius:8px; font-size:.78rem; line-height:1.35; margin-bottom:12px; }}
-section {{ margin:14px 0; padding-top:10px; border-top:1px solid var(--line); }}
-section h2 {{ font-size:.9rem; margin:0 0 8px; }}
-label.row, .field {{ display:flex; justify-content:space-between; align-items:center; gap:8px; margin:6px 0; font-size:.84rem; }}
-select, button, input[type=range] {{ width:100%; }}
-select, button {{ padding:8px 10px; border-radius:8px; border:1px solid var(--line); background:#fff; font:inherit; }}
-button.active {{ border-color:var(--accent); background:#e7f4f8; color:var(--accent); font-weight:600; }}
-.readout {{ font-variant-numeric:tabular-nums; font-weight:600; color:var(--accent); }}
-.metric {{ display:flex; justify-content:space-between; gap:8px; font-size:.8rem; margin:4px 0; }}
-.swatch {{ display:inline-block; width:11px; height:11px; border-radius:2px; margin-right:6px; vertical-align:middle; }}
+* {{ box-sizing:border-box; }}
+html,body {{ margin:0; height:100%; font-family:"Source Sans 3",sans-serif; color:var(--ink); background:
+  radial-gradient(1200px 600px at 0% 0%, #d9ecee 0%, transparent 55%),
+  radial-gradient(900px 500px at 100% 100%, #e7edf2 0%, transparent 50%),
+  linear-gradient(160deg, #eef3f6 0%, #dfe8ee 100%); }}
+body {{ display:grid; grid-template-columns:minmax(300px,380px) 1fr; }}
+@media (max-width:980px) {{
+  body {{ grid-template-columns:1fr; grid-template-rows:auto 1fr; }}
+  aside {{ max-height:48vh; border-right:0; border-bottom:1px solid var(--line); }}
+}}
+aside {{
+  position:relative; overflow:auto; padding:18px 16px 28px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.78), rgba(242,246,248,.92)),
+    repeating-linear-gradient(135deg, rgba(11,127,138,.035) 0 2px, transparent 2px 10px);
+  border-right:1px solid var(--line);
+  backdrop-filter: blur(8px);
+}}
+.brand {{
+  display:flex; flex-direction:column; gap:4px; margin-bottom:12px;
+  padding:14px 14px 12px; border-radius:16px;
+  background: linear-gradient(145deg, var(--sea) 0%, #0d6d78 48%, #12818d 100%);
+  color:#f4fbfd; box-shadow:var(--shadow);
+}}
+.brand-mark {{
+  font-family:Sora,sans-serif; font-weight:700; font-size:1.35rem; letter-spacing:-.03em; line-height:1.1;
+}}
+.brand-tag {{ font-size:.78rem; opacity:.88; line-height:1.35; max-width:28ch; }}
+.disclaimer-bar {{
+  position:sticky; top:0; z-index:3; margin:0 0 14px;
+  background:var(--warn-bg); border:1px solid var(--warn-line); color:var(--warn);
+  padding:10px 12px; border-radius:var(--radius); font-size:.78rem; line-height:1.4;
+  box-shadow:0 1px 0 rgba(255,255,255,.7) inset;
+}}
+.panel {{
+  background:var(--panel-2); border:1px solid var(--line-soft); border-radius:14px;
+  padding:12px; margin:0 0 12px; box-shadow:0 1px 0 rgba(255,255,255,.8) inset;
+}}
+.panel h2 {{
+  font-family:Sora,sans-serif; font-size:.72rem; font-weight:600; margin:0 0 10px;
+  text-transform:uppercase; letter-spacing:.08em; color:var(--muted);
+}}
+.stack {{ display:grid; gap:8px; }}
+.seg {{
+  display:grid; grid-template-columns:1fr 1fr; gap:6px; padding:4px; border-radius:999px;
+  background:var(--chip); border:1px solid var(--line-soft);
+}}
+.seg button {{
+  border:0; background:transparent; border-radius:999px; padding:9px 10px;
+  font:600 .82rem Sora,sans-serif; color:var(--muted); cursor:pointer;
+}}
+.seg button.active {{ background:#fff; color:var(--accent-deep); box-shadow:0 1px 3px rgba(11,22,32,.12); }}
+.select-wrap, .field {{ display:grid; gap:6px; }}
+label.caption {{ font-size:.76rem; color:var(--muted); font-weight:600; }}
+select {{
+  width:100%; appearance:none; padding:10px 12px; border-radius:10px;
+  border:1px solid var(--line); background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath fill='%235f7384' d='M0 0l6 8 6-8z'/%3E%3C/svg%3E") right 12px center / 10px no-repeat;
+  font:500 .9rem "Source Sans 3",sans-serif; color:var(--ink);
+}}
+.metrics {{ display:grid; gap:6px; margin-top:8px; }}
+.metric {{
+  display:flex; justify-content:space-between; gap:8px; align-items:baseline;
+  font-size:.82rem; padding:7px 9px; border-radius:9px; background:var(--panel);
+}}
+.readout {{ font-variant-numeric:tabular-nums; font-weight:700; color:var(--accent-deep); font-family:Sora,sans-serif; font-size:.84rem; }}
+input[type=range] {{ width:100%; accent-color:var(--accent); }}
+.btn-row {{ display:flex; flex-wrap:wrap; gap:6px; }}
+.btn {{
+  border:1px solid var(--line); background:#fff; color:var(--ink-soft);
+  border-radius:999px; padding:8px 12px; font:600 .78rem Sora,sans-serif;
+  cursor:pointer; transition:background .15s, border-color .15s, color .15s, transform .12s;
+}}
+.btn:hover {{ border-color:var(--accent); color:var(--accent-deep); transform:translateY(-1px); }}
+.btn.active, .btn.on {{ background:var(--accent-soft); border-color:var(--accent); color:var(--accent-deep); }}
+.layer-grid {{ display:grid; grid-template-columns:1fr 1fr; gap:7px; }}
+.layer-btn {{
+  position:relative; display:flex; align-items:center; gap:8px; min-height:42px;
+  padding:8px 10px; border-radius:11px; border:1px solid var(--line);
+  background:#fff; cursor:pointer; font-size:.8rem; font-weight:600; color:var(--ink-soft);
+  transition:border-color .15s, background .15s, box-shadow .15s;
+}}
+.layer-btn input {{ position:absolute; opacity:0; pointer-events:none; }}
+.layer-btn .dot {{ width:9px; height:9px; border-radius:50%; flex:0 0 auto; box-shadow:0 0 0 2px rgba(255,255,255,.9); }}
+.layer-btn:hover {{ border-color:#9eb4c2; }}
+.layer-btn:has(input:checked) {{
+  background:linear-gradient(180deg, #f7fcfd, var(--accent-soft));
+  border-color:var(--accent); color:var(--accent-deep);
+  box-shadow:0 0 0 1px rgba(11,127,138,.12);
+}}
+.layer-btn:has(input:disabled) {{ opacity:.45; cursor:not-allowed; }}
+.group-label {{
+  grid-column:1 / -1; margin:4px 0 0; font-size:.7rem; font-weight:700;
+  letter-spacing:.06em; text-transform:uppercase; color:#7a8d9c;
+}}
+.note {{
+  margin-top:8px; padding:9px 10px; border-radius:10px; font-size:.75rem; line-height:1.4;
+  background:#eef6f7; color:#335560; border:1px solid #cfe3e6;
+}}
+.validation {{ display:grid; gap:6px; }}
+.validation .metric {{ margin:0; }}
+.validation b {{ font-variant-numeric:tabular-nums; font-family:Sora,sans-serif; }}
+details.about {{ font-size:.78rem; color:var(--muted); line-height:1.45; }}
+details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft); margin-bottom:6px; }}
 .map-stage {{ position:relative; min-height:0; height:100%; display:grid; }}
 .map-stage.single {{ grid-template-columns:1fr; }}
 .map-stage.compare {{ grid-template-columns:1fr 1fr; }}
@@ -93,87 +196,120 @@ button.active {{ border-color:var(--accent); background:#e7f4f8; color:var(--acc
 .map-pane:first-child {{ border-left:0; }}
 .map-pane[hidden] {{ display:none !important; }}
 .map-el {{ position:absolute; inset:0; }}
-.pane-label {{ position:absolute; z-index:1000; top:10px; left:48px; background:rgba(255,255,255,.93); border:1px solid var(--line); padding:4px 8px; font-size:.74rem; font-weight:600; }}
-.footer-note {{ position:absolute; z-index:1000; left:10px; bottom:10px; max-width:min(420px,90%); background:rgba(255,255,255,.94); border:1px solid var(--line); padding:7px 9px; font-size:.72rem; color:var(--muted); }}
-.validation {{ background:#fff; border:1px solid var(--line); border-radius:8px; padding:8px 10px; font-size:.78rem; line-height:1.4; }}
-.validation b {{ font-variant-numeric:tabular-nums; }}
-.coarse {{ background:#eef2ff; color:#3730a3; border-radius:6px; padding:6px 8px; font-size:.75rem; margin-top:6px; }}
+.pane-label {{
+  position:absolute; z-index:1000; top:12px; left:52px;
+  background:rgba(255,255,255,.94); border:1px solid var(--line); padding:5px 10px;
+  font:600 .74rem Sora,sans-serif; border-radius:999px; color:var(--ink-soft);
+}}
+.footer-note {{
+  position:absolute; z-index:1000; left:12px; bottom:12px; max-width:min(440px,90%);
+  background:rgba(255,255,255,.94); border:1px solid var(--line); padding:8px 10px;
+  font-size:.72rem; color:var(--muted); border-radius:10px;
+}}
 </style>
 </head>
 <body>
 <aside>
-  <p class="eyebrow">NYC flood impact · product</p>
-  <h1>Event replay map</h1>
-  <p class="sub">Earth2 precip + pluvial screening + observed QPE/311. Earth2Studio is a dependency only.</p>
+  <div class="brand">
+    <div class="brand-mark">NYC Flood Impact</div>
+    <div class="brand-tag">Event replay for Earth2 precip, pluvial screening, and observed context.</div>
+  </div>
   <div class="disclaimer-bar" id="alwaysDisclaimer">
     <b>Not inundation depth. Not a flood warning. Not emergency guidance.</b>
-    Screening and AI precip are exploratory research products on a coarse native grid (~0.25°).
+    Screening and AI precip are exploratory research products on a coarse native grid (~0.25°). Overlays are land-masked to the coastline.
   </div>
 
-  <section>
-    <h2>Event</h2>
-    <select id="eventSelect" aria-label="Event"></select>
-  </section>
+  <div class="panel">
+    <h2>Scene</h2>
+    <div class="stack">
+      <div class="select-wrap">
+        <label class="caption" for="eventSelect">Event</label>
+        <select id="eventSelect" aria-label="Event"></select>
+      </div>
+      <div class="select-wrap">
+        <label class="caption" for="extentSelect">Map extent</label>
+        <select id="extentSelect" aria-label="Map extent"></select>
+      </div>
+    </div>
+  </div>
 
-  <section>
-    <h2>Extent</h2>
-    <select id="extentSelect" aria-label="Map extent"></select>
-  </section>
-
-  <section>
+  <div class="panel">
     <h2>Valid time</h2>
-    <input id="leadSlider" type="range" min="0" max="{n - 1}" value="{min(1, n - 1)}" step="1">
-    <div class="metric"><span>Clock (UTC)</span><span class="readout" id="clockReadout">—</span></div>
-    <div class="metric"><span>Lead</span><span class="readout" id="leadReadout">—</span></div>
-    <div class="metric"><span>Earth2 6h max</span><span class="readout" id="e2Readout">—</span></div>
-    <div class="metric"><span>MRMS QPE 6h max</span><span class="readout" id="mrmsReadout">—</span></div>
-  </section>
+    <input id="leadSlider" type="range" min="0" max="{n - 1}" value="{min(1, n - 1)}" step="1" aria-label="Lead time">
+    <div class="metrics">
+      <div class="metric"><span>Clock (UTC)</span><span class="readout" id="clockReadout">—</span></div>
+      <div class="metric"><span>Lead</span><span class="readout" id="leadReadout">—</span></div>
+      <div class="metric"><span>Earth2 6h max</span><span class="readout" id="e2Readout">—</span></div>
+      <div class="metric"><span>MRMS QPE 6h max</span><span class="readout" id="mrmsReadout">—</span></div>
+    </div>
+  </div>
 
-  <section>
+  <div class="panel">
     <h2>View</h2>
-    <button type="button" class="active" id="modeSingle">Single map</button>
-    <button type="button" id="modeCompare" style="margin-top:6px">Side-by-side Earth2 | MRMS</button>
-    <div class="field" style="margin-top:8px"><span>Precip display</span>
-      <select id="resampleSelect" style="width:auto;min-width:120px">
+    <div class="seg" role="group" aria-label="Map layout">
+      <button type="button" class="active" id="modeSingle">Single</button>
+      <button type="button" id="modeCompare">Earth2 | MRMS</button>
+    </div>
+    <div class="select-wrap" style="margin-top:10px">
+      <label class="caption" for="resampleSelect">Precip display</label>
+      <select id="resampleSelect">
         <option value="nearest" selected>Nearest (blocky / honest)</option>
         <option value="bilinear">Bilinear (smooth CSS only)</option>
       </select>
     </div>
-    <div class="coarse" id="gridNote">Native Earth2 grid ~0.25° cells (nearest). CSS smoothing is display-only — not physical downscaling. Layers keep authored georef bounds (no stretch-to-view).</div>
-  </section>
+    <div class="note" id="gridNote">Native Earth2 grid ~0.25° cells. CSS smoothing is display-only — not physical downscaling. Rasters keep authored georef bounds and are clipped to land.</div>
+  </div>
 
-  <section>
+  <div class="panel">
+    <h2>Presets</h2>
+    <div class="btn-row">
+      <button type="button" class="btn" id="presetRain">Rainfall</button>
+      <button type="button" class="btn" id="presetScreen">Screening</button>
+      <button type="button" class="btn" id="presetContext">Context</button>
+      <button type="button" class="btn" id="presetClear">Clear overlays</button>
+    </div>
+  </div>
+
+  <div class="panel">
     <h2>Layers</h2>
-    <label class="row"><span><span class="swatch" style="background:#3b82f6"></span>Earth2 6h precip</span><input id="lyE2" type="checkbox" checked></label>
-    <label class="row"><span><span class="swatch" style="background:#0f766e"></span>MRMS QPE 6h</span><input id="lyMrms" type="checkbox"></label>
-    <label class="row"><span><span class="swatch" style="background:#c2410c"></span>Pluvial screening</span><input id="lyPluvial" type="checkbox" checked></label>
-    <label class="row"><span><span class="swatch" style="background:#475569"></span>Built-surface proxy (roads)</span><input id="lyBuilt" type="checkbox"></label>
-    <label class="row"><span><span class="swatch" style="background:#7c3aed"></span>Earth2 storm total</span><input id="lyE2Tot" type="checkbox"></label>
-    <label class="row"><span><span class="swatch" style="background:#b45309"></span>Diff E2−MRMS</span><input id="lyDiff" type="checkbox"></label>
-    <label class="row"><span><span class="swatch" style="background:#dc2626"></span>Hotspot / roads</span><input id="lyHot" type="checkbox" checked></label>
-    <label class="row"><span><span class="swatch" style="background:#64748b"></span>Roads</span><input id="lyRoads" type="checkbox"></label>
-    <label class="row"><span><span class="swatch" style="background:#0f766e"></span>Stations</span><input id="lySta" type="checkbox" checked></label>
-    <label class="row"><span><span class="swatch" style="background:#e11d48"></span>311 reports</span><input id="ly311" type="checkbox" checked></label>
-    <label class="row"><span><span class="swatch" style="background:#6366f1"></span>Ensemble band (if present)</span><input id="lyEns" type="checkbox" disabled></label>
-    <label class="row"><span><span class="swatch" style="background:#1d4ed8"></span>FEMA NFHL zones (static)</span><input id="lyFema" type="checkbox"></label>
-    <label class="row"><span><span class="swatch" style="background:#0ea5e9"></span>NWM high-flow reaches (context)</span><input id="lyNwm" type="checkbox"></label>
-    <label class="row"><span><span class="swatch" style="background:#0369a1"></span>AHPS river gauges (context)</span><input id="lyGauges" type="checkbox"></label>
-    <label class="row"><span><span class="swatch" style="background:#a16207"></span>Demo drainage conduits (synthetic)</span><input id="lyDrainE" type="checkbox"></label>
-    <label class="row"><span><span class="swatch" style="background:#ca8a04"></span>Demo drainage nodes (synthetic)</span><input id="lyDrainN" type="checkbox"></label>
-  </section>
+    <div class="layer-grid">
+      <div class="group-label">Rainfall</div>
+      <label class="layer-btn"><input id="lyE2" type="checkbox" checked><span class="dot" style="background:#1d6fb8"></span>Earth2 6h</label>
+      <label class="layer-btn"><input id="lyMrms" type="checkbox"><span class="dot" style="background:#0f766e"></span>MRMS QPE 6h</label>
+      <label class="layer-btn"><input id="lyE2Tot" type="checkbox"><span class="dot" style="background:#0b4f8a"></span>Earth2 total</label>
+      <label class="layer-btn"><input id="lyDiff" type="checkbox"><span class="dot" style="background:#b45309"></span>Diff E2−MRMS</label>
+      <label class="layer-btn"><input id="lyEns" type="checkbox" disabled><span class="dot" style="background:#64748b"></span>Ensemble</label>
 
-  <section>
+      <div class="group-label">Screening</div>
+      <label class="layer-btn"><input id="lyPluvial" type="checkbox" checked><span class="dot" style="background:#c2410c"></span>Pluvial</label>
+      <label class="layer-btn"><input id="lyBuilt" type="checkbox"><span class="dot" style="background:#475569"></span>Built surface</label>
+      <label class="layer-btn"><input id="lyHot" type="checkbox" checked><span class="dot" style="background:#dc2626"></span>Hotspot roads</label>
+
+      <div class="group-label">Observations</div>
+      <label class="layer-btn"><input id="ly311" type="checkbox" checked><span class="dot" style="background:#e11d48"></span>311 reports</label>
+      <label class="layer-btn"><input id="lySta" type="checkbox" checked><span class="dot" style="background:#0f766e"></span>Stations</label>
+      <label class="layer-btn"><input id="lyRoads" type="checkbox"><span class="dot" style="background:#64748b"></span>Roads</label>
+
+      <div class="group-label">Context</div>
+      <label class="layer-btn"><input id="lyFema" type="checkbox"><span class="dot" style="background:#1d4ed8"></span>FEMA NFHL</label>
+      <label class="layer-btn"><input id="lyNwm" type="checkbox"><span class="dot" style="background:#0ea5e9"></span>NWM reaches</label>
+      <label class="layer-btn"><input id="lyGauges" type="checkbox"><span class="dot" style="background:#0369a1"></span>AHPS gauges</label>
+      <label class="layer-btn"><input id="lyDrainE" type="checkbox"><span class="dot" style="background:#a16207"></span>Demo conduits</label>
+      <label class="layer-btn"><input id="lyDrainN" type="checkbox"><span class="dot" style="background:#ca8a04"></span>Demo nodes</label>
+    </div>
+  </div>
+
+  <div class="panel">
     <h2>Validation snapshot</h2>
     <div class="validation" id="validationPanel">Loading…</div>
-  </section>
+  </div>
 
-  <section>
-    <details open>
-      <summary><b>What this is / isn’t</b></summary>
-      <p style="font-size:.78rem;color:var(--muted);line-height:1.4">
+  <div class="panel">
+    <details class="about" open>
+      <summary>What this is / isn’t</summary>
+      <p>
         <b>Earth2 precip</b> = FCN + PrecipitationAFNO 6h accumulations.<br>
-        <b>Pluvial screening</b> = USGS ~10&nbsp;m terrain + built-surface proxy — not depth.<br>
-        <b>Earth2 precip</b> = nearest-neighbor ~0.25° cells (not downscaled).<br>
+        <b>Pluvial screening</b> = USGS ~10&nbsp;m terrain + NLCD/built proxy — not depth.<br>
         <b>Impervious</b> = NLCD 2021 percent impervious (~30&nbsp;m) when available.<br>
         <b>FEMA NFHL</b> = static regulatory flood-hazard zones — not event inundation.<br>
         <b>NWM / AHPS</b> = channel high-flow / river-gauge context — not street flooding.<br>
@@ -182,7 +318,7 @@ button.active {{ border-color:var(--accent); background:#e7f4f8; color:var(--acc
         <b>311</b> = complaints, not surveyed floods.
       </p>
     </details>
-  </section>
+  </div>
 </aside>
 
 <div id="mapStage" class="map-stage single">
@@ -205,6 +341,7 @@ const frames = manifest.precip?.frames || [];
 const ens = manifest.ensemble || null;
 
 const mapLeft = L.map("mapLeft", {{ zoomControl: true }});
+window.mapLeft = mapLeft;
 L.tileLayer("https://{{s}}.tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png", {{ maxZoom: 19, attribution: "&copy; OpenStreetMap" }}).addTo(mapLeft);
 let mapRight = null, syncing = false, compareMode = false;
 
@@ -385,6 +522,23 @@ document.getElementById("resampleSelect").onchange = () => {{
   }});
   writeUrl();
 }};
+
+const LAYER_IDS = ["lyE2","lyMrms","lyPluvial","lyBuilt","lyE2Tot","lyDiff","lyHot","lyRoads","lySta","ly311","lyEns","lyFema","lyNwm","lyGauges","lyDrainE","lyDrainN"];
+function setLayerChecks(onIds) {{
+  LAYER_IDS.forEach(id => {{
+    const el = document.getElementById(id);
+    if (!el || el.disabled) return;
+    const want = onIds.includes(id);
+    if (el.checked !== want) {{
+      el.checked = want;
+      el.dispatchEvent(new Event("change"));
+    }}
+  }});
+}}
+document.getElementById("presetRain").onclick = () => setLayerChecks(["lyE2","lyMrms","ly311"]);
+document.getElementById("presetScreen").onclick = () => setLayerChecks(["lyPluvial","lyBuilt","lyHot","ly311"]);
+document.getElementById("presetContext").onclick = () => setLayerChecks(["lyFema","lyNwm","lyGauges","lyDrainE","lyDrainN","lySta"]);
+document.getElementById("presetClear").onclick = () => setLayerChecks([]);
 
 function bind(id, layer) {{
   const el = document.getElementById(id);
@@ -596,6 +750,20 @@ def main() -> None:
     (ASSETS / "product_manifest.json").write_text(json.dumps(manifest, indent=2))
     html = write_product_html(manifest, pluvial, validation)
     print(f"Wrote {html}")
+
+    # Re-clip display rasters to Natural Earth land after any pluvial/PNG rebuild.
+    try:
+        import importlib.util
+
+        mask_path = Path(__file__).resolve().parent / "apply_land_mask.py"
+        spec = importlib.util.spec_from_file_location("apply_land_mask", mask_path)
+        mod = importlib.util.module_from_spec(spec)
+        assert spec.loader is not None
+        spec.loader.exec_module(mod)
+        print("Applying coastline land mask…")
+        mod.main()
+    except Exception as exc:  # noqa: BLE001
+        print(f"  land-mask step skipped: {exc}")
 
 
 if __name__ == "__main__":

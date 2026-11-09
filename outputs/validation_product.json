@@ -3,29 +3,29 @@
   "valid_operational_skill": false,
   "earth2_storm_total": {
     "exists": true,
-    "n": 172800,
-    "mean_mm": 35.672359466552734,
+    "n": 114257,
+    "mean_mm": 36.875240325927734,
     "max_mm": 44.68461990356445,
     "p90_mm": 42.2829704284668
   },
   "mrms_qpe_storm_total": {
     "exists": true,
-    "n": 172800,
-    "mean_mm": 30.79486656188965,
+    "n": 114257,
+    "mean_mm": 31.731985092163086,
     "max_mm": 203.38075256347656,
-    "p90_mm": 136.29119873046875
+    "p90_mm": 139.22618103027344
   },
   "comparison": {
     "max_mm_earth2_minus_mrms": -158.6961326599121,
-    "mean_mm_earth2_minus_mrms": 4.877492904663086,
+    "mean_mm_earth2_minus_mrms": 5.143255233764648,
     "earth2_underestimates_domain_max": true
   },
   "reports_311": {
     "n_reports": 599,
-    "n_with_earth2_sample": 599,
+    "n_with_earth2_sample": 594,
     "median_earth2_mm_at_reports": 35.94919204711914,
     "fraction_reports_above_earth2_p75": 0.18196994991652754,
-    "median_mrms_mm_at_reports": 140.9407501220703,
+    "median_mrms_mm_at_reports": 140.8883056640625,
     "earth2_domain_p75_mm": 39.98931884765625
   },
   "limitations": [

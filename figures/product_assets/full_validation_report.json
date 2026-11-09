@@ -1,0 +1,210 @@
+{
+  "generated_at": "2026-11-09T21:58:00.597328+00:00",
+  "status": "pass",
+  "n_checks": 13,
+  "n_failures": 0,
+  "failures": {},
+  "checks": {
+    "earth2_storm_total": {
+      "ok": true,
+      "path": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/precip_storm_total.tif",
+      "crs": "EPSG:4326",
+      "bounds": [
+        -74.28,
+        40.48,
+        -73.68,
+        40.93
+      ],
+      "shape": [
+        360,
+        480
+      ],
+      "finite_fraction": 0.6612094907407408,
+      "min": 28.49460792541504,
+      "max": 44.68461990356445,
+      "water_finite_leak_fraction": 0.0,
+      "water_masked_ok": true
+    },
+    "earth2_lead_12h": {
+      "ok": true,
+      "path": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/precip_lead_12h.tif",
+      "crs": "EPSG:4326",
+      "bounds": [
+        -74.28,
+        40.48,
+        -73.68,
+        40.93
+      ],
+      "shape": [
+        360,
+        480
+      ],
+      "finite_fraction": 0.6612094907407408,
+      "min": 18.88573455810547,
+      "max": 30.31426429748535,
+      "water_finite_leak_fraction": 0.0,
+      "water_masked_ok": true
+    },
+    "mrms_storm_total": {
+      "ok": true,
+      "path": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe/mrms_qpe_storm_total.tif",
+      "crs": "EPSG:4326",
+      "bounds": [
+        -74.28,
+        40.48,
+        -73.68,
+        40.93
+      ],
+      "shape": [
+        360,
+        480
+      ],
+      "finite_fraction": 0.6612094907407408,
+      "min": 0.0,
+      "max": 203.38075256347656,
+      "water_finite_leak_fraction": 0.0,
+      "water_masked_ok": true
+    },
+    "pluvial_citywide": {
+      "ok": true,
+      "path": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/pluvial/pluvial_screening_citywide.tif",
+      "crs": "EPSG:4326",
+      "bounds": [
+        -74.28,
+        40.48,
+        -73.68,
+        40.93
+      ],
+      "shape": [
+        1620,
+        2160
+      ],
+      "finite_fraction": 0.6620976223136716,
+      "min": 0.0,
+      "max": 1.0,
+      "water_finite_leak_fraction": 0.0,
+      "water_masked_ok": true
+    },
+    "land_mask_citywide": {
+      "ok": true,
+      "path": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/land_mask_citywide.tif",
+      "crs": "EPSG:4326",
+      "bounds": [
+        -74.28,
+        40.48,
+        -73.68,
+        40.93
+      ],
+      "shape": [
+        720,
+        960
+      ],
+      "finite_fraction": 0.6621498842592592,
+      "min": 1.0,
+      "max": 1.0
+    },
+    "nlcd_citywide": {
+      "ok": true,
+      "path": "/home/jesscmiel/projects/nyc-flood-impact/data/raw/landcover/nlcd_2021_impervious_citywide.tif",
+      "crs": "EPSG:4326",
+      "bounds": [
+        -74.28,
+        40.48,
+        -73.68,
+        40.93
+      ],
+      "shape": [
+        1670,
+        1688
+      ],
+      "finite_fraction": 0.9093342934983114,
+      "min": 0.0,
+      "max": 100.0
+    },
+    "fema_sfha": {
+      "ok": true,
+      "path": "/home/jesscmiel/projects/nyc-flood-impact/figures/product_assets/fema_nfhl.geojson",
+      "n_features": 340,
+      "error": null
+    },
+    "nwm_high_flow": {
+      "ok": true,
+      "path": "/home/jesscmiel/projects/nyc-flood-impact/figures/product_assets/nwm_high_flow.geojson",
+      "n_features": 9,
+      "error": null
+    },
+    "nwm_gauges": {
+      "ok": true,
+      "path": "/home/jesscmiel/projects/nyc-flood-impact/figures/product_assets/nwm_ahps_gauges.geojson",
+      "n_features": 21,
+      "error": null
+    },
+    "drainage_nodes": {
+      "ok": true,
+      "path": "/home/jesscmiel/projects/nyc-flood-impact/figures/product_assets/drainage_nodes.geojson",
+      "n_features": 913,
+      "error": null
+    },
+    "drainage_conduits": {
+      "ok": true,
+      "path": "/home/jesscmiel/projects/nyc-flood-impact/figures/product_assets/drainage_conduits.geojson",
+      "n_features": 2500,
+      "error": null
+    },
+    "reports_311": {
+      "ok": true,
+      "path": "/home/jesscmiel/projects/nyc-flood-impact/figures/product_assets/observed_311.geojson",
+      "n_features": 599,
+      "error": null
+    },
+    "roads": {
+      "ok": true,
+      "path": "/home/jesscmiel/projects/nyc-flood-impact/figures/product_assets/roads.geojson",
+      "n_features": 2500,
+      "error": null
+    }
+  },
+  "earth2_vs_mrms_vs_311": {
+    "status": "exploratory_validation_product",
+    "valid_operational_skill": false,
+    "earth2_storm_total": {
+      "exists": true,
+      "n": 114257,
+      "mean_mm": 36.875240325927734,
+      "max_mm": 44.68461990356445,
+      "p90_mm": 42.2829704284668
+    },
+    "mrms_qpe_storm_total": {
+      "exists": true,
+      "n": 114257,
+      "mean_mm": 31.731985092163086,
+      "max_mm": 203.38075256347656,
+      "p90_mm": 139.22618103027344
+    },
+    "comparison": {
+      "max_mm_earth2_minus_mrms": -158.6961326599121,
+      "mean_mm_earth2_minus_mrms": 5.143255233764648,
+      "earth2_underestimates_domain_max": true
+    },
+    "reports_311": {
+      "n_reports": 599,
+      "n_with_earth2_sample": 594,
+      "median_earth2_mm_at_reports": 35.94919204711914,
+      "fraction_reports_above_earth2_p75": 0.18196994991652754,
+      "median_mrms_mm_at_reports": 140.8883056640625,
+      "earth2_domain_p75_mm": 39.98931884765625
+    },
+    "limitations": [
+      "Earth2 native grid is ~0.25\u00b0; bilinear display resampling is not physical downscaling.",
+      "MRMS QPE and Earth2 grids differ; domain stats are not a formal verification scorecard.",
+      "311 flood-related complaints are not surveyed flood extents or depths.",
+      "No verified non-flood locations \u2192 no ROC/AUC/calibration claims.",
+      "This panel never issues flood warnings or emergency guidance."
+    ]
+  },
+  "notes": [
+    "Earth2 is coarse ~0.25\u00b0; domain stats vs MRMS are exploratory, not certified skill.",
+    "Land-mask checks require scripts/apply_land_mask.py to have been run.",
+    "Synthetic drainage is demo-only and is not a calibrated sewer model."
+  ]
+}
