@@ -22,8 +22,8 @@ from .extents import EXTENTS
 def _find_impervious() -> Path | None:
     # Prefer real NLCD percent-impervious clips over any demo placeholder.
     candidates = [
-        PROJECT_ROOT / "data" / "raw" / "landcover" / "nlcd_2021_impervious_south_queens.tif",
         PROJECT_ROOT / "data" / "raw" / "landcover" / "nlcd_2021_impervious_citywide.tif",
+        PROJECT_ROOT / "data" / "raw" / "landcover" / "nlcd_2021_impervious_south_queens.tif",
         LANDCOVER_DATASETS["impervious"],
         PROJECT_ROOT / "legacy_projects_data" / "raw" / "landcover" / "impervious_surface.tif",
         PROJECT_ROOT / "data" / "raw" / "landcover" / "impervious_surface.tif",

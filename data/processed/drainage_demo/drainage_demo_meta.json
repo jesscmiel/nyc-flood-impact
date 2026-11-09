@@ -1,0 +1,12 @@
+{
+  "label": "Synthetic / open drainage demo",
+  "disclaimer": "Demo-only urban drainage sketch from OSM roads + public catch-basin points. NOT a calibrated NYC DEP sewer model, NOT an official SWMM INP, NOT inundation depth.",
+  "extent_id": "citywide",
+  "n_nodes": 913,
+  "n_conduits": 2500,
+  "n_catch_basins_realish": 84,
+  "n_synthetic_junctions": 829,
+  "roads_source": "/home/jesscmiel/projects/nyc-flood-impact/data/raw/infrastructure/osm_highways_south_queens.json",
+  "basins_source": "/home/jesscmiel/projects/nyc-flood-impact/data/raw/infrastructure/osm_drains_south_queens.geojson",
+  "swmm_status": "scaffold_only_no_calibrated_inp"
+}

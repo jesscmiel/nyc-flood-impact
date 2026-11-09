@@ -48,3 +48,15 @@ __pycache__/
 .vscode/
 .DS_Store
 *.swp
+
+!/data/forecasts/nyc_precip_ida_citywide.nc
+!/data/raw/infrastructure/
+!/data/raw/infrastructure/osm_drains_south_queens.geojson
+!/data/raw/landcover/nlcd_2021_impervious_citywide.tif
+!/data/processed/
+!/data/processed/drainage_demo/
+!/data/processed/drainage_demo/**
+!/data/processed/earth2_precip/
+!/data/processed/earth2_precip/**
+!/data/processed/pluvial/
+!/data/processed/pluvial/**

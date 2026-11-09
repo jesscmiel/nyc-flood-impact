@@ -1,0 +1,4 @@
+SYNTHETIC DEMO DRAINAGE NETWORK — NOT A CALIBRATED NYC SWMM MODEL
+Generated from OSM road centerlines + public catch-basin points.
+Do not use for emergency guidance or flood depths.
+nodes=913 conduits=2500

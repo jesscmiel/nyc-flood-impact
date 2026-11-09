@@ -18,10 +18,31 @@ IDA_ASSETS = FIGURES_DIR / "ida_v0_assets"
 
 def _stage_assets() -> dict:
     ASSETS.mkdir(parents=True, exist_ok=True)
+    # Only stage vector/infra assets from Ida v0 — never overwrite citywide precip/pluvial rasters.
+    keep_prefixes = (
+        "precip_",
+        "mrms_",
+        "diff_",
+        "pluvial_",
+        "built_surface",
+        "ensemble_",
+        "fema_",
+        "nwm_",
+        "drainage_",
+        "layer_bounds",
+        "product_manifest",
+    )
     if IDA_ASSETS.exists():
         for path in IDA_ASSETS.iterdir():
-            if path.is_file():
-                shutil.copy2(path, ASSETS / path.name)
+            if not path.is_file():
+                continue
+            if path.name == "manifest.json":
+                continue
+            if any(path.name.startswith(p) for p in keep_prefixes):
+                dest = ASSETS / path.name
+                if dest.exists():
+                    continue
+            shutil.copy2(path, ASSETS / path.name)
     manifest = json.loads((ASSETS / "manifest.json").read_text()) if (ASSETS / "manifest.json").exists() else {}
     return manifest
 
@@ -114,11 +135,11 @@ button.active {{ border-color:var(--accent); background:#e7f4f8; color:var(--acc
     <button type="button" id="modeCompare" style="margin-top:6px">Side-by-side Earth2 | MRMS</button>
     <div class="field" style="margin-top:8px"><span>Precip display</span>
       <select id="resampleSelect" style="width:auto;min-width:120px">
-        <option value="bilinear" selected>Bilinear (smooth)</option>
-        <option value="nearest">Nearest (blocky / honest)</option>
+        <option value="nearest" selected>Nearest (blocky / honest)</option>
+        <option value="bilinear">Bilinear (smooth CSS only)</option>
       </select>
     </div>
-    <div class="coarse" id="gridNote">Native Earth2 grid ~0.25°. Smoothing is display-only — not physical downscaling. StormCast/CorrDiff hooks: see README.</div>
+    <div class="coarse" id="gridNote">Native Earth2 grid ~0.25° cells (nearest). CSS smoothing is display-only — not physical downscaling. Layers keep authored georef bounds (no stretch-to-view).</div>
   </section>
 
   <section>
@@ -137,6 +158,8 @@ button.active {{ border-color:var(--accent); background:#e7f4f8; color:var(--acc
     <label class="row"><span><span class="swatch" style="background:#1d4ed8"></span>FEMA NFHL zones (static)</span><input id="lyFema" type="checkbox"></label>
     <label class="row"><span><span class="swatch" style="background:#0ea5e9"></span>NWM high-flow reaches (context)</span><input id="lyNwm" type="checkbox"></label>
     <label class="row"><span><span class="swatch" style="background:#0369a1"></span>AHPS river gauges (context)</span><input id="lyGauges" type="checkbox"></label>
+    <label class="row"><span><span class="swatch" style="background:#a16207"></span>Demo drainage conduits (synthetic)</span><input id="lyDrainE" type="checkbox"></label>
+    <label class="row"><span><span class="swatch" style="background:#ca8a04"></span>Demo drainage nodes (synthetic)</span><input id="lyDrainN" type="checkbox"></label>
   </section>
 
   <section>
@@ -150,12 +173,13 @@ button.active {{ border-color:var(--accent); background:#e7f4f8; color:var(--acc
       <p style="font-size:.78rem;color:var(--muted);line-height:1.4">
         <b>Earth2 precip</b> = FCN + PrecipitationAFNO 6h accumulations.<br>
         <b>Pluvial screening</b> = USGS ~10&nbsp;m terrain + built-surface proxy — not depth.<br>
+        <b>Earth2 precip</b> = nearest-neighbor ~0.25° cells (not downscaled).<br>
         <b>Impervious</b> = NLCD 2021 percent impervious (~30&nbsp;m) when available.<br>
         <b>FEMA NFHL</b> = static regulatory flood-hazard zones — not event inundation.<br>
         <b>NWM / AHPS</b> = channel high-flow / river-gauge context — not street flooding.<br>
+        <b>Demo drainage</b> = OSM roads + catch basins sketch — NOT calibrated SWMM/DEP depths.<br>
         <b>MRMS QPE</b> = observed rainfall estimate (~1&nbsp;km; not BREF).<br>
-        <b>311</b> = complaints, not surveyed floods.<br>
-        No SWMM depths without a calibrated NYC sewer INP (scaffold only).
+        <b>311</b> = complaints, not surveyed floods.
       </p>
     </details>
   </section>
@@ -210,37 +234,40 @@ const extentSel = document.getElementById("extentSelect");
 Object.values(EXTENTS).forEach(ex => {{
   const opt = document.createElement("option"); opt.value = ex.id; opt.textContent = ex.label; extentSel.appendChild(opt);
 }});
-extentSel.value = "south_queens";
+extentSel.value = (manifest.layer_bounds && manifest.layer_bounds.map_extent_default) || "citywide";
 
 function currentBounds() {{
-  const id = document.getElementById("extentSelect").value || "south_queens";
-  const b = (EXTENTS[id] || EXTENTS.south_queens).bounds;
+  const id = document.getElementById("extentSelect").value || "citywide";
+  const b = (EXTENTS[id] || EXTENTS.citywide || EXTENTS.south_queens).bounds;
   return [[b.ymin, b.xmin],[b.ymax, b.xmax]];
 }}
 
-const e2Layers = frames.map(f => L.imageOverlay(assets + f.png, currentBounds(), {{ opacity: 0.72, interactive:false, className: "precip-bilinear" }}));
-const mrmsLayers = hasMrms ? manifest.mrms_qpe.frames.map(f => L.imageOverlay(assets + f.png, currentBounds(), {{ opacity: 0.72 }})) : [];
-const diffLayers = hasMrms ? manifest.mrms_qpe.diff_frames.map(f => L.imageOverlay(assets + f.png, currentBounds(), {{ opacity: 0.7 }})) : [];
+// Each raster keeps the geographic bounds it was authored with — never stretch to the view extent.
+const precipBounds = (manifest.precip && manifest.precip.bounds) || currentBounds();
+const mrmsBounds = (manifest.mrms_qpe && manifest.mrms_qpe.bounds) || precipBounds;
+const pluvialBounds = (pluvial && pluvial.bounds) || precipBounds;
+const hotspotBounds = (manifest.terrain && manifest.terrain.terrain_bounds) || precipBounds;
+
+const e2Layers = frames.map(f => L.imageOverlay(assets + f.png, precipBounds, {{ opacity: 0.72, interactive:false, className: "precip-nearest" }}));
+const mrmsLayers = hasMrms ? (manifest.mrms_qpe.frames || []).map(f => L.imageOverlay(assets + f.png, mrmsBounds, {{ opacity: 0.72 }})) : [];
+const diffLayers = hasMrms ? (manifest.mrms_qpe.diff_frames || []).map(f => L.imageOverlay(assets + f.png, mrmsBounds, {{ opacity: 0.7 }})) : [];
 let activeE2 = e2Layers[Math.min(1, e2Layers.length-1)];
 let activeMrms = mrmsLayers[Math.min(1, Math.max(mrmsLayers.length-1,0))] || null;
 let activeDiff = null;
-const e2Total = manifest.precip?.storm_total_png ? L.imageOverlay(assets + manifest.precip.storm_total_png, currentBounds(), {{ opacity: 0.65 }}) : null;
-const pluvialLayer = pluvial?.png ? L.imageOverlay(assets + pluvial.png, currentBounds(), {{ opacity: 0.55 }}) : null;
-const builtLayer = pluvial?.built_surface_png ? L.imageOverlay(assets + pluvial.built_surface_png, currentBounds(), {{ opacity: 0.5 }}) : null;
-const hotspot = manifest.disruption?.hotspot_png ? L.imageOverlay(assets + manifest.disruption.hotspot_png, currentBounds(), {{ opacity: 0.5 }}) : null;
-const ensLayer = (ens && ens.available && ens.png) ? L.imageOverlay(assets + ens.png, currentBounds(), {{ opacity: 0.55 }}) : null;
-let roadsLayer=null, disruptLayer=null, stationsLayer=null;
+const e2Total = manifest.precip?.storm_total_png ? L.imageOverlay(assets + manifest.precip.storm_total_png, precipBounds, {{ opacity: 0.65 }}) : null;
+const pluvialLayer = pluvial?.png ? L.imageOverlay(assets + pluvial.png, pluvialBounds, {{ opacity: 0.55 }}) : null;
+const builtLayer = pluvial?.built_surface_png ? L.imageOverlay(assets + pluvial.built_surface_png, pluvialBounds, {{ opacity: 0.5 }}) : null;
+const hotspot = manifest.disruption?.hotspot_png ? L.imageOverlay(assets + manifest.disruption.hotspot_png, hotspotBounds, {{ opacity: 0.5 }}) : null;
+const ensLayer = (ens && ens.available && ens.png) ? L.imageOverlay(assets + ens.png, precipBounds, {{ opacity: 0.55 }}) : null;
+let roadsLayer=null, disruptLayer=null, stationsLayer=null, drainNodes=null, drainEdges=null;
 const reports = L.markerClusterGroup({{ showCoverageOnHover:false }});
 if (pluvialLayer) pluvialLayer.addTo(mapLeft);
-if (hotspot) hotspot.addTo(mapLeft);
 if (activeE2) activeE2.addTo(mapLeft);
 
 function fitExtent() {{
+  // View-only: do NOT setBounds on raster overlays (that was the scaling bug).
   const b = currentBounds();
   mapLeft.fitBounds(b);
-  [...e2Layers, ...mrmsLayers, ...diffLayers, e2Total, pluvialLayer, builtLayer, hotspot, ensLayer].forEach(layer => {{
-    if (layer) layer.setBounds(b);
-  }});
   if (mapRight) mapRight.fitBounds(b);
   writeUrl();
 }}
@@ -299,7 +326,7 @@ function writeUrl() {{
     lead: document.getElementById("leadSlider").value,
     mode: compareMode ? "compare" : "single",
     resample: document.getElementById("resampleSelect").value,
-    layers: ["lyE2","lyMrms","lyPluvial","lyBuilt","lyE2Tot","lyDiff","lyHot","lyRoads","lySta","ly311","lyEns","lyFema","lyNwm","lyGauges"].filter(id => document.getElementById(id).checked).join(",")
+    layers: ["lyE2","lyMrms","lyPluvial","lyBuilt","lyE2Tot","lyDiff","lyHot","lyRoads","lySta","ly311","lyEns","lyFema","lyNwm","lyGauges","lyDrainE","lyDrainN"].filter(id => document.getElementById(id).checked).join(",")
   }});
   history.replaceState(null, "", "#" + params.toString());
 }}
@@ -313,7 +340,7 @@ function readUrl() {{
   if (p.get("lead") != null) document.getElementById("leadSlider").value = p.get("lead");
   if (p.get("resample")) document.getElementById("resampleSelect").value = p.get("resample");
   const layers = (p.get("layers") || "").split(",");
-  if (layers[0]) ["lyE2","lyMrms","lyPluvial","lyBuilt","lyE2Tot","lyDiff","lyHot","lyRoads","lySta","ly311","lyEns","lyFema","lyNwm","lyGauges"].forEach(id => {{
+  if (layers[0]) ["lyE2","lyMrms","lyPluvial","lyBuilt","lyE2Tot","lyDiff","lyHot","lyRoads","lySta","ly311","lyEns","lyFema","lyNwm","lyGauges","lyDrainE","lyDrainN"].forEach(id => {{
     const el = document.getElementById(id); if (el) el.checked = layers.includes(id);
   }});
   if (p.get("mode") === "compare") setCompare(true);
@@ -416,6 +443,34 @@ fetch(assets + "nwm_ahps_gauges.geojson").then(r => r.ok ? r.json() : null).then
   bind("lyGauges", gaugesLayer);
   if (document.getElementById("lyGauges").checked) gaugesLayer.addTo(mapLeft);
 }}).catch(() => {{}});
+fetch(assets + "drainage_conduits.geojson").then(r => r.ok ? r.json() : null).then(geo => {{
+  if (!geo) return;
+  drainEdges = L.geoJSON(geo, {{
+    style: {{ color:"#a16207", weight:1.5, opacity:0.55 }},
+    onEachFeature: (f,l) => l.bindTooltip("Demo conduit (OSM road) — NOT a sewer pipe / NOT SWMM depth")
+  }});
+  bind("lyDrainE", drainEdges);
+}}).catch(() => {{}});
+fetch(assets + "drainage_nodes.geojson").then(r => r.ok ? r.json() : null).then(geo => {{
+  if (!geo) return;
+  drainNodes = L.geoJSON(geo, {{
+    pointToLayer: (f,ll) => {{
+      const synth = !!(f.properties && f.properties.synthetic);
+      return L.circleMarker(ll, {{
+        radius: synth ? 2.5 : 3.5,
+        color: synth ? "#a16207" : "#854d0e",
+        fillColor: synth ? "#facc15" : "#ca8a04",
+        fillOpacity: 0.85,
+        weight: 1
+      }});
+    }},
+    onEachFeature: (f,l) => {{
+      const p = f.properties || {{}};
+      l.bindTooltip((p.node_id || "node") + " · demo drainage (NOT calibrated NYC SWMM)");
+    }}
+  }});
+  bind("lyDrainN", drainNodes);
+}}).catch(() => {{}});
 
 document.getElementById("lyE2").onchange = e => {{ if (e.target.checked) activeE2.addTo(mapLeft); else mapLeft.removeLayer(activeE2); writeUrl(); }};
 document.getElementById("lyMrms").onchange = e => {{
@@ -456,6 +511,7 @@ fetch(assets + (manifest.reports?.geojson || "observed_311.geojson")).then(r=>r.
 readUrl();
 fitExtent();
 setLead(+document.getElementById("leadSlider").value);
+document.querySelectorAll(".leaflet-image-layer").forEach(el => {{ el.style.imageRendering = (document.getElementById("resampleSelect").value === "nearest") ? "pixelated" : "auto"; }});
 </script>
 </body>
 </html>
@@ -502,8 +558,20 @@ def main() -> None:
         except Exception as exc:  # noqa: BLE001
             print(f"  ensemble probe skipped: {exc}")
 
-    print("Building pluvial screening…")
-    pluvial = build_pluvial_screening(extent_id="south_queens", assets_dir=ASSETS)
+    # Prefer citywide rebuild manifest precip/mrms if present.
+    city_manifest = ASSETS / "manifest.json"
+    if city_manifest.exists():
+        city = json.loads(city_manifest.read_text())
+        if city.get("precip", {}).get("native_grid", {}).get("n_lat", 0) >= 2:
+            manifest["precip"] = city["precip"]
+            if city.get("mrms_qpe"):
+                manifest["mrms_qpe"] = city["mrms_qpe"]
+            if city.get("layer_bounds"):
+                manifest["layer_bounds"] = city["layer_bounds"]
+            manifest["study_area"] = city.get("study_area", manifest.get("study_area"))
+
+    print("Building pluvial screening (citywide)…")
+    pluvial = build_pluvial_screening(extent_id="citywide", assets_dir=ASSETS)
     print(f"  mean={pluvial['mean']:.2f} p90={pluvial['p90']:.2f}")
 
     print("Building validation product…")
@@ -512,15 +580,17 @@ def main() -> None:
     validation = build_validation_product(e2_tif, mrms_tif if mrms_tif.exists() else None, ASSETS)
     print(f"  wrote outputs/validation_product.json")
 
-    # SWMM scaffold note in manifest
+    drain_meta = ASSETS / "drainage_demo_meta.json"
     manifest["swmm"] = {
         "integrated": False,
-        "missing": "Calibrated NYC sewer/drainage INP + rain-gage mapping. See docs in README Track 2.",
+        "missing": "Calibrated NYC sewer/drainage INP — not available.",
+        "demo_drainage": json.loads(drain_meta.read_text()) if drain_meta.exists() else None,
+        "note": "Map includes a clearly labeled synthetic/open drainage sketch (OSM + catch basins). Not official depths.",
     }
     manifest["downscaling_hooks"] = {
-        "stormcast": "earth2studio.models.px.StormCast / StormCastConus — not run in this pass (weights/runtime).",
-        "corrdiff": "earth2studio.models.dx.CorrDiff* — not run in this pass; wire as diagnostic after FCN.",
-        "policy": "No fake downscaling; bilinear display is visual only.",
+        "stormcast": "Blocked on natten build (see outputs/stormcast_corrdiff_attempt.json).",
+        "corrdiff": "Blocked on earth2studio extra corrdiff-era5-hrrr / natten.",
+        "policy": "No fake downscaling; precip display uses nearest-neighbor native ~0.25° cells.",
     }
 
     (ASSETS / "product_manifest.json").write_text(json.dumps(manifest, indent=2))

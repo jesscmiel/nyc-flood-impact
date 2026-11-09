@@ -9,8 +9,8 @@ EVENTS = {
         "init_time": "2021-09-01T12:00:00",
         "start": "2021-09-01T00:00:00",
         "end": "2021-09-02T23:00:00",
-        "default_extent": "south_queens",
-        "notes": "Primary v0 case study. Flash Flood Emergency for NYC.",
+        "default_extent": "citywide",
+        "notes": "Primary v0 case study. Flash Flood Emergency for NYC. Earth2 shown as ~0.25° cells over metro NYC.",
         "available": True,
     },
     "placeholder-future": {
@@ -26,15 +26,15 @@ EVENTS = {
 }
 
 EXTENTS = {
+    "citywide": {
+        "id": "citywide",
+        "label": "NYC metro / citywide",
+        "bounds": {"xmin": -74.28, "ymin": 40.48, "xmax": -73.68, "ymax": 40.93},
+    },
     "south_queens": {
         "id": "south_queens",
         "label": "South Queens / Jamaica Bay",
         "bounds": {"xmin": -74.12, "ymin": 40.55, "xmax": -73.72, "ymax": 40.73},
-    },
-    "citywide": {
-        "id": "citywide",
-        "label": "NYC citywide (approx.)",
-        "bounds": {"xmin": -74.28, "ymin": 40.48, "xmax": -73.68, "ymax": 40.93},
     },
 }
 

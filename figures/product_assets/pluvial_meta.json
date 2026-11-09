@@ -4,30 +4,30 @@
   "formula": "0.55 * terrain_screening + 0.45 * imperviousness",
   "png": "pluvial_screening.png",
   "built_surface_png": "built_surface_proxy.png",
-  "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/pluvial/pluvial_screening_south_queens.tif",
-  "extent_id": "south_queens",
+  "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/pluvial/pluvial_screening_citywide.tif",
+  "extent_id": "citywide",
   "sources": [
     "/home/jesscmiel/projects/nyc-flood-impact/data/processed/terrain_screening_10m.tif",
-    "/home/jesscmiel/projects/nyc-flood-impact/data/raw/landcover/nlcd_2021_impervious_south_queens.tif"
+    "/home/jesscmiel/projects/nyc-flood-impact/data/raw/landcover/nlcd_2021_impervious_citywide.tif"
   ],
   "impervious_kind": "nlcd_or_percent_impervious",
   "demo_impervious_rejected": false,
   "warnings": [],
   "grid": {
-    "height": 648,
-    "width": 1440,
-    "approx_cell_deg": 0.00027777777777778173
+    "height": 1620,
+    "width": 2160,
+    "approx_cell_deg": 0.0002777777777777751
   },
   "bounds": [
     [
-      40.55,
-      -74.12
+      40.48,
+      -74.28
     ],
     [
-      40.73,
-      -73.72
+      40.93,
+      -73.68
     ]
   ],
-  "mean": 0.5729060173034668,
-  "p90": 0.9638697504997253
+  "mean": 0.270402729511261,
+  "p90": 0.7663081884384155
 }
