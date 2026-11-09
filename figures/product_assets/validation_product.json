@@ -1,0 +1,38 @@
+{
+  "status": "exploratory_validation_product",
+  "valid_operational_skill": false,
+  "earth2_storm_total": {
+    "exists": true,
+    "n": 72000,
+    "mean_mm": 34.34516525268555,
+    "max_mm": 39.25322341918945,
+    "p90_mm": 36.955169677734375
+  },
+  "mrms_qpe_storm_total": {
+    "exists": true,
+    "n": 72000,
+    "mean_mm": 115.4808349609375,
+    "max_mm": 203.64581298828125,
+    "p90_mm": 160.35275268554688
+  },
+  "comparison": {
+    "max_mm_earth2_minus_mrms": -164.3925895690918,
+    "mean_mm_earth2_minus_mrms": -81.13566970825195,
+    "earth2_underestimates_domain_max": true
+  },
+  "reports_311": {
+    "n_reports": 599,
+    "n_with_earth2_sample": 599,
+    "median_earth2_mm_at_reports": 34.161155700683594,
+    "fraction_reports_above_earth2_p75": 0.29549248747913187,
+    "median_mrms_mm_at_reports": 140.95529174804688,
+    "earth2_domain_p75_mm": 35.480674743652344
+  },
+  "limitations": [
+    "Earth2 native grid is ~0.25\u00b0; bilinear display resampling is not physical downscaling.",
+    "MRMS QPE and Earth2 grids differ; domain stats are not a formal verification scorecard.",
+    "311 flood-related complaints are not surveyed flood extents or depths.",
+    "No verified non-flood locations \u2192 no ROC/AUC/calibration claims.",
+    "This panel never issues flood warnings or emergency guidance."
+  ]
+}

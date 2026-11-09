@@ -1,0 +1,44 @@
+"""Event catalog and map extents for the product UI."""
+
+from __future__ import annotations
+
+EVENTS = {
+    "ida-2021": {
+        "id": "ida-2021",
+        "label": "Hurricane Ida remnants (2021-09-01)",
+        "init_time": "2021-09-01T12:00:00",
+        "start": "2021-09-01T00:00:00",
+        "end": "2021-09-02T23:00:00",
+        "default_extent": "south_queens",
+        "notes": "Primary v0 case study. Flash Flood Emergency for NYC.",
+        "available": True,
+    },
+    "placeholder-future": {
+        "id": "placeholder-future",
+        "label": "Future event (placeholder)",
+        "init_time": None,
+        "start": None,
+        "end": None,
+        "default_extent": "citywide",
+        "notes": "Hook for additional storms — not loaded yet.",
+        "available": False,
+    },
+}
+
+EXTENTS = {
+    "south_queens": {
+        "id": "south_queens",
+        "label": "South Queens / Jamaica Bay",
+        "bounds": {"xmin": -74.12, "ymin": 40.55, "xmax": -73.72, "ymax": 40.73},
+    },
+    "citywide": {
+        "id": "citywide",
+        "label": "NYC citywide (approx.)",
+        "bounds": {"xmin": -74.28, "ymin": 40.48, "xmax": -73.68, "ymax": 40.93},
+    },
+}
+
+
+def bounds_list(extent_id: str) -> list[list[float]]:
+    b = EXTENTS[extent_id]["bounds"]
+    return [[b["ymin"], b["xmin"]], [b["ymax"], b["xmax"]]]

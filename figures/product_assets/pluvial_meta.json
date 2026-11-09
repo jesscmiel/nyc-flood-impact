@@ -1,0 +1,24 @@
+{
+  "label": "Pluvial screening index",
+  "disclaimer": "Relative screening from terrain low/flatness and imperviousness only. Not inundation depth, not a flood warning, not a calibrated hydrology model.",
+  "formula": "0.55 * terrain_screening + 0.45 * imperviousness",
+  "png": "pluvial_screening.png",
+  "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/pluvial/pluvial_screening_south_queens.tif",
+  "extent_id": "south_queens",
+  "sources": [
+    "/home/jesscmiel/projects/nyc-flood-impact/data/processed/terrain_screening_10m.tif",
+    "/home/jesscmiel/projects/nyc-flood-impact/data/raw/landcover/impervious_surface.tif"
+  ],
+  "bounds": [
+    [
+      40.55,
+      -74.12
+    ],
+    [
+      40.73,
+      -73.72
+    ]
+  ],
+  "mean": 0.6118099689483643,
+  "p90": 0.7974978089332581
+}

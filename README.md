@@ -1,92 +1,68 @@
 # NYC Flood Impact
 
-Standalone prototype for an Earth-2–powered NYC flood-impact map, starting from the
-**Hurricane Ida remnants** event (2021-09-01) over South Queens / Jamaica Bay.
+Standalone prototype for an Earth-2–powered NYC flood-impact map (Hurricane Ida remnants, 2021-09-01).
 
-**Earth2Studio is a dependency only** — this repository is an application, not an
-upstream contribution to [NVIDIA/earth2studio](https://github.com/NVIDIA/earth2studio).
+**Earth2Studio is a dependency only** — not an upstream NVIDIA contribution.
 
-## What this is / is not
-
-| Is | Is not |
-| --- | --- |
-| Deterministic FCN + PrecipitationAFNO precip → map layers | Operational flood guidance |
-| Terrain screening, roads/stations, 311 compare | Calibrated inundation depth |
-| Optional MRMS **QPE** QA (not BREF) | A PR into NVIDIA/earth2studio |
-
-## Layout
-
-```
-src/nyc_flash_flood_case_study/   # Python package
-scripts/                          # forecast, map build, demos
-figures/ida_v0_event_map.html     # interactive map
-figures/ida_v0_assets/            # map layers
-data/forecasts/                   # clipped forcing NetCDF (small)
-tests/
-```
-
-## Install
+## Quick open
 
 ```bash
-cd nyc-flood-impact
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -U pip
+cd /home/jesscmiel/projects/nyc-flood-impact
+python3 -m venv .venv && . .venv/bin/activate
 pip install -e .
-
-# Optional SWMM path
-pip install -e '.[swmm]'
+python scripts/build_product_map.py
+cd figures && python3 -m http.server 8765 --bind 127.0.0.1
+# http://127.0.0.1:8765/product_map.html
 ```
 
-### Earth2Studio (required for running forecasts)
+Worker tip: point Cursor `--worker-dir` at `/home/jesscmiel/projects/nyc-flood-impact`.
 
-Install Earth2Studio in the **same** environment (or a sibling GPU env used only for
-`scripts/run_earth2_forecast.py`):
+## Product upgrades (5 tracks)
+
+| Track | Status | What’s in the repo |
+| --- | --- | --- |
+| **1 Precip credibility** | Partial | Coarse-grid UI notice; bilinear vs nearest display; 2-member ensemble spread layer wired. StormCast/CorrDiff documented as next hooks — **no fake downscaling** / no StormCast run this pass. |
+| **2 Real hydrology** | Partial | Pluvial screening = terrain + imperviousness (`pluvial.py`). Hotspot/roads still screening labels. SWMM scaffold exists (`swmm.py`) but **no calibrated NYC INP** — depths not invented. |
+| **3 Product UI** | Done (MVP) | Event picker (Ida + placeholder), South Queens / citywide extent, clock valid times, `#` URL state, mobile stack layout, sticky disclaimers → `figures/product_map.html`. |
+| **4 Ops path** | Done (MVP) | `scripts/run_live_pipeline.py` + `make live-ida` / `make live`. Freshness notes; exposure scores only — never flood warnings. Auth/hosting deferred. |
+| **5 Validation** | Done (MVP) | `scripts/run_validation_report.py` → `outputs/validation_product.json` + map panel (Earth2 vs MRMS vs 311). |
+
+See also `figures/PRODUCT_README.md` and Project store `docs/product-upgrades-plan.md`.
+
+## Earth2Studio install
 
 ```bash
-# Preferred during development: editable install from a local checkout
-pip install -e /path/to/earth2studio
+# Sibling editable checkout (recommended on this machine)
+pip install -e /home/jesscmiel/projects/earth2studio
 
-# Or from PyPI / documented install when you do not need a local checkout
-# pip install "earth2studio[...]"   # see Earth2Studio docs for extras
-```
-
-Typical local layout on this machine:
-
-```text
-~/projects/earth2studio/     # NVIDIA Earth2Studio checkout (framework)
-~/projects/nyc-flood-impact/ # this app
-```
-
-Forecast generation (GPU / Earth2Studio env):
-
-```bash
+# Forecast (GPU env)
 python scripts/run_earth2_forecast.py \
   --init-time 2021-09-01T12:00:00 --steps 4 --members 1 \
-  --output data/forecasts/earth2_precip_ida_20210901T12.nc
+  --output data/forecasts/earth2_precip_ida.nc
 ```
 
-Map + optional MRMS QPE QA (app env):
+Multi-member uncertainty (Track 1):
 
 ```bash
-python scripts/build_ida_v0_map.py \
-  --global-forecast data/forecasts/earth2_precip_ida_20210901T12.nc \
-  --clipped-forecast data/forecasts/nyc_precip_ida_20210901T12.nc \
-  --with-mrms-qa
+python scripts/run_earth2_forecast.py --init-time 2021-09-01T12:00:00 --steps 4 --members 4 \
+  --output data/forecasts/earth2_precip_ida_ens.nc
 ```
 
-Open the map:
+### Downscaling hooks (not run in this pass)
+
+- `earth2studio.models.px.StormCast` / `StormCastConus` — higher-res nowcasting path when weights/runtime allow.
+- `earth2studio.models.dx.CorrDiff*` — diagnostic downscaling after a global prognostic.
+- Policy: prefer real model outputs over interpolating fake resolution.
+
+## Makefile
 
 ```bash
-cd figures
-python3 -m http.server 8765 --bind 127.0.0.1
-# http://127.0.0.1:8765/ida_v0_event_map.html
+make map          # build product_map.html
+make validation   # refresh validation JSON
+make live-ida     # rebuild from existing Ida clipped forecast + MRMS QA assets
+make live INIT=2021-09-01T12:00:00   # GPU forecast via E2S_PYTHON then map
 ```
 
-See [`figures/IDA_V0_DEMO_README.md`](figures/IDA_V0_DEMO_README.md) for layer disclaimers.
+## License
 
-## License / attribution
-
-Application code in this repo is intended for research prototyping. Earth2Studio is
-separately licensed (Apache-2.0 upstream). OpenStreetMap, NYC Open Data, and NOAA MRMS
-have their own terms — retain attributions in the map UI.
+Apache-2.0 for application code in this repo. Earth2Studio, OSM, NYC Open Data, and NOAA MRMS retain their own terms.

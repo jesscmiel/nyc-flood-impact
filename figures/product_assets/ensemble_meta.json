@@ -1,0 +1,8 @@
+{
+  "available": true,
+  "n_members": 2,
+  "png": "ensemble_spread.png",
+  "storm_total_mean_max_mm": 40.133018493652344,
+  "storm_total_spread_max_mm": 0.02927684783935547,
+  "note": "Across-member std of storm-total precip (mm). Uncertainty band, not downscaling."
+}

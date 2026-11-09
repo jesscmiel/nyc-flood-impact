@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "NYC flood-impact prototype powered by Earth2Studio forecasts (Ida case study)."
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "Apache-2.0" }
+license = "Apache-2.0"
 authors = [{ name = "Jessica Cmiel" }]
 dependencies = [
   "numpy>=1.26",

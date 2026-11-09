@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NYC Flood Impact · product map</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
+<style>
+:root { --ink:#15202b; --muted:#5c6b7a; --panel:#f3f6f8; --line:#d7dee5; --accent:#0f6e8c; --warn:#9a3412; --bg:#e7eef2; }
+* { box-sizing:border-box; }
+html,body { margin:0; height:100%; font-family:"IBM Plex Sans",system-ui,sans-serif; color:var(--ink); background:var(--bg); }
+body { display:grid; grid-template-columns:minmax(280px,340px) 1fr; }
+@media (max-width:900px) {
+  body { grid-template-columns:1fr; grid-template-rows:auto 1fr; }
+  aside { max-height:46vh; border-right:0; border-bottom:1px solid var(--line); }
+}
+aside { background:var(--panel); border-right:1px solid var(--line); padding:14px 14px 24px; overflow:auto; }
+h1 { font-size:1.2rem; margin:0 0 6px; }
+.eyebrow { text-transform:uppercase; letter-spacing:.08em; font-size:.68rem; color:var(--muted); margin:0 0 6px; }
+.sub { color:var(--muted); font-size:.84rem; line-height:1.4; margin:0 0 10px; }
+.disclaimer-bar { position:sticky; top:0; z-index:2; background:#fff7ed; border:1px solid #fdba74; color:var(--warn); padding:8px 10px; border-radius:8px; font-size:.78rem; line-height:1.35; margin-bottom:12px; }
+section { margin:14px 0; padding-top:10px; border-top:1px solid var(--line); }
+section h2 { font-size:.9rem; margin:0 0 8px; }
+label.row, .field { display:flex; justify-content:space-between; align-items:center; gap:8px; margin:6px 0; font-size:.84rem; }
+select, button, input[type=range] { width:100%; }
+select, button { padding:8px 10px; border-radius:8px; border:1px solid var(--line); background:#fff; font:inherit; }
+button.active { border-color:var(--accent); background:#e7f4f8; color:var(--accent); font-weight:600; }
+.readout { font-variant-numeric:tabular-nums; font-weight:600; color:var(--accent); }
+.metric { display:flex; justify-content:space-between; gap:8px; font-size:.8rem; margin:4px 0; }
+.swatch { display:inline-block; width:11px; height:11px; border-radius:2px; margin-right:6px; vertical-align:middle; }
+.map-stage { position:relative; min-height:0; height:100%; display:grid; }
+.map-stage.single { grid-template-columns:1fr; }
+.map-stage.compare { grid-template-columns:1fr 1fr; }
+.map-pane { position:relative; height:100%; min-height:0; overflow:hidden; border-left:1px solid var(--line); }
+.map-pane:first-child { border-left:0; }
+.map-pane[hidden] { display:none !important; }
+.map-el { position:absolute; inset:0; }
+.pane-label { position:absolute; z-index:1000; top:10px; left:48px; background:rgba(255,255,255,.93); border:1px solid var(--line); padding:4px 8px; font-size:.74rem; font-weight:600; }
+.footer-note { position:absolute; z-index:1000; left:10px; bottom:10px; max-width:min(420px,90%); background:rgba(255,255,255,.94); border:1px solid var(--line); padding:7px 9px; font-size:.72rem; color:var(--muted); }
+.validation { background:#fff; border:1px solid var(--line); border-radius:8px; padding:8px 10px; font-size:.78rem; line-height:1.4; }
+.validation b { font-variant-numeric:tabular-nums; }
+.coarse { background:#eef2ff; color:#3730a3; border-radius:6px; padding:6px 8px; font-size:.75rem; margin-top:6px; }
+</style>
+</head>
+<body>
+<aside>
+  <p class="eyebrow">NYC flood impact · product</p>
+  <h1>Event replay map</h1>
+  <p class="sub">Earth2 precip + pluvial screening + observed QPE/311. Earth2Studio is a dependency only.</p>
+  <div class="disclaimer-bar" id="alwaysDisclaimer">
+    <b>Not inundation depth. Not a flood warning. Not emergency guidance.</b>
+    Screening and AI precip are exploratory research products on a coarse native grid (~0.25°).
+  </div>
+
+  <section>
+    <h2>Event</h2>
+    <select id="eventSelect" aria-label="Event"></select>
+  </section>
+
+  <section>
+    <h2>Extent</h2>
+    <select id="extentSelect" aria-label="Map extent"></select>
+  </section>
+
+  <section>
+    <h2>Valid time</h2>
+    <input id="leadSlider" type="range" min="0" max="3" value="1" step="1">
+    <div class="metric"><span>Clock (UTC)</span><span class="readout" id="clockReadout">—</span></div>
+    <div class="metric"><span>Lead</span><span class="readout" id="leadReadout">—</span></div>
+    <div class="metric"><span>Earth2 6h max</span><span class="readout" id="e2Readout">—</span></div>
+    <div class="metric"><span>MRMS QPE 6h max</span><span class="readout" id="mrmsReadout">—</span></div>
+  </section>
+
+  <section>
+    <h2>View</h2>
+    <button type="button" class="active" id="modeSingle">Single map</button>
+    <button type="button" id="modeCompare" style="margin-top:6px">Side-by-side Earth2 | MRMS</button>
+    <div class="field" style="margin-top:8px"><span>Precip display</span>
+      <select id="resampleSelect" style="width:auto;min-width:120px">
+        <option value="bilinear" selected>Bilinear (smooth)</option>
+        <option value="nearest">Nearest (blocky / honest)</option>
+      </select>
+    </div>
+    <div class="coarse" id="gridNote">Native Earth2 grid ~0.25°. Smoothing is display-only — not physical downscaling. StormCast/CorrDiff hooks: see README.</div>
+  </section>
+
+  <section>
+    <h2>Layers</h2>
+    <label class="row"><span><span class="swatch" style="background:#3b82f6"></span>Earth2 6h precip</span><input id="lyE2" type="checkbox" checked></label>
+    <label class="row"><span><span class="swatch" style="background:#0f766e"></span>MRMS QPE 6h</span><input id="lyMrms" type="checkbox"></label>
+    <label class="row"><span><span class="swatch" style="background:#c2410c"></span>Pluvial screening</span><input id="lyPluvial" type="checkbox" checked></label>
+    <label class="row"><span><span class="swatch" style="background:#7c3aed"></span>Earth2 storm total</span><input id="lyE2Tot" type="checkbox"></label>
+    <label class="row"><span><span class="swatch" style="background:#b45309"></span>Diff E2−MRMS</span><input id="lyDiff" type="checkbox"></label>
+    <label class="row"><span><span class="swatch" style="background:#dc2626"></span>Hotspot / roads</span><input id="lyHot" type="checkbox" checked></label>
+    <label class="row"><span><span class="swatch" style="background:#64748b"></span>Roads</span><input id="lyRoads" type="checkbox"></label>
+    <label class="row"><span><span class="swatch" style="background:#0f766e"></span>Stations</span><input id="lySta" type="checkbox" checked></label>
+    <label class="row"><span><span class="swatch" style="background:#e11d48"></span>311 reports</span><input id="ly311" type="checkbox" checked></label>
+    <label class="row"><span><span class="swatch" style="background:#6366f1"></span>Ensemble band (if present)</span><input id="lyEns" type="checkbox" disabled></label>
+  </section>
+
+  <section>
+    <h2>Validation snapshot</h2>
+    <div class="validation" id="validationPanel">Loading…</div>
+  </section>
+
+  <section>
+    <details open>
+      <summary><b>What this is / isn’t</b></summary>
+      <p style="font-size:.78rem;color:var(--muted);line-height:1.4">
+        <b>Earth2 precip</b> = FCN + PrecipitationAFNO 6h accumulations.<br>
+        <b>Pluvial screening</b> = terrain + impervious index — not depth.<br>
+        <b>MRMS QPE</b> = observed rainfall estimate (not BREF).<br>
+        <b>311</b> = complaints, not surveyed floods.<br>
+        No SWMM depths without a calibrated NYC sewer INP (scaffold only).
+      </p>
+    </details>
+  </section>
+</aside>
+
+<div id="mapStage" class="map-stage single">
+  <div class="map-pane"><div class="pane-label" id="leftLabel">Earth2</div><div id="mapLeft" class="map-el"></div></div>
+  <div class="map-pane" id="rightPane" hidden><div class="pane-label">MRMS QPE</div><div id="mapRight" class="map-el"></div></div>
+  <div class="footer-note">Shareable URL updates as you change lead/layers/mode/extent. Prototype only.</div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<script>
+const EVENTS = {"ida-2021": {"id": "ida-2021", "label": "Hurricane Ida remnants (2021-09-01)", "init_time": "2021-09-01T12:00:00", "start": "2021-09-01T00:00:00", "end": "2021-09-02T23:00:00", "default_extent": "south_queens", "notes": "Primary v0 case study. Flash Flood Emergency for NYC.", "available": true}, "placeholder-future": {"id": "placeholder-future", "label": "Future event (placeholder)", "init_time": null, "start": null, "end": null, "default_extent": "citywide", "notes": "Hook for additional storms \u2014 not loaded yet.", "available": false}};
+const EXTENTS = {"south_queens": {"id": "south_queens", "label": "South Queens / Jamaica Bay", "bounds": {"xmin": -74.12, "ymin": 40.55, "xmax": -73.72, "ymax": 40.73}}, "citywide": {"id": "citywide", "label": "NYC citywide (approx.)", "bounds": {"xmin": -74.28, "ymin": 40.48, "xmax": -73.68, "ymax": 40.93}}};
+const manifest = {"event": "Hurricane Ida remnants over NYC", "study_area": "South Queens / Jamaica Bay", "precip": {"init_time": "2021-09-01T12:00:00.000000000", "forecast_model": "FourCastNet + PrecipitationAFNO", "frames": [{"index": 0, "lead_hours": 6, "valid_time": "2021-09-01T18:00", "png": "precip_lead_06h.png", "tif": "/home/jesscmiel/projects/earth2studio/projects/nyc_flash_flood_case_study/data/processed/earth2_precip/precip_lead_06h.tif", "mean_mm": 4.323268413543701, "max_mm": 5.351292610168457}, {"index": 1, "lead_hours": 12, "valid_time": "2021-09-02T00:00", "png": "precip_lead_12h.png", "tif": "/home/jesscmiel/projects/earth2studio/projects/nyc_flash_flood_case_study/data/processed/earth2_precip/precip_lead_12h.tif", "mean_mm": 21.808130264282227, "max_mm": 25.380882263183594}, {"index": 2, "lead_hours": 18, "valid_time": "2021-09-02T06:00", "png": "precip_lead_18h.png", "tif": "/home/jesscmiel/projects/earth2studio/projects/nyc_flash_flood_case_study/data/processed/earth2_precip/precip_lead_18h.tif", "mean_mm": 8.213379859924316, "max_mm": 9.56131362915039}, {"index": 3, "lead_hours": 24, "valid_time": "2021-09-02T12:00", "png": "precip_lead_24h.png", "tif": "/home/jesscmiel/projects/earth2studio/projects/nyc_flash_flood_case_study/data/processed/earth2_precip/precip_lead_24h.tif", "mean_mm": 0.00038793846033513546, "max_mm": 0.0018156884470954537}], "storm_total_png": "precip_storm_total.png", "storm_total_tif": "/home/jesscmiel/projects/earth2studio/projects/nyc_flash_flood_case_study/data/processed/earth2_precip/precip_storm_total.tif", "storm_total_max_mm": 39.25322341918945, "storm_total_mean_mm": 34.34516525268555, "display_note": "Precip layers are bilinearly resampled from the native ~0.25\u00b0 Earth2 grid onto a denser display grid for visualization only; this is not physical downscaling.", "interval_hours": 6.0, "bounds": [[40.55, -74.12], [40.73, -73.72]]}, "infra": {"stations_geojson": "subway_stations.geojson", "basins_geojson": "catch_basins.geojson", "roads_geojson": "roads.geojson", "n_stations": 309, "n_basins": 0, "n_roads": 2500}, "disruption": {"roads_geojson": "roads_with_disruption.geojson", "disrupted_geojson": "roads_potential_disruption.geojson", "hotspot_png": "precip_terrain_hotspot.png", "n_disrupted": 125, "n_roads": 2500, "rule": "Road segment marked if any sample point falls in cells with storm-total precip \u2265 35.5 mm (max of 20.0 mm and domain P75) AND terrain screening \u2265 0.92 (max of 0.55 and domain P75). Heuristic exposure only \u2014 not a traffic or inundation forecast.", "precip_threshold_mm": 35.480674743652344, "terrain_threshold": 0.9234345555305481}, "reports": {"n_reports": 599, "geojson": "observed_311.geojson"}, "terrain": {"terrain_png": "terrain_screening.png", "terrain_bounds": [[40.55, -74.12], [40.73, -73.72]]}, "disclaimer": "Exploratory prototype. Not inundation depth, not emergency guidance, not a verified flood forecast. MRMS QPE is the observed precip reference; BREF is not used.", "mrms_qpe": {"product": "MultiSensor_QPE_01H_Pass1_00.00", "product_note": "NOAA MRMS MultiSensor QPE 01H Pass1 (public S3). Hourly depths summed into 6 h intervals ending at each Earth2 valid time. Units treated as mm. Not BREF/reflectivity.", "source": "https://noaa-mrms-pds.s3.amazonaws.com/", "init_time": "2021-09-01T12:00:00", "shared_display_vmax_mm": 142.17919921875, "frames": [{"lead_hours": 6, "valid_time": "2021-09-01T18:00", "png": "mrms_qpe_lead_06h.png", "tif": "/home/jesscmiel/projects/earth2studio/projects/nyc_flash_flood_case_study/data/processed/mrms_qpe/mrms_qpe_lead_06h.tif", "mean_mm": 2.0329673290252686, "max_mm": 4.953685283660889, "n_hourly_files": 6, "hourly_ends_utc": ["2021-09-01T13:00", "2021-09-01T14:00", "2021-09-01T15:00", "2021-09-01T16:00", "2021-09-01T17:00", "2021-09-01T18:00"]}, {"lead_hours": 12, "valid_time": "2021-09-02T00:00", "png": "mrms_qpe_lead_12h.png", "tif": "/home/jesscmiel/projects/earth2studio/projects/nyc_flash_flood_case_study/data/processed/mrms_qpe/mrms_qpe_lead_12h.tif", "mean_mm": 22.826684951782227, "max_mm": 61.3129997253418, "n_hourly_files": 6, "hourly_ends_utc": ["2021-09-01T19:00", "2021-09-01T20:00", "2021-09-01T21:00", "2021-09-01T22:00", "2021-09-01T23:00", "2021-09-02T00:00"]}, {"lead_hours": 18, "valid_time": "2021-09-02T06:00", "png": "mrms_qpe_lead_18h.png", "tif": "/home/jesscmiel/projects/earth2studio/projects/nyc_flash_flood_case_study/data/processed/mrms_qpe/mrms_qpe_lead_18h.tif", "mean_mm": 90.51799011230469, "max_mm": 142.17919921875, "n_hourly_files": 6, "hourly_ends_utc": ["2021-09-02T01:00", "2021-09-02T02:00", "2021-09-02T03:00", "2021-09-02T04:00", "2021-09-02T05:00", "2021-09-02T06:00"]}, {"lead_hours": 24, "valid_time": "2021-09-02T12:00", "png": "mrms_qpe_lead_24h.png", "tif": "/home/jesscmiel/projects/earth2studio/projects/nyc_flash_flood_case_study/data/processed/mrms_qpe/mrms_qpe_lead_24h.tif", "mean_mm": 0.1031830683350563, "max_mm": 1.957192063331604, "n_hourly_files": 6, "hourly_ends_utc": ["2021-09-02T07:00", "2021-09-02T08:00", "2021-09-02T09:00", "2021-09-02T10:00", "2021-09-02T11:00", "2021-09-02T12:00"]}], "storm_total_png": "mrms_qpe_storm_total.png", "storm_total_tif": "/home/jesscmiel/projects/earth2studio/projects/nyc_flash_flood_case_study/data/processed/mrms_qpe/mrms_qpe_storm_total.tif", "storm_total_max_mm": 203.64581298828125, "storm_total_mean_mm": 115.4808349609375, "diff_frames": [{"lead_hours": 6, "png": "diff_e2_minus_mrms_lead_06h.png", "mean_diff_mm": 2.2903008460998535, "rmse_mm": 2.5035197734832764, "max_abs_diff_mm": 4.5882697105407715}, {"lead_hours": 12, "png": "diff_e2_minus_mrms_lead_12h.png", "mean_diff_mm": -1.0185539722442627, "rmse_mm": 11.048540115356445, "max_abs_diff_mm": 39.952674865722656}, {"lead_hours": 18, "png": "diff_e2_minus_mrms_lead_18h.png", "mean_diff_mm": -82.30461883544922, "rmse_mm": 87.80799865722656, "max_abs_diff_mm": 134.834228515625}, {"lead_hours": 24, "png": "diff_e2_minus_mrms_lead_24h.png", "mean_diff_mm": -0.10279512405395508, "rmse_mm": 0.31740057468414307, "max_abs_diff_mm": 1.9563138484954834}], "bounds": [[40.55, -74.12], [40.73, -73.72]]}, "ensemble": {"available": true, "n_members": 2, "png": "ensemble_spread.png", "storm_total_mean_max_mm": 40.133018493652344, "storm_total_spread_max_mm": 0.02927684783935547, "note": "Across-member std of storm-total precip (mm). Uncertainty band, not downscaling."}, "swmm": {"integrated": false, "missing": "Calibrated NYC sewer/drainage INP + rain-gage mapping. See docs in README Track 2."}, "downscaling_hooks": {"stormcast": "earth2studio.models.px.StormCast / StormCastConus \u2014 not run in this pass (weights/runtime).", "corrdiff": "earth2studio.models.dx.CorrDiff* \u2014 not run in this pass; wire as diagnostic after FCN.", "policy": "No fake downscaling; bilinear display is visual only."}};
+const pluvial = {"label": "Pluvial screening index", "disclaimer": "Relative screening from terrain low/flatness and imperviousness only. Not inundation depth, not a flood warning, not a calibrated hydrology model.", "formula": "0.55 * terrain_screening + 0.45 * imperviousness", "png": "pluvial_screening.png", "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/pluvial/pluvial_screening_south_queens.tif", "extent_id": "south_queens", "sources": ["/home/jesscmiel/projects/nyc-flood-impact/data/processed/terrain_screening_10m.tif", "/home/jesscmiel/projects/nyc-flood-impact/data/raw/landcover/impervious_surface.tif"], "bounds": [[40.55, -74.12], [40.73, -73.72]], "mean": 0.6118099689483643, "p90": 0.7974978089332581};
+const validation = {"status": "exploratory_validation_product", "valid_operational_skill": false, "earth2_storm_total": {"exists": true, "n": 72000, "mean_mm": 34.34516525268555, "max_mm": 39.25322341918945, "p90_mm": 36.955169677734375}, "mrms_qpe_storm_total": {"exists": true, "n": 72000, "mean_mm": 115.4808349609375, "max_mm": 203.64581298828125, "p90_mm": 160.35275268554688}, "comparison": {"max_mm_earth2_minus_mrms": -164.3925895690918, "mean_mm_earth2_minus_mrms": -81.13566970825195, "earth2_underestimates_domain_max": true}, "reports_311": {"n_reports": 599, "n_with_earth2_sample": 599, "median_earth2_mm_at_reports": 34.161155700683594, "fraction_reports_above_earth2_p75": 0.29549248747913187, "median_mrms_mm_at_reports": 140.95529174804688, "earth2_domain_p75_mm": 35.480674743652344}, "limitations": ["Earth2 native grid is ~0.25\u00b0; bilinear display resampling is not physical downscaling.", "MRMS QPE and Earth2 grids differ; domain stats are not a formal verification scorecard.", "311 flood-related complaints are not surveyed flood extents or depths.", "No verified non-flood locations \u2192 no ROC/AUC/calibration claims.", "This panel never issues flood warnings or emergency guidance."]};
+const assets = "product_assets/";
+const hasMrms = Boolean(manifest.mrms_qpe);
+const frames = manifest.precip?.frames || [];
+const ens = manifest.ensemble || null;
+
+const mapLeft = L.map("mapLeft", { zoomControl: true });
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "&copy; OpenStreetMap" }).addTo(mapLeft);
+let mapRight = null, syncing = false, compareMode = false;
+
+function sync(a,b) {
+  if (!b || syncing) return;
+  syncing = true;
+  try { b.setView(a.getCenter(), a.getZoom(), { animate:false }); } finally { syncing = false; }
+}
+function ensureRight() {
+  if (!hasMrms || mapRight) return mapRight;
+  mapRight = L.map("mapRight", { zoomControl: true });
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "&copy; OpenStreetMap" }).addTo(mapRight);
+  mapLeft.on("moveend", () => sync(mapLeft, mapRight));
+  mapRight.on("moveend", () => sync(mapRight, mapLeft));
+  return mapRight;
+}
+
+// Populate selectors before any currentBounds() call.
+const eventSel = document.getElementById("eventSelect");
+Object.values(EVENTS).forEach(ev => {
+  const opt = document.createElement("option");
+  opt.value = ev.id; opt.textContent = ev.label + (ev.available ? "" : " (unavailable)");
+  opt.disabled = !ev.available; eventSel.appendChild(opt);
+});
+eventSel.value = "ida-2021";
+const extentSel = document.getElementById("extentSelect");
+Object.values(EXTENTS).forEach(ex => {
+  const opt = document.createElement("option"); opt.value = ex.id; opt.textContent = ex.label; extentSel.appendChild(opt);
+});
+extentSel.value = "south_queens";
+
+function currentBounds() {
+  const id = document.getElementById("extentSelect").value || "south_queens";
+  const b = (EXTENTS[id] || EXTENTS.south_queens).bounds;
+  return [[b.ymin, b.xmin],[b.ymax, b.xmax]];
+}
+
+const e2Layers = frames.map(f => L.imageOverlay(assets + f.png, currentBounds(), { opacity: 0.72, interactive:false, className: "precip-bilinear" }));
+const mrmsLayers = hasMrms ? manifest.mrms_qpe.frames.map(f => L.imageOverlay(assets + f.png, currentBounds(), { opacity: 0.72 })) : [];
+const diffLayers = hasMrms ? manifest.mrms_qpe.diff_frames.map(f => L.imageOverlay(assets + f.png, currentBounds(), { opacity: 0.7 })) : [];
+let activeE2 = e2Layers[Math.min(1, e2Layers.length-1)];
+let activeMrms = mrmsLayers[Math.min(1, Math.max(mrmsLayers.length-1,0))] || null;
+let activeDiff = null;
+const e2Total = manifest.precip?.storm_total_png ? L.imageOverlay(assets + manifest.precip.storm_total_png, currentBounds(), { opacity: 0.65 }) : null;
+const pluvialLayer = pluvial?.png ? L.imageOverlay(assets + pluvial.png, currentBounds(), { opacity: 0.55 }) : null;
+const hotspot = manifest.disruption?.hotspot_png ? L.imageOverlay(assets + manifest.disruption.hotspot_png, currentBounds(), { opacity: 0.5 }) : null;
+const ensLayer = (ens && ens.available && ens.png) ? L.imageOverlay(assets + ens.png, currentBounds(), { opacity: 0.55 }) : null;
+let roadsLayer=null, disruptLayer=null, stationsLayer=null;
+const reports = L.markerClusterGroup({ showCoverageOnHover:false });
+if (pluvialLayer) pluvialLayer.addTo(mapLeft);
+if (hotspot) hotspot.addTo(mapLeft);
+if (activeE2) activeE2.addTo(mapLeft);
+
+function fitExtent() {
+  const b = currentBounds();
+  mapLeft.fitBounds(b);
+  [...e2Layers, ...mrmsLayers, ...diffLayers, e2Total, pluvialLayer, hotspot, ensLayer].forEach(layer => {
+    if (layer) layer.setBounds(b);
+  });
+  if (mapRight) mapRight.fitBounds(b);
+  writeUrl();
+}
+
+function setLead(i) {
+  if (!frames.length) return;
+  const f = frames[i];
+  if (activeE2 && mapLeft.hasLayer(activeE2)) mapLeft.removeLayer(activeE2);
+  activeE2 = e2Layers[i];
+  if (document.getElementById("lyE2").checked) activeE2.addTo(mapLeft);
+  if (hasMrms) {
+    if (activeMrms) { mapLeft.hasLayer(activeMrms) && mapLeft.removeLayer(activeMrms); mapRight && mapRight.hasLayer(activeMrms) && mapRight.removeLayer(activeMrms); }
+    activeMrms = mrmsLayers[i];
+    if (compareMode && mapRight) activeMrms.addTo(mapRight);
+    else if (document.getElementById("lyMrms").checked) activeMrms.addTo(mapLeft);
+    if (activeDiff && mapLeft.hasLayer(activeDiff)) mapLeft.removeLayer(activeDiff);
+    activeDiff = diffLayers[i];
+    if (document.getElementById("lyDiff").checked && !compareMode) activeDiff.addTo(mapLeft);
+    document.getElementById("mrmsReadout").textContent = manifest.mrms_qpe.frames[i].max_mm.toFixed(1) + " mm";
+  } else document.getElementById("mrmsReadout").textContent = "n/a";
+  document.getElementById("clockReadout").textContent = f.valid_time.replace("T", " ");
+  document.getElementById("leadReadout").textContent = "+" + f.lead_hours + " h";
+  document.getElementById("e2Readout").textContent = f.max_mm.toFixed(1) + " mm";
+  document.getElementById("leftLabel").textContent = compareMode ? ("Earth2 · " + f.valid_time.replace("T"," ")) : "Earth2";
+  writeUrl();
+}
+
+function setCompare(on) {
+  compareMode = on && hasMrms;
+  const stage = document.getElementById("mapStage");
+  document.getElementById("modeSingle").classList.toggle("active", !compareMode);
+  document.getElementById("modeCompare").classList.toggle("active", compareMode);
+  if (compareMode) {
+    stage.classList.add("compare"); stage.classList.remove("single");
+    document.getElementById("rightPane").hidden = false;
+    setTimeout(() => {
+      const r = ensureRight();
+      mapLeft.invalidateSize(); r.invalidateSize();
+      r.setView(mapLeft.getCenter(), mapLeft.getZoom(), { animate:false });
+      setLead(+document.getElementById("leadSlider").value);
+    }, 120);
+  } else {
+    stage.classList.add("single"); stage.classList.remove("compare");
+    document.getElementById("rightPane").hidden = true;
+    if (mapRight && activeMrms && mapRight.hasLayer(activeMrms)) mapRight.removeLayer(activeMrms);
+    setTimeout(() => mapLeft.invalidateSize(), 50);
+    setLead(+document.getElementById("leadSlider").value);
+  }
+  writeUrl();
+}
+
+function writeUrl() {
+  const params = new URLSearchParams({
+    event: document.getElementById("eventSelect").value,
+    extent: document.getElementById("extentSelect").value,
+    lead: document.getElementById("leadSlider").value,
+    mode: compareMode ? "compare" : "single",
+    resample: document.getElementById("resampleSelect").value,
+    layers: ["lyE2","lyMrms","lyPluvial","lyE2Tot","lyDiff","lyHot","lyRoads","lySta","ly311","lyEns"].filter(id => document.getElementById(id).checked).join(",")
+  });
+  history.replaceState(null, "", "#" + params.toString());
+}
+
+function readUrl() {
+  const raw = location.hash.replace(/^#/, "");
+  if (!raw) return;
+  const p = new URLSearchParams(raw);
+  if (p.get("event")) document.getElementById("eventSelect").value = p.get("event");
+  if (p.get("extent")) document.getElementById("extentSelect").value = p.get("extent");
+  if (p.get("lead") != null) document.getElementById("leadSlider").value = p.get("lead");
+  if (p.get("resample")) document.getElementById("resampleSelect").value = p.get("resample");
+  const layers = (p.get("layers") || "").split(",");
+  if (layers[0]) ["lyE2","lyMrms","lyPluvial","lyE2Tot","lyDiff","lyHot","lyRoads","lySta","ly311","lyEns"].forEach(id => {
+    const el = document.getElementById(id); if (el) el.checked = layers.includes(id);
+  });
+  if (p.get("mode") === "compare") setCompare(true);
+}
+
+// validation panel
+(function() {
+  const v = validation || {};
+  const e2 = v.earth2_storm_total || {};
+  const m = v.mrms_qpe_storm_total || {};
+  const c = v.comparison || {};
+  const r = v.reports_311 || {};
+  document.getElementById("validationPanel").innerHTML = `
+    <div class="metric"><span>Earth2 storm max</span><b>${e2.max_mm != null ? e2.max_mm.toFixed(1)+" mm" : "n/a"}</b></div>
+    <div class="metric"><span>MRMS QPE storm max</span><b>${m.max_mm != null ? m.max_mm.toFixed(1)+" mm" : "n/a"}</b></div>
+    <div class="metric"><span>Max Δ (E2−MRMS)</span><b>${c.max_mm_earth2_minus_mrms != null ? c.max_mm_earth2_minus_mrms.toFixed(1)+" mm" : "n/a"}</b></div>
+    <div class="metric"><span>311 reports</span><b>${r.n_reports ?? "n/a"}</b></div>
+    <div class="metric"><span>311 above E2 P75</span><b>${r.fraction_reports_above_earth2_p75 != null ? (100*r.fraction_reports_above_earth2_p75).toFixed(0)+"%" : "n/a"}</b></div>
+    <div style="margin-top:6px;color:var(--muted)">Exploratory only — not certified skill / not flood warnings.</div>`;
+})();
+
+if (ens && ens.available) {
+  document.getElementById("lyEns").disabled = false;
+  document.getElementById("gridNote").textContent += " Ensemble members available: " + ens.n_members + " (spread layer = storm-total std).";
+} else {
+  document.getElementById("gridNote").textContent += " Ensemble band: not loaded (run multi-member forecast to enable).";
+}
+
+document.getElementById("leadSlider").addEventListener("input", e => setLead(+e.target.value));
+document.getElementById("modeSingle").onclick = () => setCompare(false);
+document.getElementById("modeCompare").onclick = () => setCompare(true);
+document.getElementById("extentSelect").onchange = fitExtent;
+document.getElementById("eventSelect").onchange = () => {
+  const ev = EVENTS[eventSel.value];
+  if (!ev.available) alert("Event placeholder only — Ida is currently loaded.");
+  writeUrl();
+};
+document.getElementById("resampleSelect").onchange = () => {
+  const nearest = document.getElementById("resampleSelect").value === "nearest";
+  document.querySelectorAll(".leaflet-image-layer").forEach(el => {
+    el.style.imageRendering = nearest ? "pixelated" : "auto";
+  });
+  writeUrl();
+};
+
+function bind(id, layer) {
+  const el = document.getElementById(id);
+  el.addEventListener("change", () => {
+    if (!layer) return;
+    if (el.checked) layer.addTo(mapLeft); else mapLeft.removeLayer(layer);
+    writeUrl();
+  });
+}
+bind("lyPluvial", pluvialLayer);
+bind("lyE2Tot", e2Total);
+bind("lyHot", hotspot);
+bind("lyEns", ensLayer);
+document.getElementById("lyE2").onchange = e => { if (e.target.checked) activeE2.addTo(mapLeft); else mapLeft.removeLayer(activeE2); writeUrl(); };
+document.getElementById("lyMrms").onchange = e => {
+  if (compareMode) return;
+  if (!activeMrms) return;
+  if (e.target.checked) activeMrms.addTo(mapLeft); else mapLeft.removeLayer(activeMrms);
+  writeUrl();
+};
+document.getElementById("lyDiff").onchange = e => {
+  if (compareMode || !activeDiff) return;
+  if (e.target.checked) activeDiff.addTo(mapLeft); else mapLeft.removeLayer(activeDiff);
+  writeUrl();
+};
+
+fetch(assets + (manifest.infra?.roads_geojson || "roads.geojson")).then(r=>r.json()).then(geo => {
+  roadsLayer = L.geoJSON(geo, { style: { color:"#64748b", weight:1, opacity:.5 } });
+  bind("lyRoads", roadsLayer);
+  if (document.getElementById("lyRoads").checked) roadsLayer.addTo(mapLeft);
+});
+fetch(assets + (manifest.disruption?.disrupted_geojson || "roads_potential_disruption.geojson")).then(r=>r.json()).then(geo => {
+  disruptLayer = L.geoJSON(geo, { style: { color:"#b91c1c", weight:3, opacity:.9 } });
+  if (document.getElementById("lyHot").checked) disruptLayer.addTo(mapLeft);
+});
+fetch(assets + (manifest.infra?.stations_geojson || "subway_stations.geojson")).then(r=>r.json()).then(geo => {
+  stationsLayer = L.geoJSON(geo, { pointToLayer: (f,ll) => L.circleMarker(ll, { radius:4, color:"#0f766e", fillColor:"#14b8a6", fillOpacity:.9, weight:1 }) });
+  bind("lySta", stationsLayer);
+  if (document.getElementById("lySta").checked) stationsLayer.addTo(mapLeft);
+});
+fetch(assets + (manifest.reports?.geojson || "observed_311.geojson")).then(r=>r.json()).then(geo => {
+  L.geoJSON(geo, {
+    pointToLayer: (f,ll) => L.circleMarker(ll, { radius:4, color:"#9f1239", fillColor:"#e11d48", fillOpacity:.85, weight:1 }),
+    onEachFeature: (f,l) => l.bindTooltip((f.properties.descriptor||"311") + " · " + (f.properties.created_date||""))
+  }).eachLayer(l => reports.addLayer(l));
+  bind("ly311", reports);
+  if (document.getElementById("ly311").checked) reports.addTo(mapLeft);
+});
+
+readUrl();
+fitExtent();
+setLead(+document.getElementById("leadSlider").value);
+</script>
+</body>
+</html>
