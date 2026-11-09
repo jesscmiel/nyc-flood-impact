@@ -22,7 +22,7 @@ Worker tip: point Cursor `--worker-dir` at `/home/jesscmiel/projects/nyc-flood-i
 | Track | Status | What’s in the repo |
 | --- | --- | --- |
 | **1 Precip credibility** | Partial | Coarse-grid UI notice; bilinear vs nearest display; 2-member ensemble spread layer wired. StormCast/CorrDiff documented as next hooks — **no fake downscaling** / no StormCast run this pass. |
-| **2 Real hydrology** | Partial | Pluvial screening = terrain + imperviousness (`pluvial.py`). Hotspot/roads still screening labels. SWMM scaffold exists (`swmm.py`) but **no calibrated NYC INP** — depths not invented. |
+| **2 Real hydrology** | Partial | Pluvial screening uses USGS ~10&nbsp;m terrain + OSM road **built-surface proxy** (demo NLCD constant raster rejected). Still screening, not depth. SWMM scaffold (`swmm.py`) blocked on calibrated NYC INP. See Project store `docs/hydrology-resolution-options.md`. |
 | **3 Product UI** | Done (MVP) | Event picker (Ida + placeholder), South Queens / citywide extent, clock valid times, `#` URL state, mobile stack layout, sticky disclaimers → `figures/product_map.html`. |
 | **4 Ops path** | Done (MVP) | `scripts/run_live_pipeline.py` + `make live-ida` / `make live`. Freshness notes; exposure scores only — never flood warnings. Auth/hosting deferred. |
 | **5 Validation** | Done (MVP) | `scripts/run_validation_report.py` → `outputs/validation_product.json` + map panel (Earth2 vs MRMS vs 311). |
@@ -48,10 +48,16 @@ python scripts/run_earth2_forecast.py --init-time 2021-09-01T12:00:00 --steps 4 
   --output data/forecasts/earth2_precip_ida_ens.nc
 ```
 
-### Downscaling hooks (not run in this pass)
+### Downscaling hooks (not run by default)
 
-- `earth2studio.models.px.StormCast` / `StormCastConus` — higher-res nowcasting path when weights/runtime allow.
+```bash
+# Probe imports in the Earth2Studio venv (weights still required to actually run):
+/home/jesscmiel/projects/earth2studio/.venv/bin/python scripts/document_higher_res_precip.py
+```
+
+- `earth2studio.models.px.StormCast` / `StormCastCONUS` — higher-res regional path when weights + conditioning (often HRRR) allow.
 - `earth2studio.models.dx.CorrDiff*` — diagnostic downscaling after a global prognostic.
+- Observed higher-res precip already in-repo: **MRMS QPE ~1 km**.
 - Policy: prefer real model outputs over interpolating fake resolution.
 
 ## Makefile

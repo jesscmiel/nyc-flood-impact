@@ -1,14 +1,26 @@
 {
   "label": "Pluvial screening index",
-  "disclaimer": "Relative screening from terrain low/flatness and imperviousness only. Not inundation depth, not a flood warning, not a calibrated hydrology model.",
-  "formula": "0.55 * terrain_screening + 0.45 * imperviousness",
+  "disclaimer": "Relative screening from terrain low/flatness and built/impervious surface only. Not inundation depth, not a flood warning, not a calibrated hydrology or SWMM model.",
+  "formula": "0.60 * terrain_screening + 0.40 * built_surface_proxy_roads",
   "png": "pluvial_screening.png",
+  "built_surface_png": "built_surface_proxy.png",
   "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/pluvial/pluvial_screening_south_queens.tif",
   "extent_id": "south_queens",
   "sources": [
     "/home/jesscmiel/projects/nyc-flood-impact/data/processed/terrain_screening_10m.tif",
-    "/home/jesscmiel/projects/nyc-flood-impact/data/raw/landcover/impervious_surface.tif"
+    "/home/jesscmiel/projects/nyc-flood-impact/data/raw/infrastructure/osm_highways_south_queens.json"
   ],
+  "impervious_kind": "built_surface_proxy_roads",
+  "demo_impervious_rejected": true,
+  "warnings": [
+    "Detected demo/near-constant impervious raster (impervious_surface.tif); preferring OSM road built-surface proxy.",
+    "Road-centerline density proxy for built/impervious surface. Not NLCD percent impervious; not building footprints."
+  ],
+  "grid": {
+    "height": 648,
+    "width": 1440,
+    "approx_cell_deg": 0.00027777777777778173
+  },
   "bounds": [
     [
       40.55,
@@ -19,6 +31,6 @@
       -73.72
     ]
   ],
-  "mean": 0.6118099689483643,
-  "p90": 0.7974978089332581
+  "mean": 0.42898857593536377,
+  "p90": 0.7272460460662842
 }

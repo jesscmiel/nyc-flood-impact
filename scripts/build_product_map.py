@@ -126,6 +126,7 @@ button.active {{ border-color:var(--accent); background:#e7f4f8; color:var(--acc
     <label class="row"><span><span class="swatch" style="background:#3b82f6"></span>Earth2 6h precip</span><input id="lyE2" type="checkbox" checked></label>
     <label class="row"><span><span class="swatch" style="background:#0f766e"></span>MRMS QPE 6h</span><input id="lyMrms" type="checkbox"></label>
     <label class="row"><span><span class="swatch" style="background:#c2410c"></span>Pluvial screening</span><input id="lyPluvial" type="checkbox" checked></label>
+    <label class="row"><span><span class="swatch" style="background:#475569"></span>Built-surface proxy (roads)</span><input id="lyBuilt" type="checkbox"></label>
     <label class="row"><span><span class="swatch" style="background:#7c3aed"></span>Earth2 storm total</span><input id="lyE2Tot" type="checkbox"></label>
     <label class="row"><span><span class="swatch" style="background:#b45309"></span>Diff E2−MRMS</span><input id="lyDiff" type="checkbox"></label>
     <label class="row"><span><span class="swatch" style="background:#dc2626"></span>Hotspot / roads</span><input id="lyHot" type="checkbox" checked></label>
@@ -145,8 +146,9 @@ button.active {{ border-color:var(--accent); background:#e7f4f8; color:var(--acc
       <summary><b>What this is / isn’t</b></summary>
       <p style="font-size:.78rem;color:var(--muted);line-height:1.4">
         <b>Earth2 precip</b> = FCN + PrecipitationAFNO 6h accumulations.<br>
-        <b>Pluvial screening</b> = terrain + impervious index — not depth.<br>
-        <b>MRMS QPE</b> = observed rainfall estimate (not BREF).<br>
+        <b>Pluvial screening</b> = USGS ~10&nbsp;m terrain + built-surface proxy — not depth.<br>
+        <b>Built-surface proxy</b> = OSM road corridors (demo NLCD rejected).<br>
+        <b>MRMS QPE</b> = observed rainfall estimate (~1&nbsp;km; not BREF).<br>
         <b>311</b> = complaints, not surveyed floods.<br>
         No SWMM depths without a calibrated NYC sewer INP (scaffold only).
       </p>
@@ -219,6 +221,7 @@ let activeMrms = mrmsLayers[Math.min(1, Math.max(mrmsLayers.length-1,0))] || nul
 let activeDiff = null;
 const e2Total = manifest.precip?.storm_total_png ? L.imageOverlay(assets + manifest.precip.storm_total_png, currentBounds(), {{ opacity: 0.65 }}) : null;
 const pluvialLayer = pluvial?.png ? L.imageOverlay(assets + pluvial.png, currentBounds(), {{ opacity: 0.55 }}) : null;
+const builtLayer = pluvial?.built_surface_png ? L.imageOverlay(assets + pluvial.built_surface_png, currentBounds(), {{ opacity: 0.5 }}) : null;
 const hotspot = manifest.disruption?.hotspot_png ? L.imageOverlay(assets + manifest.disruption.hotspot_png, currentBounds(), {{ opacity: 0.5 }}) : null;
 const ensLayer = (ens && ens.available && ens.png) ? L.imageOverlay(assets + ens.png, currentBounds(), {{ opacity: 0.55 }}) : null;
 let roadsLayer=null, disruptLayer=null, stationsLayer=null;
@@ -230,7 +233,7 @@ if (activeE2) activeE2.addTo(mapLeft);
 function fitExtent() {{
   const b = currentBounds();
   mapLeft.fitBounds(b);
-  [...e2Layers, ...mrmsLayers, ...diffLayers, e2Total, pluvialLayer, hotspot, ensLayer].forEach(layer => {{
+  [...e2Layers, ...mrmsLayers, ...diffLayers, e2Total, pluvialLayer, builtLayer, hotspot, ensLayer].forEach(layer => {{
     if (layer) layer.setBounds(b);
   }});
   if (mapRight) mapRight.fitBounds(b);
@@ -291,7 +294,7 @@ function writeUrl() {{
     lead: document.getElementById("leadSlider").value,
     mode: compareMode ? "compare" : "single",
     resample: document.getElementById("resampleSelect").value,
-    layers: ["lyE2","lyMrms","lyPluvial","lyE2Tot","lyDiff","lyHot","lyRoads","lySta","ly311","lyEns"].filter(id => document.getElementById(id).checked).join(",")
+    layers: ["lyE2","lyMrms","lyPluvial","lyBuilt","lyE2Tot","lyDiff","lyHot","lyRoads","lySta","ly311","lyEns"].filter(id => document.getElementById(id).checked).join(",")
   }});
   history.replaceState(null, "", "#" + params.toString());
 }}
@@ -305,7 +308,7 @@ function readUrl() {{
   if (p.get("lead") != null) document.getElementById("leadSlider").value = p.get("lead");
   if (p.get("resample")) document.getElementById("resampleSelect").value = p.get("resample");
   const layers = (p.get("layers") || "").split(",");
-  if (layers[0]) ["lyE2","lyMrms","lyPluvial","lyE2Tot","lyDiff","lyHot","lyRoads","lySta","ly311","lyEns"].forEach(id => {{
+  if (layers[0]) ["lyE2","lyMrms","lyPluvial","lyBuilt","lyE2Tot","lyDiff","lyHot","lyRoads","lySta","ly311","lyEns"].forEach(id => {{
     const el = document.getElementById(id); if (el) el.checked = layers.includes(id);
   }});
   if (p.get("mode") === "compare") setCompare(true);
@@ -360,6 +363,7 @@ function bind(id, layer) {{
   }});
 }}
 bind("lyPluvial", pluvialLayer);
+bind("lyBuilt", builtLayer);
 bind("lyE2Tot", e2Total);
 bind("lyHot", hotspot);
 bind("lyEns", ensLayer);

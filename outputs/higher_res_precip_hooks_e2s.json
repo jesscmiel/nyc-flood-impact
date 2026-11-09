@@ -1,0 +1,18 @@
+{
+  "policy": "No fake downscaling. Prefer MRMS (~1 km) as observed reference; StormCast/CorrDiff only when weights run successfully.",
+  "native_earth2_fcn": "~0.25\u00b0 (PrecipitationAFNO on FCN states)",
+  "mrms_qpe_local": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe",
+  "hooks": {
+    "stormcast": "earth2studio.models.px.StormCast / StormCastCONUS",
+    "corrdiff": "earth2studio.models.dx.CorrDiff / CorrDiffEra5Hrrr / \u2026",
+    "run_with": "Use the Earth2Studio venv (e.g. /home/jesscmiel/projects/earth2studio/.venv/bin/python), not system Python."
+  },
+  "python_hint": "/home/jesscmiel/projects/earth2studio/.venv/bin/python",
+  "imports": {
+    "earth2studio": true,
+    "StormCast": true,
+    "StormCastCONUS": true,
+    "CorrDiff": true,
+    "CorrDiffEra5Hrrr": true
+  }
+}
