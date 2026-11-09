@@ -61,12 +61,13 @@ def _citywide_land_geometry():
         boroughs = gpd.read_file(borough_path).to_crs("EPSG:4326")
         nyc = unary_union(boroughs.geometry)
         # Replace coarse NE coastline inside NYC with borough shorelines.
-        land = ne_u.difference(nyc.buffer(0.003)).union(nyc)
+        # Slightly erode land (~40 m) so overlays don't bleed past OSM water edges.
+        land = ne_u.difference(nyc.buffer(0.003)).union(nyc).buffer(-0.00035)
         if ocean_zip.exists() and zipfile.is_zipfile(ocean_zip):
             ocean = gpd.read_file(f"zip://{ocean_zip}").to_crs("EPSG:4326").clip(clip)
             if len(ocean):
                 land = land.difference(unary_union(ocean.geometry))
-        source = "NYC boroughs + Natural Earth 10m land/ocean"
+        source = "NYC boroughs + Natural Earth 10m land/ocean (eroded ~40m)"
     else:
         land = ne_u
         source = "Natural Earth 10m land/ocean"
@@ -168,25 +169,22 @@ def main() -> None:
     for path in (PROCESSED_DIR / "earth2_precip").glob("*.tif"):
         mask_geotiff(path, mask, transform)
         print(f"  masked {path.name}")
-    for path in (PROCESSED_DIR / "mrms_qpe").glob("*citywide*.tif"):
-        mask_geotiff(path, mask, transform)
-        print(f"  masked {path.name}")
-    for path in (PROCESSED_DIR / "mrms_qpe").glob("mrms_qpe_storm_total.tif"):
-        mask_geotiff(path, mask, transform)
     pluvial_tif = PROCESSED_DIR / "pluvial" / "pluvial_screening_citywide.tif"
     if pluvial_tif.exists():
         mask_geotiff(pluvial_tif, mask, transform)
+    for path in (PROCESSED_DIR / "susceptibility").glob("*.tif"):
+        mask_geotiff(path, mask, transform)
+        print(f"  masked {path.name}")
 
-    # Mask display PNGs
+    # Mask display PNGs (Earth2 precip + time-varying susceptibility)
+    susc_bounds = (manifest.get("susceptibility") or {}).get("bounds") or precip_bounds
     pngs = []
     for fr in manifest.get("precip", {}).get("frames", []):
         pngs.append((ASSETS / fr["png"], precip_bounds))
     if manifest.get("precip", {}).get("storm_total_png"):
         pngs.append((ASSETS / manifest["precip"]["storm_total_png"], precip_bounds))
-    for fr in (manifest.get("mrms_qpe") or {}).get("frames", []):
-        pngs.append((ASSETS / fr["png"], mrms_bounds))
-    if (manifest.get("mrms_qpe") or {}).get("storm_total_png"):
-        pngs.append((ASSETS / manifest["mrms_qpe"]["storm_total_png"], mrms_bounds))
+    for fr in (manifest.get("susceptibility") or {}).get("frames", []):
+        pngs.append((ASSETS / fr["png"], susc_bounds))
     pngs.append((ASSETS / "pluvial_screening.png", pluvial_bounds))
     if (ASSETS / "built_surface_proxy.png").exists():
         pngs.append((ASSETS / "built_surface_proxy.png", pluvial_bounds))
@@ -198,10 +196,11 @@ def main() -> None:
 
     meta = {
         "land_mask": str(mask_path),
-        "source": "NYC boroughs + Natural Earth 10m land/ocean",
+        "source": "NYC boroughs + Natural Earth 10m land/ocean (eroded ~40m)",
         "extent_id": EXTENT_ID,
         "land_fraction": float(mask.mean()),
         "note": "Product rasters/PNGs alpha-masked over water so overlays follow OSM/borough coastlines.",
+        "product_policy": "earth2_only",
     }
     (ASSETS / "land_mask_meta.json").write_text(json.dumps(meta, indent=2))
     print(json.dumps(meta, indent=2))

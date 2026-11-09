@@ -36,6 +36,7 @@ def _find_impervious() -> Path | None:
 
 def _find_terrain_screening() -> Path | None:
     candidates = [
+        PROCESSED_DIR / "terrain_screening_citywide.tif",
         EVENT_OUTPUTS["terrain_screening_highres"],
         PROCESSED_DIR / "terrain_screening_10m.tif",
         PROJECT_ROOT / "legacy_projects_data" / "processed" / "flash_flood_susceptibility.tif",
@@ -43,11 +44,16 @@ def _find_terrain_screening() -> Path | None:
     for path in candidates:
         if path.exists():
             return path
+    # Build from citywide DEM when available.
+    dem = _find_dem()
+    if dem is not None and "citywide" in dem.name:
+        return build_terrain_screening_from_dem(dem)
     return None
 
 
 def _find_dem() -> Path | None:
     candidates = [
+        RAW_DIR / "terrain" / "dem_usgs_citywide.tif",
         RAW_DIR / "terrain" / "dem_usgs_1_3_arcsec.tif",
         EVENT_OUTPUTS.get("dem_highres", RAW_DIR / "terrain" / "dem_usgs_1_3_arcsec.tif"),
         RAW_DIR / "terrain" / "dem.tif",
@@ -56,6 +62,40 @@ def _find_dem() -> Path | None:
         if path and Path(path).exists():
             return Path(path)
     return None
+
+
+def build_terrain_screening_from_dem(dem_path: Path, out_path: Path | None = None) -> Path:
+    """Relative low/flat screening from a DEM (not flood depth)."""
+    out_path = out_path or (PROCESSED_DIR / "terrain_screening_citywide.tif")
+    with rasterio.open(dem_path) as src:
+        dem = src.read(1).astype(np.float32)
+        nodata = src.nodata
+        profile = src.profile.copy()
+        transform = src.transform
+    if nodata is not None:
+        dem = np.where(dem == nodata, np.nan, dem)
+    dem = np.where((dem < -200) | (dem > 3000), np.nan, dem)
+    valid = np.isfinite(dem)
+    screening = np.full(dem.shape, np.nan, dtype=np.float32)
+    if valid.any():
+        elev = dem[valid]
+        low, high = np.percentile(elev, [5, 95])
+        norm = np.clip((dem - low) / max(high - low, 1e-6), 0, 1)
+        # Low elevation → higher screening
+        low_component = 1.0 - norm
+        gy, gx = np.gradient(np.nan_to_num(dem, nan=float(np.nanmedian(elev))))
+        slope = np.hypot(gx, gy)
+        s_valid = slope[valid]
+        s_hi = float(np.percentile(s_valid, 90)) if s_valid.size else 1.0
+        flat = 1.0 - np.clip(slope / max(s_hi, 1e-6), 0, 1)
+        screening = np.clip(0.65 * low_component + 0.35 * flat, 0, 1).astype(np.float32)
+        screening = np.where(valid, screening, np.nan)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    profile.update(dtype="float32", count=1, nodata=-9999.0, compress="deflate")
+    with rasterio.open(out_path, "w", **profile) as dst:
+        dst.write(np.where(np.isfinite(screening), screening, -9999.0), 1)
+        dst.update_tags(interpretation="Relative terrain screening — not inundation depth.")
+    return out_path
 
 
 def _is_demo_impervious(path: Path) -> bool:
@@ -342,4 +382,4 @@ def build_pluvial_screening(
     return meta
 
 
-__all__ = ["build_pluvial_screening", "build_built_surface_fraction"]
+__all__ = ["build_pluvial_screening", "build_built_surface_fraction", "build_terrain_screening_from_dem"]

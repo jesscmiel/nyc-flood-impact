@@ -1,18 +1,22 @@
 {
-  "event": "Hurricane Ida remnants over NYC",
-  "study_area": "NYC citywide (approx.)",
+  "product_policy": "earth2_only",
+  "note": "Earth2 precip only \u2014 no MRMS/NEXRAD/other precip sources in the product UI.",
+  "honesty": "AI 6h accumulations on ~0.25\u00b0 grid. Temporal blend frames are mid-interval linear mixes for smoother loop \u2014 not extra model output, not radar reflectivity.",
   "precip": {
-    "init_time": "2021-09-01T12:00:00.000000000",
+    "init_time": "2021-09-01T12:00",
     "forecast_model": "FourCastNet + PrecipitationAFNO",
     "frames": [
       {
         "index": 0,
-        "lead_hours": 6,
+        "lead_hours": 6.0,
         "valid_time": "2021-09-01T18:00",
         "png": "precip_lead_06h.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/precip_lead_06h.tif",
         "mean_mm": 5.388677597045898,
         "max_mm": 8.593907356262207,
+        "native": true,
+        "temporal_blend": false,
+        "blend_of": null,
         "native_shape": [
           3,
           3
@@ -20,12 +24,18 @@
       },
       {
         "index": 1,
-        "lead_hours": 12,
-        "valid_time": "2021-09-02T00:00",
-        "png": "precip_lead_12h.png",
-        "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/precip_lead_12h.tif",
-        "mean_mm": 24.12721824645996,
-        "max_mm": 30.31426429748535,
+        "lead_hours": 9.0,
+        "valid_time": "2021-09-01T21:00",
+        "png": "precip_lead_09h_blend.png",
+        "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/precip_lead_09h_blend.tif",
+        "mean_mm": 14.75794792175293,
+        "max_mm": 19.454086303710938,
+        "native": false,
+        "temporal_blend": true,
+        "blend_of": [
+          6.0,
+          12.0
+        ],
         "native_shape": [
           3,
           3
@@ -33,12 +43,15 @@
       },
       {
         "index": 2,
-        "lead_hours": 18,
-        "valid_time": "2021-09-02T06:00",
-        "png": "precip_lead_18h.png",
-        "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/precip_lead_18h.tif",
-        "mean_mm": 7.472281455993652,
-        "max_mm": 10.237536430358887,
+        "lead_hours": 12.0,
+        "valid_time": "2021-09-02T00:00",
+        "png": "precip_lead_12h.png",
+        "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/precip_lead_12h.tif",
+        "mean_mm": 24.12721824645996,
+        "max_mm": 30.31426429748535,
+        "native": true,
+        "temporal_blend": false,
+        "blend_of": null,
         "native_shape": [
           3,
           3
@@ -46,12 +59,69 @@
       },
       {
         "index": 3,
-        "lead_hours": 24,
+        "lead_hours": 15.0,
+        "valid_time": "2021-09-02T03:00",
+        "png": "precip_lead_15h_blend.png",
+        "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/precip_lead_15h_blend.tif",
+        "mean_mm": 15.799750328063965,
+        "max_mm": 19.23303985595703,
+        "native": false,
+        "temporal_blend": true,
+        "blend_of": [
+          12.0,
+          18.0
+        ],
+        "native_shape": [
+          3,
+          3
+        ]
+      },
+      {
+        "index": 4,
+        "lead_hours": 18.0,
+        "valid_time": "2021-09-02T06:00",
+        "png": "precip_lead_18h.png",
+        "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/precip_lead_18h.tif",
+        "mean_mm": 7.472281455993652,
+        "max_mm": 10.237536430358887,
+        "native": true,
+        "temporal_blend": false,
+        "blend_of": null,
+        "native_shape": [
+          3,
+          3
+        ]
+      },
+      {
+        "index": 5,
+        "lead_hours": 21.0,
+        "valid_time": "2021-09-02T09:00",
+        "png": "precip_lead_21h_blend.png",
+        "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/precip_lead_21h_blend.tif",
+        "mean_mm": 3.73626708984375,
+        "max_mm": 5.118768215179443,
+        "native": false,
+        "temporal_blend": true,
+        "blend_of": [
+          18.0,
+          24.0
+        ],
+        "native_shape": [
+          3,
+          3
+        ]
+      },
+      {
+        "index": 6,
+        "lead_hours": 24.0,
         "valid_time": "2021-09-02T12:00",
         "png": "precip_lead_24h.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/precip_lead_24h.tif",
         "mean_mm": 0.000252810976235196,
         "max_mm": 0.0022752988152205944,
+        "native": true,
+        "temporal_blend": false,
+        "blend_of": null,
         "native_shape": [
           3,
           3
@@ -61,8 +131,6 @@
     "storm_total_png": "precip_storm_total.png",
     "storm_total_tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/precip_storm_total.tif",
     "storm_total_max_mm": 44.68461990356445,
-    "storm_total_mean_mm": 36.98843002319336,
-    "interval_hours": 6.0,
     "bounds": [
       [
         40.48,
@@ -73,24 +141,6 @@
         -73.68
       ]
     ],
-    "data_bounds": [
-      [
-        40.48,
-        -74.28
-      ],
-      [
-        40.93,
-        -73.68
-      ]
-    ],
-    "native_cell_bounds": {
-      "xmin": -74.375,
-      "xmax": -73.625,
-      "ymin": 40.375,
-      "ymax": 41.125,
-      "dlat": 0.25,
-      "dlon": 0.25
-    },
     "native_grid": {
       "n_lat": 3,
       "n_lon": 3,
@@ -105,86 +155,120 @@
         -73.75
       ]
     },
-    "display_note": "Earth2 precip shown as nearest-neighbor ~0.25\u00b0 cells over the NYC metro extent. Not street-scale truth; bilinear UI toggle only changes CSS image-rendering.",
-    "resampling": "nearest",
-    "extent_id": "citywide"
+    "colorbar": {
+      "cmap": "turbo",
+      "units": "mm / interval",
+      "label": "Earth2 precip (mm)"
+    },
+    "opacity_default": 0.75
   },
-  "infra": {
-    "stations_geojson": "subway_stations.geojson",
-    "basins_geojson": "catch_basins.geojson",
-    "roads_geojson": "roads.geojson",
-    "n_stations": 309,
-    "n_basins": 0,
-    "n_roads": 2500
-  },
-  "disruption": {
-    "roads_geojson": "roads_with_disruption.geojson",
-    "disrupted_geojson": "roads_potential_disruption.geojson",
-    "hotspot_png": "precip_terrain_hotspot.png",
-    "n_disrupted": 125,
-    "n_roads": 2500,
-    "rule": "Road segment marked if any sample point falls in cells with storm-total precip \u2265 35.5 mm (max of 20.0 mm and domain P75) AND terrain screening \u2265 0.92 (max of 0.55 and domain P75). Heuristic exposure only \u2014 not a traffic or inundation forecast.",
-    "precip_threshold_mm": 35.480674743652344,
-    "terrain_threshold": 0.9234345555305481
-  },
-  "reports": {
-    "n_reports": 599,
-    "geojson": "observed_311.geojson"
-  },
-  "terrain": {
-    "terrain_png": "terrain_screening.png",
-    "terrain_bounds": [
-      [
-        40.55,
-        -74.12
+  "susceptibility": {
+    "static_png": "pluvial_screening.png",
+    "static_meta": {
+      "label": "Pluvial screening index",
+      "disclaimer": "Relative screening from terrain low/flatness and built/impervious surface only. Not inundation depth, not a flood warning, not a calibrated hydrology or SWMM model.",
+      "formula": "0.55 * terrain_screening + 0.45 * imperviousness",
+      "png": "pluvial_screening.png",
+      "built_surface_png": "built_surface_proxy.png",
+      "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/pluvial/pluvial_screening_citywide.tif",
+      "extent_id": "citywide",
+      "sources": [
+        "/home/jesscmiel/projects/nyc-flood-impact/data/processed/terrain_screening_citywide.tif",
+        "/home/jesscmiel/projects/nyc-flood-impact/data/raw/landcover/nlcd_2021_impervious_citywide.tif"
       ],
-      [
-        40.73,
-        -73.72
-      ]
-    ]
-  },
-  "disclaimer": "Exploratory prototype. Not inundation depth, not emergency guidance, not a verified flood forecast. MRMS QPE is the observed precip reference; BREF is not used.",
-  "mrms_qpe": {
-    "product": "MultiSensor_QPE_01H_Pass1_00.00",
-    "product_note": "MRMS QPE reprojected/padded to citywide display grid. Outside original South Queens pull may be empty.",
+      "impervious_kind": "nlcd_or_percent_impervious",
+      "demo_impervious_rejected": false,
+      "warnings": [],
+      "grid": {
+        "height": 180,
+        "width": 240,
+        "approx_cell_deg": 0.002499999999999976
+      },
+      "bounds": [
+        [
+          40.48,
+          -74.28
+        ],
+        [
+          40.93,
+          -73.68
+        ]
+      ],
+      "mean": 0.5890676975250244,
+      "p90": 0.9195972084999084
+    },
     "frames": [
       {
-        "lead_hours": 6,
-        "png": "mrms_qpe_lead_06h.png",
-        "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe/mrms_qpe_lead_06h_citywide.tif",
-        "max_mm": 4.921154022216797,
-        "mean_mm": 2.032963752746582,
-        "valid_time": "2021-09-01T18:00"
+        "index": 0,
+        "lead_hours": 6.0,
+        "valid_time": "2021-09-01T18:00",
+        "png": "susc_lead_06h.png",
+        "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility/susc_lead_06h.tif",
+        "mean": 0.24042586982250214,
+        "p90": 0.35843461751937866,
+        "formula": "base_pluvial * (0.30 + 0.70 * precip_norm)"
       },
       {
-        "lead_hours": 12,
-        "png": "mrms_qpe_lead_12h.png",
-        "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe/mrms_qpe_lead_12h_citywide.tif",
-        "max_mm": 61.23429870605469,
-        "mean_mm": 22.826622009277344,
-        "valid_time": "2021-09-02T00:00"
+        "index": 1,
+        "lead_hours": 9.0,
+        "valid_time": "2021-09-01T21:00",
+        "png": "susc_lead_09h_blend.png",
+        "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility/susc_lead_09h_blend.tif",
+        "mean": 0.3626338839530945,
+        "p90": 0.5471924543380737,
+        "formula": "base_pluvial * (0.30 + 0.70 * precip_norm)"
       },
       {
-        "lead_hours": 18,
-        "png": "mrms_qpe_lead_18h.png",
-        "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe/mrms_qpe_lead_18h_citywide.tif",
-        "max_mm": 141.99810791015625,
-        "mean_mm": 90.51798248291016,
-        "valid_time": "2021-09-02T06:00"
+        "index": 2,
+        "lead_hours": 12.0,
+        "valid_time": "2021-09-02T00:00",
+        "png": "susc_lead_12h.png",
+        "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility/susc_lead_12h.tif",
+        "mean": 0.48484185338020325,
+        "p90": 0.7353920936584473,
+        "formula": "base_pluvial * (0.30 + 0.70 * precip_norm)"
       },
       {
-        "lead_hours": 24,
-        "png": "mrms_qpe_lead_24h.png",
-        "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe/mrms_qpe_lead_24h_citywide.tif",
-        "max_mm": 1.9517256021499634,
-        "mean_mm": 0.10318975150585175,
-        "valid_time": "2021-09-02T12:00"
+        "index": 3,
+        "lead_hours": 15.0,
+        "valid_time": "2021-09-02T03:00",
+        "png": "susc_lead_15h_blend.png",
+        "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility/susc_lead_15h_blend.tif",
+        "mean": 0.38363784551620483,
+        "p90": 0.5969842672348022,
+        "formula": "base_pluvial * (0.30 + 0.70 * precip_norm)"
+      },
+      {
+        "index": 4,
+        "lead_hours": 18.0,
+        "valid_time": "2021-09-02T06:00",
+        "png": "susc_lead_18h.png",
+        "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility/susc_lead_18h.tif",
+        "mean": 0.28243380784988403,
+        "p90": 0.43913984298706055,
+        "formula": "base_pluvial * (0.30 + 0.70 * precip_norm)"
+      },
+      {
+        "index": 5,
+        "lead_hours": 21.0,
+        "valid_time": "2021-09-02T09:00",
+        "png": "susc_lead_21h_blend.png",
+        "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility/susc_lead_21h_blend.tif",
+        "mean": 0.22957946360111237,
+        "p90": 0.3534071445465088,
+        "formula": "base_pluvial * (0.30 + 0.70 * precip_norm)"
+      },
+      {
+        "index": 6,
+        "lead_hours": 24.0,
+        "valid_time": "2021-09-02T12:00",
+        "png": "susc_lead_24h.png",
+        "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility/susc_lead_24h.tif",
+        "mean": 0.1767251342535019,
+        "p90": 0.2718793749809265,
+        "formula": "base_pluvial * (0.30 + 0.70 * precip_norm)"
       }
     ],
-    "storm_total_png": "mrms_qpe_storm_total.png",
-    "storm_total_max_mm": 203.38075256347656,
-    "storm_total_mean_mm": 30.79486656188965,
     "bounds": [
       [
         40.48,
@@ -195,22 +279,64 @@
         -73.68
       ]
     ],
-    "data_bounds": [
-      [
-        40.48,
-        -74.28
-      ],
-      [
-        40.93,
-        -73.68
-      ]
+    "formula": "base_pluvial(terrain+NLCD) * (0.30 + 0.70 * precip_norm)",
+    "disclaimer": "Screening index only \u2014 not inundation depth.",
+    "colorbar": {
+      "cmap": "YlOrRd",
+      "units": "index 0\u20131",
+      "label": "Susceptibility (screening)"
+    },
+    "opacity_default": 0.65
+  },
+  "infra_highlights": {
+    "frames": [
+      {
+        "index": 0,
+        "lead_hours": 6.0,
+        "geojson": "infra_lead_06h.geojson",
+        "n_features": 43
+      },
+      {
+        "index": 1,
+        "lead_hours": 9.0,
+        "geojson": "infra_lead_09h_blend.geojson",
+        "n_features": 1528
+      },
+      {
+        "index": 2,
+        "lead_hours": 12.0,
+        "geojson": "infra_lead_12h.geojson",
+        "n_features": 1881
+      },
+      {
+        "index": 3,
+        "lead_hours": 15.0,
+        "geojson": "infra_lead_15h_blend.geojson",
+        "n_features": 1561
+      },
+      {
+        "index": 4,
+        "lead_hours": 18.0,
+        "geojson": "infra_lead_18h.geojson",
+        "n_features": 399
+      },
+      {
+        "index": 5,
+        "lead_hours": 21.0,
+        "geojson": "infra_lead_21h_blend.geojson",
+        "n_features": 67
+      },
+      {
+        "index": 6,
+        "lead_hours": 24.0,
+        "geojson": "infra_lead_24h.geojson",
+        "n_features": 0
+      }
     ],
-    "shared_display_vmax_mm": 141.99810791015625,
-    "extent_id": "citywide",
-    "diff_frames": [],
-    "init_time": "2021-09-01T12:00:00.000000000"
+    "note": "Roads highlighted where Earth2 precip \u00d7 susceptibility is elevated \u2014 demo sync only."
   },
   "layer_bounds": {
+    "map_extent_default": "citywide",
     "precip": [
       [
         40.48,
@@ -221,7 +347,7 @@
         -73.68
       ]
     ],
-    "mrms": [
+    "susceptibility": [
       [
         40.48,
         -74.28
@@ -230,17 +356,8 @@
         40.93,
         -73.68
       ]
-    ],
-    "pluvial": [
-      [
-        40.48,
-        -74.28
-      ],
-      [
-        40.93,
-        -73.68
-      ]
-    ],
-    "map_extent_default": "citywide"
-  }
+    ]
+  },
+  "mrms_qpe": null,
+  "compare_mode": false
 }

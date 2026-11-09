@@ -3,34 +3,28 @@
   "valid_operational_skill": false,
   "earth2_storm_total": {
     "exists": true,
-    "n": 114257,
-    "mean_mm": 36.875240325927734,
+    "n": 112888,
+    "mean_mm": 36.88090133666992,
     "max_mm": 44.68461990356445,
     "p90_mm": 42.2829704284668
   },
   "mrms_qpe_storm_total": {
-    "exists": true,
-    "n": 114257,
-    "mean_mm": 31.731985092163086,
-    "max_mm": 203.38075256347656,
-    "p90_mm": 139.22618103027344
+    "exists": false,
+    "excluded": true,
+    "reason": "product_policy_earth2_only"
   },
-  "comparison": {
-    "max_mm_earth2_minus_mrms": -158.6961326599121,
-    "mean_mm_earth2_minus_mrms": 5.143255233764648,
-    "earth2_underestimates_domain_max": true
-  },
+  "comparison": {},
   "reports_311": {
     "n_reports": 599,
     "n_with_earth2_sample": 594,
     "median_earth2_mm_at_reports": 35.94919204711914,
     "fraction_reports_above_earth2_p75": 0.18196994991652754,
-    "median_mrms_mm_at_reports": 140.8883056640625,
+    "median_mrms_mm_at_reports": null,
     "earth2_domain_p75_mm": 39.98931884765625
   },
   "limitations": [
     "Earth2 native grid is ~0.25\u00b0; bilinear display resampling is not physical downscaling.",
-    "MRMS QPE and Earth2 grids differ; domain stats are not a formal verification scorecard.",
+    "Product policy is Earth2-only; MRMS is excluded from the product UI/validation panel.",
     "311 flood-related complaints are not surveyed flood extents or depths.",
     "No verified non-flood locations \u2192 no ROC/AUC/calibration claims.",
     "This panel never issues flood warnings or emergency guidance."

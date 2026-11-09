@@ -47,15 +47,36 @@ def build_validation_product(
     earth2_storm_tif: Path,
     mrms_storm_tif: Path | None = None,
     assets_dir: Path | None = None,
+    *,
+    include_mrms: bool = True,
 ) -> dict:
-    """Write JSON (+ optional assets copy) summarizing Earth2 / MRMS / 311 overlap."""
+    """Write JSON (+ optional assets copy) summarizing Earth2 / 311 (and optional MRMS)."""
     OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
     assets_dir = assets_dir or (FIGURES_DIR / "product_assets")
     assets_dir.mkdir(parents=True, exist_ok=True)
 
     e2 = _domain_stats(earth2_storm_tif)
-    mrms_path = mrms_storm_tif or (PROJECT_ROOT / "data" / "processed" / "mrms_qpe" / "mrms_qpe_storm_total.tif")
-    mrms = _domain_stats(mrms_path)
+    mrms_path: Path | None
+    if include_mrms:
+        mrms_path = mrms_storm_tif or (PROJECT_ROOT / "data" / "processed" / "mrms_qpe" / "mrms_qpe_storm_total.tif")
+        mrms = _domain_stats(mrms_path)
+    else:
+        mrms_path = None
+        mrms = {"exists": False, "excluded": True, "reason": "product_policy_earth2_only"}
+
+    limitations = [
+        "Earth2 native grid is ~0.25°; bilinear display resampling is not physical downscaling.",
+        "311 flood-related complaints are not surveyed flood extents or depths.",
+        "No verified non-flood locations → no ROC/AUC/calibration claims.",
+        "This panel never issues flood warnings or emergency guidance.",
+    ]
+    if include_mrms:
+        limitations.insert(
+            1,
+            "MRMS QPE and Earth2 grids differ; domain stats are not a formal verification scorecard.",
+        )
+    else:
+        limitations.insert(1, "Product policy is Earth2-only; MRMS is excluded from the product UI/validation panel.")
 
     report: dict = {
         "status": "exploratory_validation_product",
@@ -64,16 +85,10 @@ def build_validation_product(
         "mrms_qpe_storm_total": mrms,
         "comparison": {},
         "reports_311": {},
-        "limitations": [
-            "Earth2 native grid is ~0.25°; bilinear display resampling is not physical downscaling.",
-            "MRMS QPE and Earth2 grids differ; domain stats are not a formal verification scorecard.",
-            "311 flood-related complaints are not surveyed flood extents or depths.",
-            "No verified non-flood locations → no ROC/AUC/calibration claims.",
-            "This panel never issues flood warnings or emergency guidance.",
-        ],
+        "limitations": limitations,
     }
 
-    if e2.get("exists") and mrms.get("exists") and e2.get("n", 0) and mrms.get("n", 0):
+    if include_mrms and e2.get("exists") and mrms.get("exists") and e2.get("n", 0) and mrms.get("n", 0):
         report["comparison"] = {
             "max_mm_earth2_minus_mrms": float(e2["max_mm"] - mrms["max_mm"]),
             "mean_mm_earth2_minus_mrms": float(e2["mean_mm"] - mrms["mean_mm"]),
@@ -89,7 +104,11 @@ def build_validation_product(
     if reports_csv.exists() and earth2_storm_tif.exists():
         df = pd.read_csv(reports_csv).dropna(subset=["lon", "lat"])
         e2_at = _sample_raster(earth2_storm_tif, df["lon"].to_numpy(), df["lat"].to_numpy())
-        mrms_at = _sample_raster(mrms_path, df["lon"].to_numpy(), df["lat"].to_numpy()) if mrms_path.exists() else np.full(len(df), np.nan)
+        mrms_at = (
+            _sample_raster(mrms_path, df["lon"].to_numpy(), df["lat"].to_numpy())
+            if (include_mrms and mrms_path is not None and mrms_path.exists())
+            else np.full(len(df), np.nan)
+        )
         valid_e2 = np.isfinite(e2_at)
         report["reports_311"] = {
             "n_reports": int(len(df)),

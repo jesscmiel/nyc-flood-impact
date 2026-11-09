@@ -7,16 +7,16 @@
   "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/pluvial/pluvial_screening_citywide.tif",
   "extent_id": "citywide",
   "sources": [
-    "/home/jesscmiel/projects/nyc-flood-impact/data/processed/terrain_screening_10m.tif",
+    "/home/jesscmiel/projects/nyc-flood-impact/data/processed/terrain_screening_citywide.tif",
     "/home/jesscmiel/projects/nyc-flood-impact/data/raw/landcover/nlcd_2021_impervious_citywide.tif"
   ],
   "impervious_kind": "nlcd_or_percent_impervious",
   "demo_impervious_rejected": false,
   "warnings": [],
   "grid": {
-    "height": 1620,
-    "width": 2160,
-    "approx_cell_deg": 0.0002777777777777751
+    "height": 180,
+    "width": 240,
+    "approx_cell_deg": 0.002499999999999976
   },
   "bounds": [
     [
@@ -28,6 +28,6 @@
       -73.68
     ]
   ],
-  "mean": 0.270402729511261,
-  "p90": 0.7663081884384155
+  "mean": 0.5890676975250244,
+  "p90": 0.9195972084999084
 }

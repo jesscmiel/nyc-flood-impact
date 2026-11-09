@@ -1,0 +1,15 @@
+{
+  "attempted": "https://elevation.nationalmap.gov/arcgis/rest/services/3DEPElevation/ImageServer/exportImage",
+  "status": "ok",
+  "path": "/home/jesscmiel/projects/nyc-flood-impact/data/raw/terrain/dem_usgs_citywide.tif",
+  "http_status": 200,
+  "content_type": "image/tiff",
+  "nbytes": 1770518,
+  "finite_fraction": 1.0,
+  "min": -5.5861711502075195,
+  "max": 208.14454650878906,
+  "shape": [
+    540,
+    720
+  ]
+}
