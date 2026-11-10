@@ -1,0 +1,42 @@
+{
+  "product": "flood_risk_research_prototype",
+  "official_nws": false,
+  "decision_grade": false,
+  "enterprise": false,
+  "hens": false,
+  "updated_utc": "2026-11-10T19:29:00Z",
+  "depth_tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_citywide_mrms_qpe_ida_storm_total_m.tif",
+  "scores": {
+    "reports_311": {
+      "name": "311_reports",
+      "n_points": 599,
+      "n_sampled": 599,
+      "n_hits_depth_ge": 593,
+      "depth_threshold_m": 0.03,
+      "hit_rate": 0.989983305509182,
+      "mean_depth_at_points_m": 0.10245042520642081,
+      "max_depth_at_points_m": 0.14311082661151886
+    },
+    "gauges": {
+      "name": "ahps_gauges",
+      "n_points": 21,
+      "n_sampled": 21,
+      "n_hits_depth_ge": 1,
+      "depth_threshold_m": 0.03,
+      "hit_rate": 0.047619047619047616,
+      "mean_depth_at_points_m": 0.001992275140115193,
+      "max_depth_at_points_m": 0.04183777794241905
+    }
+  },
+  "summary": {
+    "hit_rate_311": 0.989983305509182,
+    "hit_rate_gauges": 0.047619047619047616,
+    "n_311": 599,
+    "n_gauges": 21
+  },
+  "confidence": {
+    "level": "low",
+    "note": "Low hit rates vs depth \u2014 expect false alarms / misses; research only."
+  },
+  "honesty": "Exploratory collocation of 311/AHPS points on research depth. Not certified verification skill. NOT NWS validation."
+}

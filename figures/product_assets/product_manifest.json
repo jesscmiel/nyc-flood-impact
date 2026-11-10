@@ -2542,5 +2542,10 @@
       "facilities"
     ],
     "official": false
+  },
+  "validation_dashboard": {
+    "scores": "validation_scores.json",
+    "official": false,
+    "certified_skill": false
   }
 }

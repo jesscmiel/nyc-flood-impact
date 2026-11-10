@@ -307,8 +307,10 @@ details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft);
   </div>
 
   <div class="panel">
-    <h2>Validation</h2>
-    <div class="validation" id="validationPanel">Loading…</div>
+    <h2>Validation dashboard</h2>
+    <div class="honesty" style="margin-top:0">311 / gauge collocation on research depth — <b>not certified skill</b>.</div>
+    <div class="validation" id="validationPanel" style="margin-top:8px">Loading…</div>
+    <div id="validationConfidence" class="honesty" style="margin-top:8px">Confidence: …</div>
   </div>
 
   <div class="panel">
@@ -693,15 +695,34 @@ function readUrl() {{
   return {{ product: p.get("product"), playing: p.get("playing") === "1", hasLayers: Boolean(layers[0]) }};
 }}
 
+function renderValidationDashboard(scores, legacy) {{
+  const panel = document.getElementById("validationPanel");
+  const confEl = document.getElementById("validationConfidence");
+  if (!panel) return;
+  const s = scores && scores.summary ? scores.summary : null;
+  const conf = scores && scores.confidence ? scores.confidence : null;
+  const e2 = (legacy && legacy.earth2_storm_total) || {{}};
+  const pct = (x) => x == null ? "n/a" : (100 * x).toFixed(1) + "%";
+  panel.innerHTML = `
+    <div class="metric"><span>311 hit rate @ ≥3 cm</span><b>${{s ? pct(s.hit_rate_311) : "n/a"}}</b></div>
+    <div class="metric"><span>311 samples</span><b>${{s && s.n_311 != null ? s.n_311 : "n/a"}}</b></div>
+    <div class="metric"><span>Gauge hit rate @ ≥3 cm</span><b>${{s ? pct(s.hit_rate_gauges) : "n/a"}}</b></div>
+    <div class="metric"><span>Gauge samples</span><b>${{s && s.n_gauges != null ? s.n_gauges : "n/a"}}</b></div>
+    <div class="metric"><span>Legacy E2 storm max</span><b>${{e2.max_mm != null ? e2.max_mm.toFixed(1)+" mm" : "n/a"}}</b></div>
+    <div style="margin-top:6px;color:var(--muted);font-size:.72rem;line-height:1.35">${{(scores && scores.honesty) || "Exploratory validation — not certified skill."}}</div>`;
+  if (confEl) {{
+    const level = conf ? conf.level : "unknown";
+    const note = conf ? conf.note : "";
+    confEl.innerHTML = `<b>Confidence: ${{level}}</b> — ${{note}}`;
+  }}
+}}
 (function() {{
-  const v = validation || {{}};
-  const e2 = v.earth2_storm_total || {{}};
-  const r = v.reports_311 || {{}};
-  document.getElementById("validationPanel").innerHTML = `
-    <div class="metric"><span>Earth2 storm max</span><b>${{e2.max_mm != null ? e2.max_mm.toFixed(1)+" mm" : "n/a"}}</b></div>
-    <div class="metric"><span>311 reports</span><b>${{r.n_reports ?? "n/a"}}</b></div>
-    <div class="metric"><span>311 above E2 P75</span><b>${{r.fraction_reports_above_earth2_p75 != null ? (100*r.fraction_reports_above_earth2_p75).toFixed(0)+"%" : "n/a"}}</b></div>
-    <div style="margin-top:6px;color:var(--muted)">Earth2-primary exploratory validation — not certified skill.</div>`;
+  const legacy = validation || {{}};
+  const name = (manifest.validation_dashboard && manifest.validation_dashboard.scores) || "validation_scores.json";
+  fetch(assets + name, {{ cache: "no-cache" }})
+    .then(r => r.ok ? r.json() : null)
+    .then(scores => renderValidationDashboard(scores, legacy))
+    .catch(() => renderValidationDashboard(null, legacy));
 }})();
 
 document.getElementById("leadSlider").addEventListener("input", e => {{ setPlaying(false); setLead(+e.target.value); }});
