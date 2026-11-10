@@ -158,14 +158,14 @@ details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft);
 <body>
 <aside>
   <div class="brand">
-    <div class="brand-kicker">NYC · Earth2 primary</div>
+    <div class="brand-kicker">NYC · research flood-warning prototype</div>
     <div class="brand-mark">Flood Impact</div>
-    <div class="brand-tag">Radar-style storm replay with multi-factor flood susceptibility screening.</div>
+    <div class="brand-tag">High-res Ida storm viz + estimated depth alerts. Not an official NWS product.</div>
   </div>
   <div class="disclaimer-bar">
-    <b>NOT an official NWS flood warning. NOT emergency guidance.</b>
-    Primary path is <b>Earth2</b>. Depth layers are <b>estimated research inundation</b> (pysheds HAND/bathtub) — not agency-calibrated.
-    Alt tracks (Earth2 ensemble / labeled MRMS QPE) are scenarios. AI precip ≠ NEXRAD reflectivity.
+    <b>Research flood-warning prototype — NOT an official NWS product. NOT emergency guidance.</b>
+    Ida storm viz defaults to higher-res <b>MRMS QPE (~1&nbsp;km)</b>. Earth2 remains a labeled scenario track.
+    Depth/alerts are estimated research thresholds (pysheds HAND/bathtub) — not agency-calibrated.
   </div>
 
   <div class="panel">
@@ -272,6 +272,12 @@ details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft);
   </div>
 
   <div class="panel">
+    <h2>Research alerts (prototype)</h2>
+    <div class="honesty" style="margin-top:0">Threshold chips from estimated depth — <b>NOT official NWS watches/warnings</b>.</div>
+    <div class="validation" id="alertPanel" style="margin-top:8px">Loading…</div>
+  </div>
+
+  <div class="panel">
     <h2>Validation</h2>
     <div class="validation" id="validationPanel">Loading…</div>
   </div>
@@ -327,9 +333,14 @@ mapLeft.getPane("rasterPane").style.zIndex = 350;
 mapLeft.createPane("depthPane");
 mapLeft.getPane("depthPane").style.zIndex = 400;
 mapLeft.createPane("vectorPane");
-mapLeft.getPane("vectorPane").style.zIndex = 450;
+mapLeft.getPane("vectorPane").style.zIndex = 650; // above markerPane (600) so roads stay visible
+mapLeft.getPane("vectorPane").style.pointerEvents = "none";
 mapLeft.createPane("pointPane");
-mapLeft.getPane("pointPane").style.zIndex = 550;
+mapLeft.getPane("pointPane").style.zIndex = 660;
+mapLeft.getPane("pointPane").style.pointerEvents = "auto";
+// Custom panes need dedicated SVG renderers or GeoJSON paths never paint.
+const vectorRenderer = L.svg({{ pane: "vectorPane" }});
+const pointRenderer = L.svg({{ pane: "pointPane" }});
 L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{{z}}/{{y}}/{{x}}", {{
   maxZoom: 19,
   attribution: "Tiles &copy; Esri &mdash; Source: Esri, OpenStreetMap"
@@ -458,8 +469,8 @@ function setLead(i) {{
     fetch(assets + infraMeta.geojson).then(r => r.ok ? r.json() : null).then(geo => {{
       if (!geo || +document.getElementById("leadSlider").value !== i) return;
       activeInfra = L.geoJSON(geo, {{
-        pane: "vectorPane",
-        style: {{ color:"#b91c1c", weight:3, opacity:0.95 }},
+        pane: "vectorPane", renderer: vectorRenderer,
+        style: {{ color:"#b91c1c", weight:3.5, opacity:0.95 }},
         onEachFeature: (ft, layer) => layer.bindTooltip("Storm-synced · multi-factor susceptibility (demo)")
       }}).addTo(mapLeft);
       raiseVectors();
@@ -514,9 +525,12 @@ function setPlaying(on) {{
   playTimer = setInterval(() => setLead((+document.getElementById("leadSlider").value + 1) % frames.length), ms);
 }}
 
-const LAYER_IDS = ["lyE2","lyE2Tot","lyDepth","lyDepthTot","lySusc","lyBuilt","lyInfra","lyHot","ly311","lySta","lyRoads","lyFema","lyNwm","lyGauges","lyDrainE","lyDrainN"];
-function setLayerChecks(onIds) {{
-  LAYER_IDS.forEach(id => {{
+const PRODUCT_LAYER_IDS = ["lyE2","lyE2Tot","lyDepth","lyDepthTot","lySusc","lyBuilt","lyInfra"];
+const CONTEXT_LAYER_IDS = ["lyHot","ly311","lySta","lyRoads","lyFema","lyNwm","lyGauges","lyDrainE","lyDrainN"];
+const LAYER_IDS = PRODUCT_LAYER_IDS.concat(CONTEXT_LAYER_IDS);
+function setLayerChecks(onIds, {{ onlyProduct=true }} = {{}}) {{
+  const ids = onlyProduct ? PRODUCT_LAYER_IDS : LAYER_IDS;
+  ids.forEach(id => {{
     const el = document.getElementById(id);
     if (!el || el.disabled) return;
     const want = onIds.includes(id);
@@ -536,23 +550,25 @@ function applyProductMode(mode) {{
   const bar = document.getElementById("hudLegendBar");
   const legend = document.getElementById("hudLegendLabel");
   bar.classList.remove("susc", "depth");
+  // Only toggle product rasters/infra-sync — never wipe Roads/311/FEMA/context checkboxes.
   if (mode === "susceptibility") {{
     bar.classList.add("susc"); legend.textContent = "Susceptibility (screening)";
-    document.getElementById("modeHint").textContent = "Susceptibility: weather × landscape × infrastructure — screening, not calibrated depth.";
+    document.getElementById("modeHint").textContent = "Susceptibility screening. Context layers (roads/311/FEMA…) stay independently toggleable.";
     setLayerChecks(["lySusc"]); setPlaying(false);
   }} else if (mode === "coupled") {{
     legend.textContent = "Precip (mm)";
-    document.getElementById("modeHint").textContent = "Coupled: precip → multi-factor susceptibility → storm-synced infra.";
+    document.getElementById("modeHint").textContent = "Coupled: precip → susceptibility → storm-synced roads. Context toggles remain available.";
     setLayerChecks(["lyE2","lySusc","lyInfra","lySta"]);
   }} else if (mode === "depth") {{
-    bar.classList.add("depth"); legend.textContent = "Est. depth (m) — NOT flood warning";
-    document.getElementById("modeHint").textContent = "Estimated research inundation (pysheds HAND/bathtub). Depth forcing follows selected storm path (Earth2 or MRMS QPE Ida alt). NOT official NWS flood warning.";
+    bar.classList.add("depth"); legend.textContent = "Est. depth (m) — research prototype";
+    document.getElementById("modeHint").textContent = "Research flood-warning prototype depth (pysheds). NOT official NWS. Context layers stay toggleable.";
     setLayerChecks(["lyDepth","lyDepthTot"]); setPlaying(false);
   }} else {{
-    legend.textContent = "Precip (mm)";
-    document.getElementById("modeHint").textContent = "Storm mode: animate active path precip. Susceptibility/depth off by default.";
+    legend.textContent = (activePath && activePath.precip && activePath.precip.colorbar && activePath.precip.colorbar.label) || "Precip (mm)";
+    document.getElementById("modeHint").textContent = "Storm mode: denser high-res Ida loop when MRMS path selected. Infra/context toggles do not reset.";
     setLayerChecks(["lyE2"]);
   }}
+  updateAlerts();
   setLead(+document.getElementById("leadSlider").value);
 }}
 
@@ -607,7 +623,10 @@ document.getElementById("eventSelect").onchange = () => {{ if (!EVENTS[eventSel.
 document.getElementById("stormPathSelect").onchange = () => {{
   activePath = stormPaths.find(p => p.id === pathSel.value) || stormPaths[0];
   rebuildPathLayers();
-  applyProductMode(productMode);
+  // Keep current product mode + context toggles; only refresh frames/depth set.
+  setLead(+document.getElementById("leadSlider").value);
+  updateAlerts();
+  writeUrl();
 }};
 document.getElementById("opPrecip").oninput = () => {{
   document.getElementById("opPrecipVal").textContent = document.getElementById("opPrecip").value + "%";
@@ -693,54 +712,91 @@ bindHotOnce();
 
 fetch(assets + "fema_nfhl.geojson").then(r => r.ok ? r.json() : null).then(geo => {{
   if (!geo) return;
-  femaLayer = registerVector(L.geoJSON(geo, {{ pane:"vectorPane", style: f => {{ const sfha=(f.properties&&f.properties.SFHA_TF)==="T"; return {{ color: sfha?"#1d4ed8":"#93c5fd", weight:1.5, fillColor: sfha?"#3b82f6":"#bfdbfe", fillOpacity: sfha?0.28:0.12 }}; }} }}));
+  femaLayer = registerVector(L.geoJSON(geo, {{
+    pane:"vectorPane", renderer: vectorRenderer,
+    style: f => {{ const sfha=(f.properties&&f.properties.SFHA_TF)==="T"; return {{ color: sfha?"#1d4ed8":"#93c5fd", weight:2, fillColor: sfha?"#3b82f6":"#bfdbfe", fillOpacity: sfha?0.35:0.15 }}; }}
+  }}));
   bind("lyFema", femaLayer);
 }}).catch(()=>{{}});
 fetch(assets + "nwm_high_flow.geojson").then(r => r.ok ? r.json() : null).then(geo => {{
   if (!geo) return;
-  nwmLayer = registerVector(L.geoJSON(geo, {{ pane:"vectorPane", style: {{ color:"#0ea5e9", weight:3.5, opacity:0.9 }} }}));
+  nwmLayer = registerVector(L.geoJSON(geo, {{ pane:"vectorPane", renderer: vectorRenderer, style: {{ color:"#0ea5e9", weight:4, opacity:0.95 }} }}));
   bind("lyNwm", nwmLayer);
 }}).catch(()=>{{}});
 fetch(assets + "nwm_ahps_gauges.geojson").then(r => r.ok ? r.json() : null).then(geo => {{
   if (!geo) return;
-  gaugesLayer = registerVector(L.geoJSON(geo, {{ pane:"pointPane", pointToLayer: (f,ll) => L.circleMarker(ll, {{ radius:6, color:"#0369a1", fillColor:"#38bdf8", fillOpacity:0.95, weight:1, pane:"pointPane" }}) }}));
+  gaugesLayer = registerVector(L.geoJSON(geo, {{
+    pane:"pointPane", renderer: pointRenderer,
+    pointToLayer: (f,ll) => L.circleMarker(ll, {{ radius:7, color:"#0369a1", fillColor:"#38bdf8", fillOpacity:0.95, weight:2, pane:"pointPane", renderer: pointRenderer }})
+  }}));
   bind("lyGauges", gaugesLayer);
 }}).catch(()=>{{}});
 fetch(assets + "drainage_conduits.geojson").then(r => r.ok ? r.json() : null).then(geo => {{
   if (!geo) return;
-  drainEdges = registerVector(L.geoJSON(geo, {{ pane:"vectorPane", style: {{ color:"#a16207", weight:2, opacity:0.75 }} }}));
+  drainEdges = registerVector(L.geoJSON(geo, {{ pane:"vectorPane", renderer: vectorRenderer, style: {{ color:"#a16207", weight:2.5, opacity:0.85 }} }}));
   bind("lyDrainE", drainEdges);
 }}).catch(()=>{{}});
 fetch(assets + "drainage_nodes.geojson").then(r => r.ok ? r.json() : null).then(geo => {{
   if (!geo) return;
-  drainNodes = registerVector(L.geoJSON(geo, {{ pane:"pointPane", pointToLayer: (f,ll) => L.circleMarker(ll, {{ radius:3.5, color:"#854d0e", fillColor:"#facc15", fillOpacity:0.9, weight:1, pane:"pointPane" }}) }}));
+  drainNodes = registerVector(L.geoJSON(geo, {{
+    pane:"pointPane", renderer: pointRenderer,
+    pointToLayer: (f,ll) => L.circleMarker(ll, {{ radius:4, color:"#854d0e", fillColor:"#facc15", fillOpacity:0.95, weight:1, pane:"pointPane", renderer: pointRenderer }})
+  }}));
   bind("lyDrainN", drainNodes);
 }}).catch(()=>{{}});
 fetch(assets + (manifest.infra?.roads_geojson || "roads.geojson")).then(r => r.ok ? r.json() : null).then(geo => {{
   if (!geo) return;
-  roadsLayer = registerVector(L.geoJSON(geo, {{ pane:"vectorPane", style: {{ color:"#334155", weight:2.2, opacity:0.85 }} }}));
+  roadsLayer = registerVector(L.geoJSON(geo, {{ pane:"vectorPane", renderer: vectorRenderer, style: {{ color:"#0f172a", weight:2.8, opacity:0.9 }} }}));
   bind("lyRoads", roadsLayer);
 }}).catch(err => console.warn("roads load failed", err));
 fetch(assets + (manifest.disruption?.disrupted_geojson || "roads_potential_disruption.geojson")).then(r => r.ok ? r.json() : null).then(geo => {{
   if (!geo) return;
-  disruptLayer = registerVector(L.geoJSON(geo, {{ pane:"vectorPane", style: {{ color:"#b91c1c", weight:3.5, opacity:0.95 }} }}));
-  // If already checked, sync now that disruptLayer exists
+  disruptLayer = registerVector(L.geoJSON(geo, {{ pane:"vectorPane", renderer: vectorRenderer, style: {{ color:"#b91c1c", weight:4, opacity:0.95 }} }}));
   if (document.getElementById("lyHot").checked) document.getElementById("lyHot").dispatchEvent(new Event("change"));
 }}).catch(()=>{{}});
 fetch(assets + (manifest.infra?.stations_geojson || "subway_stations.geojson")).then(r => r.ok ? r.json() : null).then(geo => {{
   if (!geo) return;
-  stationsLayer = registerVector(L.geoJSON(geo, {{ pane:"pointPane", pointToLayer: (f,ll) => L.circleMarker(ll, {{ radius:5, color:"#0f766e", fillColor:"#14b8a6", fillOpacity:0.95, weight:1, pane:"pointPane" }}) }}));
+  stationsLayer = registerVector(L.geoJSON(geo, {{
+    pane:"pointPane", renderer: pointRenderer,
+    pointToLayer: (f,ll) => L.circleMarker(ll, {{ radius:6, color:"#0f766e", fillColor:"#14b8a6", fillOpacity:0.95, weight:2, pane:"pointPane", renderer: pointRenderer }})
+  }}));
   bind("lySta", stationsLayer);
 }}).catch(()=>{{}});
 fetch(assets + (manifest.reports?.geojson || "observed_311.geojson")).then(r => r.ok ? r.json() : null).then(geo => {{
   if (!geo) return;
   L.geoJSON(geo, {{
-    pointToLayer: (f,ll) => L.circleMarker(ll, {{ radius:5, color:"#9f1239", fillColor:"#e11d48", fillOpacity:0.9, weight:1, pane:"pointPane" }}),
+    pointToLayer: (f,ll) => L.circleMarker(ll, {{ radius:6, color:"#9f1239", fillColor:"#e11d48", fillOpacity:0.95, weight:1, pane:"pointPane", renderer: pointRenderer }}),
     onEachFeature: (f,l) => l.bindTooltip((f.properties.descriptor||"311") + " · " + (f.properties.created_date||""))
   }}).eachLayer(l => reports.addLayer(l));
   registerVector(reports);
   bind("ly311", reports);
 }}).catch(err => console.warn("311 load failed", err));
+
+function updateAlerts() {{
+  const panel = document.getElementById("alertPanel");
+  if (!panel) return;
+  const ds = activeDepthSet || depthSetForPath(activePath && activePath.id);
+  const st = ds && ds.storm_total;
+  const maxM = st && st.max_m != null ? Number(st.max_m) : null;
+  const wet = st && st.wet_fraction != null ? Number(st.wet_fraction) : null;
+  const thr = (manifest.flood_warning_prototype && manifest.flood_warning_prototype.thresholds_m) || {{ advisory: 0.03, watch: 0.08, warning: 0.15 }};
+  let level = "none", color = "#64748b", label = "No research alert";
+  if (maxM != null) {{
+    if (maxM >= thr.warning) {{ level = "warning"; color = "#b91c1c"; label = "Research WARNING"; }}
+    else if (maxM >= thr.watch) {{ level = "watch"; color = "#c2410c"; label = "Research WATCH"; }}
+    else if (maxM >= thr.advisory) {{ level = "advisory"; color = "#a16207"; label = "Research ADVISORY"; }}
+  }}
+  const force = ds ? (ds.label || ds.id) : "n/a";
+  panel.innerHTML = `
+    <div class="metric"><span>Prototype level</span><b style="color:${{color}}">${{label}}</b></div>
+    <div class="metric"><span>Est. max depth</span><b>${{maxM != null ? maxM.toFixed(3) + " m" : "n/a"}}</b></div>
+    <div class="metric"><span>Wet fraction</span><b>${{wet != null ? (100*wet).toFixed(1) + "%" : "n/a"}}</b></div>
+    <div class="metric"><span>Depth forcing</span><b style="font-size:.72rem">${{force}}</b></div>
+    <div style="margin-top:6px;color:var(--muted);font-size:.72rem;line-height:1.35">
+      Thresholds (research): advisory ≥ ${{thr.advisory}} m, watch ≥ ${{thr.watch}} m, warning ≥ ${{thr.warning}} m.
+      Derived from bathtub/HAND depth — <b>not NWS criteria</b>, not PySWMM/DEP calibrated sewer response.
+    </div>`;
+}}
 
 const urlState = readUrl() || {{}};
 activePath = stormPaths.find(p => p.id === pathSel.value) || stormPaths[0];
@@ -758,6 +814,10 @@ if (urlState.product && ["storm","susceptibility","coupled","depth"].includes(ur
 if (!inundation) {{
   ["lyDepth","lyDepthTot","productDepth"].forEach(id => {{ const el = document.getElementById(id); if (el) el.disabled = true; }});
 }}
+updateAlerts();
+// Default play speed slightly faster for denser loops
+const playSpeedEl = document.getElementById("playSpeed");
+if (playSpeedEl && (frames.length || 0) >= 12) playSpeedEl.value = "450";
 if (urlState.playing) setPlaying(true);
 document.querySelectorAll(".leaflet-image-layer").forEach(el => {{
   el.style.imageRendering = (document.getElementById("resampleSelect").value === "nearest") ? "pixelated" : "auto";

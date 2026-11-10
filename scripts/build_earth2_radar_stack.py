@@ -339,17 +339,15 @@ def _export_mrms_alt_path(landscape, infra, transform, roads_path: Path) -> dict
         print("  MRMS alt path skipped — citywide QPE assets missing")
         return None
 
-    print("Exporting higher-res alternate storm path (MRMS QPE Ida)…")
+    print("Exporting higher-res Ida storm viz path (MRMS QPE ~1 km) with dense temporal blends…")
     prefix = "mrms_qpe_ida_"
     precip_frames, susc_frames, infra_frames = [], [], []
-    vmax = 1.0
-    fields = []
+    native_fields: list[dict] = []
     for lead, path in tifs:
         with rasterio.open(path) as src:
             data = src.read(1).astype(np.float32)
             if src.nodata is not None:
                 data = np.where(data == src.nodata, np.nan, data)
-            # Reproject to display grid if needed
             display = np.full(DISPLAY_SHAPE, np.nan, dtype=np.float32)
             reproject(
                 source=data,
@@ -362,9 +360,35 @@ def _export_mrms_alt_path(landscape, infra, transform, roads_path: Path) -> dict
                 src_nodata=np.nan,
                 dst_nodata=np.nan,
             )
+        hour = 12 + lead
+        day = 1 + hour // 24
+        hour = hour % 24
+        valid = f"2021-09-{day:02d}T{hour:02d}:00"
+        native_fields.append(
+            {
+                "lead_hours": float(lead),
+                "valid_time": valid,
+                "field": display,
+                "native": True,
+                "temporal_blend": False,
+            }
+        )
+
+    # Densify to 1h temporal blends between native 6h MRMS leads for a smoother loop.
+    dense = _blend_stack(native_fields, step_hours=1.0)
+    vmax = max(
+        (float(np.nanmax(f["field"])) for f in dense if np.isfinite(f["field"]).any()),
+        default=1.0,
+    )
+    fields = []
+    for i, fr in enumerate(dense):
+        display = fr["field"].astype(np.float32)
         fields.append(display)
-        vmax = max(vmax, float(np.nanmax(display)) if np.isfinite(display).any() else 0.0)
-        stem = f"{prefix}precip_lead_{lead:02d}h"
+        lead = fr["lead_hours"]
+        if fr["temporal_blend"]:
+            stem = f"{prefix}precip_lead_{int(round(lead)):02d}h_blend"
+        else:
+            stem = f"{prefix}precip_lead_{int(round(lead)):02d}h"
         _write_tif(E2_DIR / f"{stem}.tif", display, transform)
         _write_png(ASSETS / f"{stem}.png", _rgba_precip(display, vmax=max(vmax, 5.0)))
         pnorm = np.clip(np.nan_to_num(display, nan=0.0) / max(vmax, 1e-6), 0, 1)
@@ -375,31 +399,26 @@ def _export_mrms_alt_path(landscape, infra, transform, roads_path: Path) -> dict
         _write_png(ASSETS / f"{susc_stem}.png", _rgba_susc(susc))
         infra_name = stem.replace("precip_", "infra_") + ".geojson"
         infra_meta = _infra_highlights(display, susc, transform, roads_path, ASSETS / infra_name)
-        valid = f"2021-09-01T{12 + lead:02d}:00" if lead < 12 else f"2021-09-0{1 + (12 + lead) // 24}T{(12 + lead) % 24:02d}:00"
-        # Ida remnants evening: init ~12Z Sep 1 → lead 6 = 18Z, 12 = 00Z Sep 2, etc.
-        hour = 12 + lead
-        day = 1 + hour // 24
-        hour = hour % 24
-        valid = f"2021-09-{day:02d}T{hour:02d}:00"
         precip_frames.append(
             {
-                "index": len(precip_frames),
+                "index": i,
                 "lead_hours": float(lead),
-                "valid_time": valid,
+                "valid_time": fr["valid_time"],
                 "png": f"{stem}.png",
                 "tif": str(E2_DIR / f"{stem}.tif"),
                 "mean_mm": float(np.nanmean(display)),
                 "max_mm": float(np.nanmax(display)) if np.isfinite(display).any() else None,
-                "native": True,
-                "temporal_blend": False,
-                "resolution_note": "~1 km MRMS Multi-Sensor QPE (radar+gauge) — alternate scenario",
+                "native": fr["native"],
+                "temporal_blend": fr["temporal_blend"],
+                "blend_of": fr.get("blend_of"),
+                "resolution_note": "~1 km MRMS Multi-Sensor QPE (radar+gauge) — Ida primary viz",
             }
         )
         susc_frames.append(
             {
-                "index": len(susc_frames),
+                "index": i,
                 "lead_hours": float(lead),
-                "valid_time": valid,
+                "valid_time": fr["valid_time"],
                 "png": f"{susc_stem}.png",
                 "tif": str(SUSC_DIR / f"{susc_stem}.tif"),
                 "mean": float(np.nanmean(susc)),
@@ -407,7 +426,7 @@ def _export_mrms_alt_path(landscape, infra, transform, roads_path: Path) -> dict
             }
         )
         infra_frames.append(
-            {"index": len(infra_frames), "lead_hours": float(lead), "geojson": infra_meta.get("path"), "n_features": infra_meta.get("n_features", 0)}
+            {"index": i, "lead_hours": float(lead), "geojson": infra_meta.get("path"), "n_features": infra_meta.get("n_features", 0)}
         )
 
     with rasterio.open(total_tif) as src:
@@ -434,24 +453,26 @@ def _export_mrms_alt_path(landscape, infra, transform, roads_path: Path) -> dict
     leaflet_bounds = [[BOUNDS["ymin"], BOUNDS["xmin"]], [BOUNDS["ymax"], BOUNDS["xmax"]]]
     return {
         "id": "mrms_qpe_ida",
-        "label": "Alt · MRMS QPE Ida (~1 km)",
-        "scenario_kind": "alternate_hires_scenario",
-        "primary": False,
+        "label": "MRMS QPE Ida (~1 km)",
+        "scenario_kind": "ida_primary_hires_viz",
+        "primary": True,
+        "ida_primary_viz": True,
         "source": "NOAA MRMS Multi-Sensor QPE (radar-derived + gauge) — Hurricane Ida remnants 2021-09-01",
         "source_file": str(mrms_dir),
         "honesty": (
-            "ALTERNATE STORM SCENARIO — published higher-res Ida precip (MRMS QPE), "
-            "not a live competing weather product, not Earth2, not NEXRAD reflectivity display. "
-            "Used because StormCast/CorrDiff require natten."
+            "PRIMARY Ida storm visualization (~1 km MRMS QPE). Temporal 1h blends densify the loop. "
+            "Earth2 remains available as a labeled AI scenario track. NOT NEXRAD reflectivity tiles; "
+            "NOT an official NWS flood warning product. StormCast/CorrDiff blocked without natten."
         ),
         "precip": {
             "frames": precip_frames,
             "storm_total_png": total_png,
             "storm_total_max_mm": float(np.nanmax(total)) if np.isfinite(total).any() else None,
             "bounds": leaflet_bounds,
-            "colorbar": {"cmap": PRECIP_CMAP, "units": "mm", "label": "MRMS QPE (mm) — alt scenario"},
-            "opacity_default": 0.75,
+            "colorbar": {"cmap": PRECIP_CMAP, "units": "mm", "label": "MRMS QPE (mm)"},
+            "opacity_default": 0.78,
             "approx_resolution_km": 1.0,
+            "loop_note": "Native 6h MRMS leads densified with 1h temporal blends",
         },
         "susceptibility": {
             "frames": susc_frames,
@@ -491,10 +512,11 @@ def main() -> None:
             roads_path = alt
 
     paths = []
-    primary = _export_path(
+    # Earth2 file naming stays unprefixed (primary=True for paths); product role is scenario.
+    earth2 = _export_path(
         "earth2_control",
-        "Earth2 (primary)",
-        "earth2_primary",
+        "Earth2 AI scenario",
+        "earth2_scenario",
         control,
         0,
         landscape,
@@ -503,7 +525,15 @@ def main() -> None:
         roads_path,
         primary=True,
     )
-    paths.append(primary)
+    earth2["primary"] = False
+    earth2["ida_primary_viz"] = False
+    earth2["label"] = "Earth2 AI scenario"
+    earth2["scenario_kind"] = "earth2_scenario"
+    earth2["honesty"] = (
+        "Earth2 AI precip scenario (~0.25°). For Ida storm visualization prefer MRMS QPE (~1 km). "
+        "Not NEXRAD. Temporal blends densify the loop only."
+    )
+    paths.append(earth2)
 
     ens = PROJECT_ROOT / "data" / "forecasts" / "nyc_precip_ida_ens2_citywide.nc"
     if ens.exists():
@@ -524,33 +554,46 @@ def main() -> None:
             )
             paths.append(alt)
 
-    # Higher-res Ida alternate scenario: published MRMS QPE (radar-derived), clearly labeled.
-    # StormCast/CorrDiff remain blocked without natten — do not fake downscaling.
-    mrms_alt = _export_mrms_alt_path(landscape, infra, transform, roads_path)
-    if mrms_alt:
-        paths.append(mrms_alt)
+    # Ida primary viz: MRMS QPE ~1 km (StormCast/CorrDiff blocked without natten).
+    mrms_viz = _export_mrms_alt_path(landscape, infra, transform, roads_path)
+    if mrms_viz:
+        paths.insert(0, mrms_viz)
 
-    # Manifest: primary precip at top level for backward compatibility + storm_paths list
-    leaflet_bounds = primary["precip"]["bounds"]
+    default_id = "mrms_qpe_ida" if mrms_viz else "earth2_control"
+    default_path = next((p for p in paths if p["id"] == default_id), paths[0])
+    leaflet_bounds = default_path["precip"]["bounds"]
     inundation_meta = ASSETS / "inundation_meta.json"
     inundation = json.loads(inundation_meta.read_text()) if inundation_meta.exists() else None
     manifest = {
-        "product_policy": "earth2_primary_with_alt_storm_paths",
+        "product_policy": "ida_hires_viz_with_earth2_scenarios",
+        "product_kind": "research_flood_warning_prototype",
         "note": (
-            "Primary path is Earth2. Alternates: Earth2 ensemble members and/or labeled higher-res "
-            "Ida scenario tracks (e.g. MRMS QPE). Not a validation split-screen."
+            "For Hurricane Ida, default storm visualization is MRMS QPE (~1 km). "
+            "Earth2 (+ ensemble) remain labeled AI scenario tracks. "
+            "Depth/alerts are research prototypes — NOT official NWS flood warnings."
         ),
-        "honesty": "AI 6h accumulations on ~0.25°. Temporal blends densify the loop only. Not radar reflectivity.",
-        "default_storm_path": "earth2_control",
+        "honesty": (
+            "Research flood-warning prototype. NOT official NWS. NOT emergency guidance. "
+            "MRMS QPE is radar+gauge QPE (~1 km), not NEXRAD reflectivity tiles."
+        ),
+        "default_storm_path": default_id,
         "storm_paths": paths,
-        "precip": primary["precip"],
+        "precip": default_path["precip"],
         "susceptibility": {
-            **primary["susceptibility"],
+            **default_path["susceptibility"],
             "static_factors": factors,
             "formula": FORMULA,
         },
-        "infra_highlights": primary["infra_highlights"],
+        "infra_highlights": default_path.get("infra_highlights") or earth2["infra_highlights"],
         "inundation": inundation,
+        "flood_warning_prototype": {
+            "label": "Research flood-warning prototype",
+            "official_nws": False,
+            "engine_depth": "pysheds HAND + bathtub",
+            "engine_sewer": "pyswmm available in env but no calibrated NYC DEP INP — thresholds use depth only",
+            "thresholds_m": {"advisory": 0.03, "watch": 0.08, "warning": 0.15},
+            "disclaimer": "Threshold chips are research heuristics on estimated depth — not NWS watch/warning criteria.",
+        },
         "layer_bounds": {
             "map_extent_default": EXTENT_ID,
             "precip": leaflet_bounds,
@@ -562,7 +605,7 @@ def main() -> None:
         "stormcast": {
             "status": "skipped",
             "reason": "natten unavailable — see outputs/stormcast_corrdiff_attempt.json",
-            "fallback_hires_path": "mrms_qpe_ida" if mrms_alt else None,
+            "ida_hires_viz": "mrms_qpe_ida" if mrms_viz else None,
         },
     }
     (ASSETS / "manifest.json").write_text(json.dumps(manifest, indent=2))
@@ -571,15 +614,25 @@ def main() -> None:
         json.dumps(
             {
                 "n_paths": len(paths),
-                "n_loop_frames_primary": len(primary["precip"]["frames"]),
-                "step_note": "Native 6h + 2h temporal blends",
+                "default_storm_path": default_id,
+                "n_loop_frames_default": len(default_path["precip"]["frames"]),
+                "step_note": "MRMS: native 6h + 1h temporal blends; Earth2: native 6h + 2h blends",
                 "susceptibility_formula": FORMULA,
                 "product_policy": manifest["product_policy"],
             },
             indent=2,
         )
     )
-    print(json.dumps({"n_paths": len(paths), "n_frames": len(primary["precip"]["frames"])}, indent=2))
+    print(
+        json.dumps(
+            {
+                "n_paths": len(paths),
+                "default": default_id,
+                "n_frames": len(default_path["precip"]["frames"]),
+            },
+            indent=2,
+        )
+    )
 
 
 if __name__ == "__main__":

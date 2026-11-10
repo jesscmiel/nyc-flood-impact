@@ -1,7 +1,8 @@
 {
   "n_paths": 3,
-  "n_loop_frames_primary": 10,
-  "step_note": "Native 6h + 2h temporal blends",
+  "default_storm_path": "mrms_qpe_ida",
+  "n_loop_frames_default": 19,
+  "step_note": "MRMS: native 6h + 1h temporal blends; Earth2: native 6h + 2h blends",
   "susceptibility_formula": "S = clip(0.35*weather + 0.40*landscape + 0.15*infra + 0.10*weather*landscape, 0, 1); landscape = 0.55*terrain_lowflat + 0.45*impervious; infra = 0.70*built_road_proxy + 0.30*(1 - drain_density_norm)",
-  "product_policy": "earth2_primary_with_alt_storm_paths"
+  "product_policy": "ida_hires_viz_with_earth2_scenarios"
 }
