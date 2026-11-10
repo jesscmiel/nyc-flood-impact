@@ -26,3 +26,7 @@ Machine-readable: `outputs/inundation_engine_spike.json` / `figures/product_asse
 1. Obtain/compile official SFINCS Linux binary (or container) and place on PATH  
 2. Or build LISFLOOD-FP from source and wrap a runner in `flood_risk/inundation/`  
 3. Re-force South Queens DEM with Ida rain and compare vs pysheds bands
+
+## User install (no fake run)
+
+Full binary/container/compile commands: [`docs/sfincs-lisflood-user-install.md`](sfincs-lisflood-user-install.md).
