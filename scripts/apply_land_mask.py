@@ -176,9 +176,26 @@ def main() -> None:
         mask_geotiff(path, mask, transform)
         print(f"  masked {path.name}")
 
-    # Mask display PNGs (Earth2 precip + time-varying susceptibility)
+    # Mask display PNGs for all storm paths (primary + alternate Earth2 scenarios)
     susc_bounds = (manifest.get("susceptibility") or {}).get("bounds") or precip_bounds
     pngs = []
+    path_list = manifest.get("storm_paths") or [
+        {"precip": manifest.get("precip"), "susceptibility": manifest.get("susceptibility")}
+    ]
+    for path in path_list:
+        precip = path.get("precip") or {}
+        susc = path.get("susceptibility") or {}
+        pb = precip.get("bounds") or precip_bounds
+        sb = susc.get("bounds") or susc_bounds
+        for fr in precip.get("frames", []):
+            pngs.append((ASSETS / fr["png"], pb))
+        if precip.get("storm_total_png"):
+            pngs.append((ASSETS / precip["storm_total_png"], pb))
+        for fr in susc.get("frames", []):
+            pngs.append((ASSETS / fr["png"], sb))
+        for fr in (path.get("infra_highlights") or {}).get("frames", []) or []:
+            pass  # vectors only
+    # Also mask top-level precip/susc for backward compatibility
     for fr in manifest.get("precip", {}).get("frames", []):
         pngs.append((ASSETS / fr["png"], precip_bounds))
     if manifest.get("precip", {}).get("storm_total_png"):
@@ -188,6 +205,16 @@ def main() -> None:
     pngs.append((ASSETS / "pluvial_screening.png", pluvial_bounds))
     if (ASSETS / "built_surface_proxy.png").exists():
         pngs.append((ASSETS / "built_surface_proxy.png", pluvial_bounds))
+    # Deduplicate
+    seen = set()
+    uniq = []
+    for path, bounds in pngs:
+        key = str(path)
+        if key in seen:
+            continue
+        seen.add(key)
+        uniq.append((path, bounds))
+    pngs = uniq
 
     for path, bounds in pngs:
         if path.exists():

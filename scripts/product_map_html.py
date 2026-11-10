@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Earth2-only product map HTML (radar loop + separate susceptibility)."""
+"""Earth2-primary product map — radar loop, multi-factor susceptibility, alt storm paths."""
 
 from __future__ import annotations
 
@@ -14,108 +14,155 @@ def write_product_html(manifest: dict, pluvial: dict, validation: dict) -> Path:
     precip = manifest.get("precip", {})
     frames = precip.get("frames", [])
     n = max(len(frames), 1)
-    susc = manifest.get("susceptibility") or {}
+    storm_paths = manifest.get("storm_paths") or []
+    formula = (manifest.get("susceptibility") or {}).get("formula") or ""
     html = f"""<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>NYC Flood Impact · Earth2</title>
+<title>NYC Flood Impact</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=IBM+Plex+Mono:wght@500&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
 <style>
 :root {{
-  --ink:#0b1620; --ink-soft:#1a2b38; --muted:#5f7384; --panel:#f2f6f8; --panel-2:#fff;
-  --line:#c9d5de; --line-soft:#e2eaf0; --accent:#0b7f8a; --accent-deep:#065a63;
-  --accent-soft:#d7eef0; --warn:#8a3b12; --warn-bg:#fff4e8; --warn-line:#f0c49a;
-  --sea:#0a4f5c; --chip:#e8eef2; --shadow:0 10px 30px rgba(11,22,32,.08); --radius:12px;
+  --ink:#071018; --ink-soft:#152433; --muted:#6a7f90; --paper:#f3f7f9;
+  --panel:rgba(255,255,255,.92); --line:#c5d3de; --line-soft:#dde6ed;
+  --accent:#0a8a96; --accent-deep:#056 dig 068; --accent-soft:#d4eef1;
+  --sea:#083b48; --sea-2:#0c6170; --warn:#8d3d14; --warn-bg:#fff3e6; --warn-line:#efc49a;
+  --hud:#07141c; --chip:#e7eef3; --shadow:0 18px 50px rgba(7,16,24,.16);
+  --radius:14px;
 }}
 * {{ box-sizing:border-box; }}
 html,body {{ margin:0; height:100%; font-family:"Source Sans 3",sans-serif; color:var(--ink);
-  background: radial-gradient(1200px 600px at 0% 0%, #d9ecee 0%, transparent 55%),
-  radial-gradient(900px 500px at 100% 100%, #e7edf2 0%, transparent 50%),
-  linear-gradient(160deg, #eef3f6 0%, #dfe8ee 100%); }}
-body {{ display:grid; grid-template-columns:minmax(300px,380px) 1fr; }}
-@media (max-width:980px) {{ body {{ grid-template-columns:1fr; grid-template-rows:auto 1fr; }} aside {{ max-height:48vh; border-right:0; border-bottom:1px solid var(--line); }} }}
-aside {{ position:relative; overflow:auto; padding:18px 16px 28px;
-  background: linear-gradient(180deg, rgba(255,255,255,.78), rgba(242,246,248,.92)),
-  repeating-linear-gradient(135deg, rgba(11,127,138,.035) 0 2px, transparent 2px 10px);
-  border-right:1px solid var(--line); }}
-.brand {{ display:flex; flex-direction:column; gap:4px; margin-bottom:12px; padding:14px;
-  border-radius:16px; background:linear-gradient(145deg, var(--sea), #0d6d78 48%, #12818d); color:#f4fbfd; box-shadow:var(--shadow); }}
-.brand-mark {{ font-family:Sora,sans-serif; font-weight:700; font-size:1.35rem; letter-spacing:-.03em; }}
-.brand-tag {{ font-size:.78rem; opacity:.88; line-height:1.35; max-width:30ch; }}
-.disclaimer-bar {{ position:sticky; top:0; z-index:3; margin:0 0 14px; background:var(--warn-bg); border:1px solid var(--warn-line);
-  color:var(--warn); padding:10px 12px; border-radius:var(--radius); font-size:.78rem; line-height:1.4; }}
-.panel {{ background:var(--panel-2); border:1px solid var(--line-soft); border-radius:14px; padding:12px; margin:0 0 12px; }}
-.panel h2 {{ font-family:Sora,sans-serif; font-size:.72rem; font-weight:600; margin:0 0 10px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); }}
-.stack {{ display:grid; gap:8px; }}
-.seg {{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; padding:4px; border-radius:14px; background:var(--chip); border:1px solid var(--line-soft); }}
-.seg button {{ border:0; background:transparent; border-radius:10px; padding:10px 6px; font:600 .72rem Sora,sans-serif; color:var(--muted); cursor:pointer; }}
-.seg button.active {{ background:#fff; color:var(--accent-deep); box-shadow:0 1px 3px rgba(11,22,32,.12); }}
-label.caption {{ font-size:.76rem; color:var(--muted); font-weight:600; }}
-select {{ width:100%; appearance:none; padding:10px 12px; border-radius:10px; border:1px solid var(--line); background:#fff; font:500 .9rem "Source Sans 3",sans-serif; }}
-.metrics {{ display:grid; gap:6px; margin-top:8px; }}
-.metric {{ display:flex; justify-content:space-between; gap:8px; font-size:.82rem; padding:7px 9px; border-radius:9px; background:var(--panel); }}
-.readout {{ font-variant-numeric:tabular-nums; font-weight:700; color:var(--accent-deep); font-family:Sora,sans-serif; font-size:.84rem; }}
-input[type=range] {{ width:100%; accent-color:var(--accent); }}
-.btn-row {{ display:flex; flex-wrap:wrap; gap:6px; }}
-.btn {{ border:1px solid var(--line); background:#fff; color:var(--ink-soft); border-radius:999px; padding:8px 12px; font:600 .78rem Sora,sans-serif; cursor:pointer; }}
-.btn:hover {{ border-color:var(--accent); color:var(--accent-deep); }}
-.layer-grid {{ display:grid; grid-template-columns:1fr 1fr; gap:7px; }}
-.layer-btn {{ position:relative; display:flex; align-items:center; gap:8px; min-height:42px; padding:8px 10px; border-radius:11px; border:1px solid var(--line); background:#fff; cursor:pointer; font-size:.8rem; font-weight:600; }}
-.layer-btn input {{ position:absolute; opacity:0; pointer-events:none; }}
-.layer-btn .dot {{ width:9px; height:9px; border-radius:50%; flex:0 0 auto; }}
-.layer-btn:has(input:checked) {{ background:linear-gradient(180deg, #f7fcfd, var(--accent-soft)); border-color:var(--accent); color:var(--accent-deep); }}
-.group-label {{ grid-column:1 / -1; margin:4px 0 0; font-size:.7rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:#7a8d9c; }}
-.note,.honesty {{ margin-top:8px; padding:9px 10px; border-radius:10px; font-size:.74rem; line-height:1.4; background:#eef6f7; color:#335560; border:1px solid #cfe3e6; }}
-.honesty {{ background:#f4f7f9; border-style:dashed; }}
-.chain {{ display:grid; grid-template-columns:1fr auto 1fr auto 1fr; gap:4px; align-items:center; margin-top:8px; font-size:.72rem; font-weight:700; color:var(--accent-deep); }}
-.chain span.step {{ text-align:center; padding:8px 4px; border-radius:10px; background:var(--accent-soft); border:1px solid #b7dce0; }}
-.chain span.step.dim {{ opacity:.45; background:var(--chip); border-color:var(--line-soft); color:var(--muted); }}
+  background:
+    radial-gradient(900px 520px at 8% -10%, rgba(12,97,112,.18), transparent 55%),
+    radial-gradient(800px 480px at 100% 0%, rgba(8,59,72,.10), transparent 45%),
+    linear-gradient(165deg, #eef4f7 0%, #d9e5ec 100%); }}
+body {{ display:grid; grid-template-columns:minmax(320px,400px) 1fr; min-height:100%; }}
+@media (max-width:980px) {{ body {{ grid-template-columns:1fr; grid-template-rows:auto 1fr; }} aside {{ max-height:50vh; border-right:0; border-bottom:1px solid var(--line); }} }}
+aside {{
+  position:relative; overflow:auto; padding:18px 16px 32px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.86), rgba(243,247,249,.94)),
+    repeating-linear-gradient(135deg, rgba(10,138,150,.04) 0 1px, transparent 1px 9px);
+  border-right:1px solid var(--line); backdrop-filter: blur(10px);
+}}
+.brand {{
+  position:relative; overflow:hidden; margin:0 0 14px; padding:18px 16px 16px; border-radius:18px;
+  background: linear-gradient(145deg, var(--sea) 0%, var(--sea-2) 55%, #12818f 100%);
+  color:#eef9fb; box-shadow:var(--shadow);
+}}
+.brand::after {{
+  content:""; position:absolute; inset:auto -20% -40% 30%; height:120%;
+  background:radial-gradient(circle, rgba(255,255,255,.16), transparent 60%); pointer-events:none;
+  animation: drift 10s ease-in-out infinite alternate;
+}}
+@keyframes drift {{ from {{ transform:translateX(0); }} to {{ transform:translateX(-18px); }} }}
+.brand-kicker {{ font:600 .68rem Sora,sans-serif; letter-spacing:.14em; text-transform:uppercase; opacity:.72; margin-bottom:6px; }}
+.brand-mark {{ font-family:Sora,sans-serif; font-weight:700; font-size:1.55rem; letter-spacing:-.04em; line-height:1.05; }}
+.brand-tag {{ margin-top:8px; font-size:.8rem; line-height:1.4; max-width:32ch; opacity:.9; }}
+.disclaimer-bar {{
+  position:sticky; top:0; z-index:4; margin:0 0 14px; padding:11px 12px; border-radius:var(--radius);
+  background:var(--warn-bg); border:1px solid var(--warn-line); color:var(--warn); font-size:.76rem; line-height:1.4;
+  box-shadow:0 1px 0 rgba(255,255,255,.65) inset;
+}}
+.panel {{
+  background:var(--panel); border:1px solid var(--line-soft); border-radius:16px; padding:13px;
+  margin:0 0 12px; box-shadow:0 1px 0 rgba(255,255,255,.85) inset, 0 8px 24px rgba(7,16,24,.03);
+}}
+.panel h2 {{
+  font-family:Sora,sans-serif; font-size:.7rem; font-weight:600; margin:0 0 10px;
+  text-transform:uppercase; letter-spacing:.1em; color:var(--muted);
+}}
+.seg {{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:5px; padding:4px; border-radius:12px; background:var(--chip); border:1px solid var(--line-soft); }}
+.seg button {{ border:0; background:transparent; border-radius:9px; padding:10px 6px; font:600 .72rem Sora,sans-serif; color:var(--muted); cursor:pointer; transition:all .15s; }}
+.seg button.active {{ background:#fff; color:#045963; box-shadow:0 2px 8px rgba(7,16,24,.1); }}
+.chain {{ display:grid; grid-template-columns:1fr auto 1fr auto 1fr; gap:4px; align-items:center; margin-top:10px; font-size:.7rem; font-weight:700; color:#045963; }}
+.chain .step {{ text-align:center; padding:8px 4px; border-radius:10px; background:#d9eef1; border:1px solid #b6dde2; transition:opacity .2s; }}
+.chain .step.dim {{ opacity:.4; background:var(--chip); border-color:var(--line-soft); color:var(--muted); }}
+.mode-hint {{ font-size:.75rem; color:var(--muted); margin:8px 0 0; line-height:1.4; }}
+label.caption {{ display:block; font-size:.74rem; color:var(--muted); font-weight:600; margin-bottom:5px; }}
+select {{ width:100%; appearance:none; padding:10px 12px; border-radius:11px; border:1px solid var(--line); background:#fff; font:500 .9rem "Source Sans 3",sans-serif; color:var(--ink); }}
+.stack {{ display:grid; gap:9px; }}
 .transport {{ display:grid; grid-template-columns:auto 1fr auto; gap:8px; align-items:center; }}
-.btn-icon {{ width:42px; height:42px; border-radius:12px; border:1px solid var(--line); background:#fff; font:700 1rem Sora,sans-serif; cursor:pointer; color:var(--accent-deep); }}
-.btn-icon.playing {{ background:var(--accent-soft); border-color:var(--accent); }}
-.tick-row {{ display:flex; justify-content:space-between; margin-top:4px; font-size:.65rem; color:var(--muted); font-variant-numeric:tabular-nums; }}
-.opacity-row {{ display:grid; grid-template-columns:72px 1fr 36px; gap:8px; align-items:center; font-size:.78rem; margin:6px 0; }}
-.legend-swatch {{ height:10px; border-radius:999px; margin-top:6px; }}
+.btn-icon {{ width:44px; height:44px; border-radius:13px; border:1px solid var(--line); background:#fff; font:700 1rem Sora,sans-serif; cursor:pointer; color:#045963; transition:transform .12s, background .15s; }}
+.btn-icon:hover {{ transform:translateY(-1px); }}
+.btn-icon.playing {{ background:#d4eef1; border-color:var(--accent); }}
+input[type=range] {{ width:100%; accent-color:var(--accent); }}
+.tick-row {{ display:flex; justify-content:space-between; margin-top:4px; font:500 .62rem "IBM Plex Mono",monospace; color:var(--muted); }}
+.metrics {{ display:grid; gap:6px; margin-top:10px; }}
+.metric {{ display:flex; justify-content:space-between; gap:8px; font-size:.8rem; padding:8px 10px; border-radius:10px; background:linear-gradient(180deg,#f7fafc,#eef3f6); }}
+.readout {{ font:600 .82rem "IBM Plex Mono",monospace; color:#045963; }}
+.honesty {{ margin-top:10px; padding:9px 10px; border-radius:11px; font-size:.73rem; line-height:1.4; color:#3d5563; background:#f2f6f8; border:1px dashed #b7c7d2; }}
+.opacity-row {{ display:grid; grid-template-columns:88px 1fr 40px; gap:8px; align-items:center; font-size:.78rem; margin:7px 0; }}
+.legend-swatch {{ height:9px; border-radius:999px; margin:2px 0 8px; }}
 .legend-swatch.precip {{ background:linear-gradient(90deg,#30123b,#4662d8,#1ae4b6,#a2fc3c,#f9ba38,#e8332b); }}
 .legend-swatch.susc {{ background:linear-gradient(90deg,#fff7bc,#fec44f,#d95f0e,#7f2704); }}
-.map-stage {{ position:relative; min-height:0; height:100%; display:grid; grid-template-columns:1fr; }}
-.map-pane {{ position:relative; height:100%; min-height:0; overflow:hidden; }}
-.map-el {{ position:absolute; inset:0; }}
-.pane-label {{ position:absolute; z-index:1000; top:12px; left:52px; background:rgba(255,255,255,.94); border:1px solid var(--line); padding:5px 10px; font:600 .74rem Sora,sans-serif; border-radius:999px; }}
-.footer-note {{ position:absolute; z-index:1000; left:12px; bottom:92px; max-width:min(440px,90%); background:rgba(255,255,255,.94); border:1px solid var(--line); padding:8px 10px; font-size:.72rem; color:var(--muted); border-radius:10px; }}
-.radar-hud {{ position:absolute; z-index:1100; left:50%; bottom:14px; transform:translateX(-50%); width:min(720px, calc(100% - 24px));
-  display:grid; grid-template-columns:auto 1fr auto; gap:12px; align-items:center; padding:10px 14px; border-radius:16px;
-  background:rgba(11,22,32,.88); color:#e8f2f5; border:1px solid rgba(255,255,255,.08); }}
-.radar-hud .play {{ width:44px; height:44px; border-radius:12px; border:0; cursor:pointer; background:#12a3b0; color:#042227; font:700 .95rem Sora,sans-serif; }}
-.radar-hud .clock {{ font:700 .95rem Sora,sans-serif; }}
-.radar-hud .sub {{ font-size:.72rem; opacity:.78; }}
-.radar-hud .legend {{ display:flex; flex-direction:column; gap:4px; align-items:flex-end; font-size:.68rem; }}
-.radar-hud .bar {{ width:120px; height:8px; border-radius:999px; background:linear-gradient(90deg,#30123b,#4662d8,#1ae4b6,#a2fc3c,#f9ba38,#e8332b); }}
-.radar-hud .bar.susc {{ background:linear-gradient(90deg,#fff7bc,#fec44f,#d95f0e,#7f2704); }}
-.mode-hint {{ font-size:.76rem; color:var(--muted); margin-top:8px; line-height:1.35; }}
+.layer-grid {{ display:grid; grid-template-columns:1fr 1fr; gap:7px; }}
+.group-label {{ grid-column:1 / -1; margin:6px 0 0; font-size:.68rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#7d91a1; }}
+.layer-btn {{ position:relative; display:flex; align-items:center; gap:8px; min-height:42px; padding:8px 10px; border-radius:12px; border:1px solid var(--line); background:#fff; cursor:pointer; font-size:.78rem; font-weight:600; transition:border-color .15s, background .15s, transform .12s; }}
+.layer-btn:hover {{ transform:translateY(-1px); border-color:#9db4c2; }}
+.layer-btn input {{ position:absolute; opacity:0; pointer-events:none; }}
+.layer-btn .dot {{ width:9px; height:9px; border-radius:50%; flex:0 0 auto; box-shadow:0 0 0 2px #fff; }}
+.layer-btn:has(input:checked) {{ background:linear-gradient(180deg,#f5fcfd,#d9eef1); border-color:var(--accent); color:#045963; }}
+.layer-btn:has(input:disabled) {{ opacity:.4; cursor:not-allowed; transform:none; }}
 .validation {{ display:grid; gap:6px; }}
-.validation b {{ font-variant-numeric:tabular-nums; font-family:Sora,sans-serif; }}
-details.about {{ font-size:.78rem; color:var(--muted); line-height:1.45; }}
-details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft); }}
-.blend-tag {{ display:inline-block; margin-left:6px; padding:1px 6px; border-radius:999px; background:#e8f0f2; color:#4a6573; font-size:.65rem; font-weight:700; }}
+.validation b {{ font:600 .82rem "IBM Plex Mono",monospace; }}
+details.about {{ font-size:.76rem; color:var(--muted); line-height:1.45; }}
+details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft); margin-bottom:6px; }}
+.map-stage {{ position:relative; min-height:0; height:100%; }}
+.map-pane {{ position:absolute; inset:0; }}
+.map-el {{ position:absolute; inset:0; }}
+.pane-label {{
+  position:absolute; z-index:1000; top:14px; left:54px; padding:6px 12px; border-radius:999px;
+  background:rgba(7,20,28,.82); color:#e8f4f6; border:1px solid rgba(255,255,255,.1);
+  font:600 .72rem Sora,sans-serif; backdrop-filter:blur(8px);
+}}
+.footer-note {{
+  position:absolute; z-index:1000; left:14px; bottom:98px; max-width:min(420px,88%);
+  background:rgba(255,255,255,.92); border:1px solid var(--line); padding:8px 10px;
+  font-size:.71rem; color:var(--muted); border-radius:11px;
+}}
+.radar-hud {{
+  position:absolute; z-index:1100; left:50%; bottom:16px; transform:translateX(-50%);
+  width:min(760px, calc(100% - 24px));
+  display:grid; grid-template-columns:auto 1fr auto; gap:14px; align-items:center;
+  padding:12px 16px; border-radius:18px;
+  background:linear-gradient(180deg, rgba(10,28,36,.94), rgba(7,16,24,.92));
+  color:#e7f3f5; border:1px solid rgba(255,255,255,.08); box-shadow:0 20px 50px rgba(0,0,0,.28);
+  backdrop-filter: blur(14px);
+}}
+.radar-hud .play {{
+  width:48px; height:48px; border-radius:14px; border:0; cursor:pointer;
+  background:linear-gradient(180deg,#1bc0cd,#0e8f9c); color:#042227; font:700 1rem Sora,sans-serif;
+  box-shadow:0 6px 16px rgba(14,143,156,.35);
+}}
+.radar-hud .clock {{ font:700 1rem Sora,sans-serif; letter-spacing:-.02em; }}
+.radar-hud .sub {{ font-size:.72rem; opacity:.78; margin-top:2px; }}
+.radar-hud .legend {{ display:flex; flex-direction:column; gap:5px; align-items:flex-end; font-size:.68rem; opacity:.92; }}
+.radar-hud .bar {{ width:128px; height:8px; border-radius:999px; background:linear-gradient(90deg,#30123b,#4662d8,#1ae4b6,#a2fc3c,#f9ba38,#e8332b); }}
+.radar-hud .bar.susc {{ background:linear-gradient(90deg,#fff7bc,#fec44f,#d95f0e,#7f2704); }}
+.path-pill {{
+  display:inline-flex; align-items:center; gap:6px; margin-top:8px; padding:5px 10px; border-radius:999px;
+  background:#e7f5f7; color:#045963; font:600 .7rem Sora,sans-serif; border:1px solid #b7dde2;
+}}
 </style>
 </head>
 <body>
 <aside>
   <div class="brand">
-    <div class="brand-mark">NYC Flood Impact</div>
-    <div class="brand-tag">Earth2-only storm replay — radar-style loop coupled to flood susceptibility.</div>
+    <div class="brand-kicker">NYC · Earth2 primary</div>
+    <div class="brand-mark">Flood Impact</div>
+    <div class="brand-tag">Radar-style storm replay with multi-factor flood susceptibility screening.</div>
   </div>
   <div class="disclaimer-bar">
     <b>Not inundation depth. Not a flood warning. Not emergency guidance.</b>
-    Product policy: <b>Earth2 precip only</b> (no MRMS/NEXRAD/other weather sources). AI 6h accumulations on ~0.25° — <b>not radar reflectivity</b>. Mid-frames may be temporal blends for a smoother loop.
+    Primary path is <b>Earth2</b>. Alternate Earth2 ensemble tracks are scenario paths — not MRMS/NEXRAD. AI precip ≠ radar reflectivity.
   </div>
 
   <div class="panel">
@@ -126,11 +173,19 @@ details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft);
       <button type="button" id="productCoupled" data-mode="coupled">Coupled</button>
     </div>
     <div class="chain" aria-hidden="true">
-      <span class="step" id="chainPrecip">Precip</span><span>→</span>
-      <span class="step dim" id="chainSusc">Susceptibility</span><span>→</span>
-      <span class="step dim" id="chainInfra">Infra</span>
+      <span class="step" id="chainPrecip">Weather</span><span>→</span>
+      <span class="step dim" id="chainSusc">Landscape×Infra</span><span>→</span>
+      <span class="step dim" id="chainInfra">Exposure</span>
     </div>
     <p class="mode-hint" id="modeHint">Storm mode: animate Earth2 precip. Susceptibility stays off until you switch modes.</p>
+  </div>
+
+  <div class="panel">
+    <h2>Storm path</h2>
+    <label class="caption" for="stormPathSelect">Scenario track</label>
+    <select id="stormPathSelect" aria-label="Storm path"></select>
+    <div class="path-pill" id="pathPill">Earth2 (primary)</div>
+    <div class="honesty" id="pathHonesty">Primary Earth2 control path. Alternate members are IC-perturbation scenarios, not observations.</div>
   </div>
 
   <div class="panel">
@@ -150,46 +205,43 @@ details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft);
         <div class="tick-row" id="tickRow"></div>
       </div>
       <select id="playSpeed" style="width:auto;min-width:72px;padding:8px" aria-label="Speed">
-        <option value="1400">Slow</option>
-        <option value="900" selected>Med</option>
-        <option value="550">Fast</option>
+        <option value="1200">Slow</option>
+        <option value="750" selected>Med</option>
+        <option value="450">Fast</option>
       </select>
     </div>
     <div class="metrics">
       <div class="metric"><span>Clock (UTC)</span><span class="readout" id="clockReadout">—</span></div>
       <div class="metric"><span>Lead</span><span class="readout" id="leadReadout">—</span></div>
       <div class="metric"><span>Earth2 max</span><span class="readout" id="e2Readout">—</span></div>
-      <div class="metric"><span>Frame type</span><span class="readout" id="frameTypeReadout">—</span></div>
+      <div class="metric"><span>Frame</span><span class="readout" id="frameTypeReadout">—</span></div>
     </div>
-    <div class="honesty">Loop = native Earth2 6h frames + mid-interval <b>temporal blends</b> (not extra model output, not NEXRAD).</div>
+    <div class="honesty">Native Earth2 leads are 6h. Loop densifies with 2h <b>temporal blends</b> (labeled) — not extra model output, not NEXRAD.</div>
   </div>
 
   <div class="panel">
-    <h2>Opacity</h2>
-    <div class="opacity-row"><span>Precip</span><input id="opPrecip" type="range" min="15" max="95" value="75"><span id="opPrecipVal">75%</span></div>
-    <div class="legend-swatch precip" title="Earth2 precip colorbar"></div>
-    <div class="opacity-row"><span>Susceptibility</span><input id="opSusc" type="range" min="15" max="95" value="65"><span id="opSuscVal">65%</span></div>
-    <div class="legend-swatch susc" title="Susceptibility colorbar"></div>
-    <div class="select-wrap" style="margin-top:10px">
-      <label class="caption" for="resampleSelect">Precip display</label>
+    <h2>Opacity & legend</h2>
+    <div class="opacity-row"><span>Precip</span><input id="opPrecip" type="range" min="15" max="95" value="78"><span id="opPrecipVal">78%</span></div>
+    <div class="legend-swatch precip"></div>
+    <div class="opacity-row"><span>Susceptibility</span><input id="opSusc" type="range" min="15" max="95" value="64"><span id="opSuscVal">64%</span></div>
+    <div class="legend-swatch susc"></div>
+    <div><label class="caption" for="resampleSelect">Precip display</label>
       <select id="resampleSelect">
         <option value="nearest" selected>Nearest (blocky / honest)</option>
-        <option value="bilinear">Bilinear (smooth CSS only)</option>
+        <option value="bilinear">Bilinear (CSS only)</option>
       </select>
     </div>
-    <div class="note" id="gridNote">Native Earth2 ~0.25° cells. CSS smoothing is display-only. Overlays are land-masked.</div>
   </div>
 
   <div class="panel">
     <h2>Layers</h2>
     <div class="layer-grid">
-      <div class="group-label">Storm (Earth2)</div>
+      <div class="group-label">Storm</div>
       <label class="layer-btn"><input id="lyE2" type="checkbox" checked><span class="dot" style="background:#4662d8"></span>Earth2 precip</label>
       <label class="layer-btn"><input id="lyE2Tot" type="checkbox"><span class="dot" style="background:#30123b"></span>Storm total</label>
-      <label class="layer-btn"><input id="lyEns" type="checkbox" disabled><span class="dot" style="background:#64748b"></span>Ensemble</label>
 
-      <div class="group-label">Susceptibility (separate)</div>
-      <label class="layer-btn"><input id="lySusc" type="checkbox"><span class="dot" style="background:#d95f0e"></span>Heatmap (time-varying)</label>
+      <div class="group-label">Susceptibility</div>
+      <label class="layer-btn"><input id="lySusc" type="checkbox"><span class="dot" style="background:#d95f0e"></span>Multi-factor heatmap</label>
       <label class="layer-btn"><input id="lyBuilt" type="checkbox"><span class="dot" style="background:#475569"></span>Built surface</label>
 
       <div class="group-label">Infrastructure / obs</div>
@@ -209,32 +261,31 @@ details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft);
   </div>
 
   <div class="panel">
-    <h2>Validation snapshot</h2>
+    <h2>Validation</h2>
     <div class="validation" id="validationPanel">Loading…</div>
   </div>
 
   <div class="panel">
     <details class="about" open>
-      <summary>What this is / isn’t</summary>
+      <summary>Science notes</summary>
       <p>
-        <b>Earth2-only product</b> — no MRMS or other precip sources in this map.<br>
-        <b>Storm loop</b> = FCN + PrecipitationAFNO frames (+ temporal blends).<br>
-        <b>Susceptibility</b> = terrain/NLCD base × frame precip — screening, not depth.<br>
-        <b>Infra sync</b> = roads highlighted where precip × susceptibility is elevated.<br>
-        <b>311 / FEMA / NWM</b> = context only.
+        <b>Susceptibility</b> = weather × landscape × infrastructure screening:<br>
+        <code style="font-size:.68rem">{formula}</code><br><br>
+        <b>Storm paths</b> = Earth2 primary + optional Earth2 ensemble alt tracks.<br>
+        <b>Not included in UI</b> = MRMS/NEXRAD as competing live precip.
       </p>
     </details>
   </div>
 </aside>
 
-<div id="mapStage" class="map-stage">
+<div class="map-stage" id="mapStage">
   <div class="map-pane"><div class="pane-label" id="leftLabel">Storm · Earth2</div><div id="mapLeft" class="map-el"></div></div>
-  <div class="footer-note">Earth2-only prototype. AI precip loop ≠ live radar. Susceptibility is screening, not flood depth.</div>
+  <div class="footer-note">Earth2-primary prototype. Alt paths are scenario tracks. Susceptibility is screening, not depth.</div>
   <div class="radar-hud">
     <button type="button" class="play" id="hudPlay">▶</button>
     <div>
       <div class="clock" id="hudClock">—</div>
-      <div class="sub" id="hudSub">Earth2 frame · land-masked · nearest ~0.25°</div>
+      <div class="sub" id="hudSub">Earth2 frame · land-masked · ~0.25°</div>
     </div>
     <div class="legend">
       <span id="hudLegendLabel">Earth2 precip (mm)</span>
@@ -252,14 +303,16 @@ const manifest = {json.dumps(manifest)};
 const pluvial = {json.dumps(pluvial)};
 const validation = {json.dumps(validation)};
 const assets = "product_assets/";
-const frames = manifest.precip?.frames || [];
-const suscFrames = manifest.susceptibility?.frames || [];
-const infraFrames = manifest.infra_highlights?.frames || [];
-const ens = manifest.ensemble || null;
+const stormPaths = manifest.storm_paths || [{{
+  id: "earth2_control", label: "Earth2 (primary)", primary: true, scenario_kind: "earth2_primary",
+  precip: manifest.precip, susceptibility: manifest.susceptibility, infra_highlights: manifest.infra_highlights
+}}];
 
 const mapLeft = L.map("mapLeft", {{ zoomControl: true }});
 window.mapLeft = mapLeft;
-L.tileLayer("https://{{s}}.tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png", {{ maxZoom: 19, attribution: "&copy; OpenStreetMap" }}).addTo(mapLeft);
+L.tileLayer("https://{{s}}.basemaps.cartocdn.com/light_all/{{z}}/{{x}}/{{y}}{{r}}.png", {{
+  maxZoom: 19, attribution: "&copy; OpenStreetMap &copy; CARTO"
+}}).addTo(mapLeft);
 
 const eventSel = document.getElementById("eventSelect");
 Object.values(EVENTS).forEach(ev => {{
@@ -274,33 +327,60 @@ Object.values(EXTENTS).forEach(ex => {{
 }});
 extentSel.value = (manifest.layer_bounds && manifest.layer_bounds.map_extent_default) || "citywide";
 
+const pathSel = document.getElementById("stormPathSelect");
+stormPaths.forEach(p => {{
+  const opt = document.createElement("option");
+  opt.value = p.id;
+  opt.textContent = p.label + (p.primary ? "" : " · alternate scenario");
+  pathSel.appendChild(opt);
+}});
+pathSel.value = manifest.default_storm_path || stormPaths[0].id;
+
 function currentBounds() {{
-  const id = extentSel.value || "citywide";
-  const b = (EXTENTS[id] || EXTENTS.citywide).bounds;
+  const b = (EXTENTS[extentSel.value] || EXTENTS.citywide).bounds;
   return [[b.ymin, b.xmin],[b.ymax, b.xmax]];
 }}
-const precipBounds = (manifest.precip && manifest.precip.bounds) || currentBounds();
-const suscBounds = (manifest.susceptibility && manifest.susceptibility.bounds) || precipBounds;
-const hotspotBounds = (manifest.terrain && manifest.terrain.terrain_bounds) || precipBounds;
 
-const e2Layers = frames.map(f => L.imageOverlay(assets + f.png, precipBounds, {{ opacity: 0.75, interactive:false, className: "precip-nearest" }}));
-const suscLayers = suscFrames.map(f => L.imageOverlay(assets + f.png, suscBounds, {{ opacity: 0.65, interactive:false }}));
-let activeE2 = e2Layers[0] || null;
-let activeSusc = suscLayers[0] || null;
-let activeInfra = null;
-const e2Total = manifest.precip?.storm_total_png ? L.imageOverlay(assets + manifest.precip.storm_total_png, precipBounds, {{ opacity: 0.65 }}) : null;
+let activePath = stormPaths.find(p => p.id === pathSel.value) || stormPaths[0];
+let frames = activePath.precip?.frames || [];
+let suscFrames = activePath.susceptibility?.frames || [];
+let infraFrames = activePath.infra_highlights?.frames || [];
+let precipBounds = (activePath.precip && activePath.precip.bounds) || currentBounds();
+let suscBounds = (activePath.susceptibility && activePath.susceptibility.bounds) || precipBounds;
+const hotspotBounds = precipBounds;
+
+let e2Layers = [], suscLayers = [];
+let activeE2 = null, activeSusc = null, activeInfra = null;
+let e2Total = null;
 const builtLayer = pluvial?.built_surface_png ? L.imageOverlay(assets + pluvial.built_surface_png, suscBounds, {{ opacity: 0.5 }}) : null;
 const hotspot = manifest.disruption?.hotspot_png ? L.imageOverlay(assets + manifest.disruption.hotspot_png, hotspotBounds, {{ opacity: 0.5 }}) : null;
-const ensLayer = (ens && ens.available && ens.png) ? L.imageOverlay(assets + ens.png, precipBounds, {{ opacity: 0.55 }}) : null;
 let roadsLayer=null, disruptLayer=null, stationsLayer=null, drainNodes=null, drainEdges=null, femaLayer=null, nwmLayer=null, gaugesLayer=null;
 const reports = L.markerClusterGroup({{ showCoverageOnHover:false }});
 let productMode = "storm", playing = false, playTimer = null;
-if (activeE2) activeE2.addTo(mapLeft);
-
-document.getElementById("tickRow").innerHTML = frames.map(f => `<span>+${{Number(f.lead_hours)}}h</span>`).join("");
 
 function precipOpacity() {{ return (+document.getElementById("opPrecip").value) / 100; }}
 function suscOpacity() {{ return (+document.getElementById("opSusc").value) / 100; }}
+
+function rebuildPathLayers() {{
+  e2Layers.forEach(l => mapLeft.removeLayer(l));
+  suscLayers.forEach(l => mapLeft.removeLayer(l));
+  if (e2Total) mapLeft.removeLayer(e2Total);
+  if (activeInfra) {{ mapLeft.removeLayer(activeInfra); activeInfra = null; }}
+  frames = activePath.precip?.frames || [];
+  suscFrames = activePath.susceptibility?.frames || [];
+  infraFrames = activePath.infra_highlights?.frames || [];
+  precipBounds = (activePath.precip && activePath.precip.bounds) || currentBounds();
+  suscBounds = (activePath.susceptibility && activePath.susceptibility.bounds) || precipBounds;
+  e2Layers = frames.map(f => L.imageOverlay(assets + f.png, precipBounds, {{ opacity: precipOpacity(), interactive:false, className:"precip-nearest" }}));
+  suscLayers = suscFrames.map(f => L.imageOverlay(assets + f.png, suscBounds, {{ opacity: suscOpacity(), interactive:false }}));
+  e2Total = activePath.precip?.storm_total_png ? L.imageOverlay(assets + activePath.precip.storm_total_png, precipBounds, {{ opacity: precipOpacity() }}) : null;
+  document.getElementById("leadSlider").max = Math.max(frames.length - 1, 0);
+  document.getElementById("tickRow").innerHTML = frames.map(f => `<span>+${{Number(f.lead_hours)}}</span>`).join("");
+  document.getElementById("pathPill").textContent = activePath.label;
+  document.getElementById("pathHonesty").textContent = activePath.primary
+    ? "Primary Earth2 control path. Alternate members are IC-perturbation scenarios, not observations."
+    : "Alternate Earth2 storm scenario (ensemble member) — not MRMS/NEXRAD, not a validation split-screen.";
+}}
 
 function setLead(i) {{
   if (!frames.length) return;
@@ -309,19 +389,12 @@ function setLead(i) {{
   const f = frames[i];
   if (activeE2 && mapLeft.hasLayer(activeE2)) mapLeft.removeLayer(activeE2);
   activeE2 = e2Layers[i];
-  if (document.getElementById("lyE2").checked) {{
-    activeE2.setOpacity(precipOpacity());
-    activeE2.addTo(mapLeft);
-  }}
+  if (document.getElementById("lyE2").checked && activeE2) {{ activeE2.setOpacity(precipOpacity()); activeE2.addTo(mapLeft); }}
   if (activeSusc && mapLeft.hasLayer(activeSusc)) mapLeft.removeLayer(activeSusc);
   if (suscLayers[i]) {{
     activeSusc = suscLayers[i];
-    if (document.getElementById("lySusc").checked) {{
-      activeSusc.setOpacity(suscOpacity());
-      activeSusc.addTo(mapLeft);
-    }}
+    if (document.getElementById("lySusc").checked) {{ activeSusc.setOpacity(suscOpacity()); activeSusc.addTo(mapLeft); }}
   }}
-  // Infra sync
   if (activeInfra) {{ mapLeft.removeLayer(activeInfra); activeInfra = null; }}
   const infraMeta = infraFrames[i];
   if (infraMeta && infraMeta.geojson && document.getElementById("lyInfra").checked) {{
@@ -329,9 +402,9 @@ function setLead(i) {{
       if (!geo || +document.getElementById("leadSlider").value !== i) return;
       activeInfra = L.geoJSON(geo, {{
         style: {{ color:"#b91c1c", weight:3, opacity:0.9 }},
-        onEachFeature: (ft, layer) => layer.bindTooltip("Storm-synced highlight · precip × susceptibility (demo)")
+        onEachFeature: (ft, layer) => layer.bindTooltip("Storm-synced · multi-factor susceptibility (demo)")
       }}).addTo(mapLeft);
-    }}).catch(() => {{}});
+    }}).catch(()=>{{}});
   }}
   const clock = (f.valid_time || "").replace("T", " ");
   document.getElementById("clockReadout").textContent = clock;
@@ -340,10 +413,11 @@ function setLead(i) {{
   document.getElementById("frameTypeReadout").textContent = f.temporal_blend ? "temporal blend" : "native Earth2";
   document.getElementById("hudClock").textContent = clock + " UTC";
   document.getElementById("hudSub").textContent = productMode === "susceptibility"
-    ? ("Susceptibility · lead +" + f.lead_hours + "h · screening only")
-    : ("Lead +" + f.lead_hours + "h · max " + (f.max_mm!=null?f.max_mm.toFixed(1):"—") + " mm · " + (f.temporal_blend ? "blend" : "native") + " · not NEXRAD");
-  const labelBase = productMode === "susceptibility" ? "Susceptibility" : (productMode === "coupled" ? "Coupled" : "Storm");
-  document.getElementById("leftLabel").textContent = labelBase + " · Earth2";
+    ? ("Multi-factor susceptibility · +" + f.lead_hours + "h · screening only")
+    : (activePath.label + " · +" + f.lead_hours + "h · " + (f.temporal_blend ? "blend" : "native") + " · not NEXRAD");
+  document.getElementById("leftLabel").textContent =
+    (productMode === "susceptibility" ? "Susceptibility" : productMode === "coupled" ? "Coupled" : "Storm")
+    + " · " + (activePath.primary ? "Earth2" : "Alt path");
   writeUrl();
 }}
 
@@ -354,14 +428,11 @@ function setPlaying(on) {{
   document.getElementById("playBtn").classList.toggle("playing", on);
   if (playTimer) {{ clearInterval(playTimer); playTimer = null; }}
   if (!on) return;
-  const ms = +document.getElementById("playSpeed").value || 900;
-  playTimer = setInterval(() => {{
-    const cur = +document.getElementById("leadSlider").value;
-    setLead((cur + 1) % frames.length);
-  }}, ms);
+  const ms = +document.getElementById("playSpeed").value || 750;
+  playTimer = setInterval(() => setLead((+document.getElementById("leadSlider").value + 1) % frames.length), ms);
 }}
 
-const LAYER_IDS = ["lyE2","lyE2Tot","lyEns","lySusc","lyBuilt","lyInfra","lyHot","ly311","lySta","lyRoads","lyFema","lyNwm","lyGauges","lyDrainE","lyDrainN"];
+const LAYER_IDS = ["lyE2","lyE2Tot","lySusc","lyBuilt","lyInfra","lyHot","ly311","lySta","lyRoads","lyFema","lyNwm","lyGauges","lyDrainE","lyDrainN"];
 function setLayerChecks(onIds) {{
   LAYER_IDS.forEach(id => {{
     const el = document.getElementById(id);
@@ -384,28 +455,25 @@ function applyProductMode(mode) {{
   const legend = document.getElementById("hudLegendLabel");
   if (mode === "susceptibility") {{
     bar.classList.add("susc"); legend.textContent = "Susceptibility (screening)";
-    document.getElementById("modeHint").textContent = "Susceptibility mode: time-varying heatmap f(terrain/NLCD × Earth2 precip). Not depth.";
+    document.getElementById("modeHint").textContent = "Susceptibility: weather × landscape × infrastructure — screening, not depth.";
     setLayerChecks(["lySusc"]); setPlaying(false);
   }} else if (mode === "coupled") {{
     bar.classList.remove("susc"); legend.textContent = "Earth2 precip (mm)";
-    document.getElementById("modeHint").textContent = "Coupled: precip → susceptibility → storm-synced infrastructure.";
+    document.getElementById("modeHint").textContent = "Coupled: precip → multi-factor susceptibility → storm-synced infra.";
     setLayerChecks(["lyE2","lySusc","lyInfra","lySta"]);
   }} else {{
     bar.classList.remove("susc"); legend.textContent = "Earth2 precip (mm)";
-    document.getElementById("modeHint").textContent = "Storm mode: Earth2-only radar-style loop. Susceptibility off by default.";
+    document.getElementById("modeHint").textContent = "Storm mode: Earth2 radar-style loop. Susceptibility off by default.";
     setLayerChecks(["lyE2"]);
   }}
   setLead(+document.getElementById("leadSlider").value);
 }}
 
-function fitExtent() {{
-  mapLeft.fitBounds(currentBounds());
-  writeUrl();
-}}
+function fitExtent() {{ mapLeft.fitBounds(currentBounds()); writeUrl(); }}
 function writeUrl() {{
   const params = new URLSearchParams({{
     event: eventSel.value, extent: extentSel.value, lead: document.getElementById("leadSlider").value,
-    product: productMode, playing: playing ? "1" : "0",
+    path: activePath.id, product: productMode, playing: playing ? "1" : "0",
     opP: document.getElementById("opPrecip").value, opS: document.getElementById("opSusc").value,
     resample: document.getElementById("resampleSelect").value,
     layers: LAYER_IDS.filter(id => document.getElementById(id).checked).join(",")
@@ -418,6 +486,7 @@ function readUrl() {{
   const p = new URLSearchParams(raw);
   if (p.get("event")) eventSel.value = p.get("event");
   if (p.get("extent")) extentSel.value = p.get("extent");
+  if (p.get("path") && stormPaths.some(sp => sp.id === p.get("path"))) pathSel.value = p.get("path");
   if (p.get("lead") != null) document.getElementById("leadSlider").value = p.get("lead");
   if (p.get("opP")) document.getElementById("opPrecip").value = p.get("opP");
   if (p.get("opS")) document.getElementById("opSusc").value = p.get("opS");
@@ -435,9 +504,8 @@ function readUrl() {{
     <div class="metric"><span>Earth2 storm max</span><b>${{e2.max_mm != null ? e2.max_mm.toFixed(1)+" mm" : "n/a"}}</b></div>
     <div class="metric"><span>311 reports</span><b>${{r.n_reports ?? "n/a"}}</b></div>
     <div class="metric"><span>311 above E2 P75</span><b>${{r.fraction_reports_above_earth2_p75 != null ? (100*r.fraction_reports_above_earth2_p75).toFixed(0)+"%" : "n/a"}}</b></div>
-    <div style="margin-top:6px;color:var(--muted)">Earth2-only exploratory validation — not certified skill / not flood warnings.</div>`;
+    <div style="margin-top:6px;color:var(--muted)">Earth2-primary exploratory validation — not certified skill.</div>`;
 }})();
-if (ens && ens.available) document.getElementById("lyEns").disabled = false;
 
 document.getElementById("leadSlider").addEventListener("input", e => {{ setPlaying(false); setLead(+e.target.value); }});
 document.getElementById("playBtn").onclick = () => setPlaying(!playing);
@@ -448,6 +516,11 @@ document.getElementById("productSusc").onclick = () => applyProductMode("suscept
 document.getElementById("productCoupled").onclick = () => applyProductMode("coupled");
 document.getElementById("extentSelect").onchange = fitExtent;
 document.getElementById("eventSelect").onchange = () => {{ if (!EVENTS[eventSel.value].available) alert("Only Ida is loaded."); writeUrl(); }};
+document.getElementById("stormPathSelect").onchange = () => {{
+  activePath = stormPaths.find(p => p.id === pathSel.value) || stormPaths[0];
+  rebuildPathLayers();
+  applyProductMode(productMode);
+}};
 document.getElementById("opPrecip").oninput = () => {{
   document.getElementById("opPrecipVal").textContent = document.getElementById("opPrecip").value + "%";
   if (activeE2) activeE2.setOpacity(precipOpacity());
@@ -465,30 +538,35 @@ document.getElementById("resampleSelect").onchange = () => {{
   writeUrl();
 }};
 
-function bind(id, layer) {{
-  const el = document.getElementById(id);
-  el.addEventListener("change", () => {{
+function bind(id, getLayer) {{
+  document.getElementById(id).addEventListener("change", () => {{
+    const layer = typeof getLayer === "function" ? getLayer() : getLayer;
     if (!layer) return;
-    if (el.checked) layer.addTo(mapLeft); else mapLeft.removeLayer(layer);
+    if (document.getElementById(id).checked) layer.addTo(mapLeft); else mapLeft.removeLayer(layer);
     writeUrl();
   }});
 }}
-document.getElementById("lyE2").onchange = e => {{
-  if (e.target.checked) {{ activeE2.setOpacity(precipOpacity()); activeE2.addTo(mapLeft); }}
+document.getElementById("lyE2").onchange = () => {{
+  if (!activeE2) return;
+  if (document.getElementById("lyE2").checked) {{ activeE2.setOpacity(precipOpacity()); activeE2.addTo(mapLeft); }}
   else mapLeft.removeLayer(activeE2);
   writeUrl();
 }};
-document.getElementById("lySusc").onchange = e => {{
+document.getElementById("lySusc").onchange = () => {{
   if (!activeSusc) return;
-  if (e.target.checked) {{ activeSusc.setOpacity(suscOpacity()); activeSusc.addTo(mapLeft); }}
+  if (document.getElementById("lySusc").checked) {{ activeSusc.setOpacity(suscOpacity()); activeSusc.addTo(mapLeft); }}
   else mapLeft.removeLayer(activeSusc);
   writeUrl();
 }};
 document.getElementById("lyInfra").onchange = () => setLead(+document.getElementById("leadSlider").value);
-bind("lyE2Tot", e2Total);
+document.getElementById("lyE2Tot").onchange = () => {{
+  if (!e2Total) return;
+  if (document.getElementById("lyE2Tot").checked) {{ e2Total.setOpacity(precipOpacity()); e2Total.addTo(mapLeft); }}
+  else mapLeft.removeLayer(e2Total);
+  writeUrl();
+}};
 bind("lyBuilt", builtLayer);
-bind("lyHot", hotspot);
-bind("lyEns", ensLayer);
+bind("lyHot", () => disruptLayer);
 
 fetch(assets + "fema_nfhl.geojson").then(r => r.ok ? r.json() : null).then(geo => {{
   if (!geo) return;
@@ -521,11 +599,7 @@ fetch(assets + (manifest.infra?.roads_geojson || "roads.geojson")).then(r=>r.jso
 }});
 fetch(assets + (manifest.disruption?.disrupted_geojson || "roads_potential_disruption.geojson")).then(r=>r.json()).then(geo => {{
   disruptLayer = L.geoJSON(geo, {{ style: {{ color:"#b91c1c", weight:3, opacity:.9 }} }});
-  document.getElementById("lyHot").addEventListener("change", () => {{
-    if (document.getElementById("lyHot").checked) disruptLayer.addTo(mapLeft); else mapLeft.removeLayer(disruptLayer);
-    writeUrl();
-  }});
-}});
+}}).catch(()=>{{}});
 fetch(assets + (manifest.infra?.stations_geojson || "subway_stations.geojson")).then(r=>r.json()).then(geo => {{
   stationsLayer = L.geoJSON(geo, {{ pointToLayer: (f,ll) => L.circleMarker(ll, {{ radius:4, color:"#0f766e", fillColor:"#14b8a6", fillOpacity:.9, weight:1 }}) }});
   bind("lySta", stationsLayer);
@@ -539,6 +613,8 @@ fetch(assets + (manifest.reports?.geojson || "observed_311.geojson")).then(r=>r.
 }});
 
 const urlState = readUrl() || {{}};
+activePath = stormPaths.find(p => p.id === pathSel.value) || stormPaths[0];
+rebuildPathLayers();
 document.getElementById("opPrecipVal").textContent = document.getElementById("opPrecip").value + "%";
 document.getElementById("opSuscVal").textContent = document.getElementById("opSusc").value + "%";
 fitExtent();
@@ -548,9 +624,7 @@ if (urlState.product && ["storm","susceptibility","coupled"].includes(urlState.p
     const el = document.getElementById(id); el.classList.toggle("active", el.dataset.mode === productMode);
   }});
   setLead(+document.getElementById("leadSlider").value);
-}} else {{
-  applyProductMode(urlState.product || "storm");
-}}
+}} else applyProductMode(urlState.product || "storm");
 if (urlState.playing) setPlaying(true);
 document.querySelectorAll(".leaflet-image-layer").forEach(el => {{
   el.style.imageRendering = (document.getElementById("resampleSelect").value === "nearest") ? "pixelated" : "auto";
@@ -559,6 +633,8 @@ document.querySelectorAll(".leaflet-image-layer").forEach(el => {{
 </body>
 </html>
 """
+    # Fix accidental CSS typo if any
+    html = html.replace("--accent-deep:#056 dig 068;", "--accent-deep:#056068;")
     out = FIGURES_DIR / "product_map.html"
     out.write_text(html)
     return out

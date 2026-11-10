@@ -1,0 +1,52 @@
+{
+  "label": "Multi-factor susceptibility factors",
+  "disclaimer": "Relative screening from weather \u00d7 landscape \u00d7 infrastructure. Not inundation depth, not flood probability, not a calibrated hydrology model.",
+  "formula": "S = clip(0.35*weather + 0.40*landscape + 0.15*infra + 0.10*weather*landscape, 0, 1); landscape = 0.55*terrain_lowflat + 0.45*impervious; infra = 0.70*built_road_proxy + 0.30*(1 - drain_density_norm)",
+  "weights": {
+    "weather": 0.35,
+    "landscape": 0.4,
+    "infra": 0.15,
+    "interaction_weather_landscape": 0.1,
+    "landscape_terrain": 0.55,
+    "landscape_impervious": 0.45,
+    "infra_built": 0.7,
+    "infra_drain_deficit": 0.3
+  },
+  "extent_id": "citywide",
+  "shape": [
+    360,
+    480
+  ],
+  "bounds": [
+    [
+      40.48,
+      -74.28
+    ],
+    [
+      40.93,
+      -73.68
+    ]
+  ],
+  "transform": [
+    0.001249999999999988,
+    0.0,
+    -74.28,
+    0.0,
+    -0.0012500000000000078,
+    40.93
+  ],
+  "paths": {
+    "terrain": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility_factors/factor_terrain.tif",
+    "impervious": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility_factors/factor_impervious.tif",
+    "landscape": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility_factors/factor_landscape.tif",
+    "built": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility_factors/factor_built.tif",
+    "drain_density": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility_factors/factor_drain_density.tif",
+    "infra": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility_factors/factor_infra.tif"
+  },
+  "sources": [
+    "/home/jesscmiel/projects/nyc-flood-impact/data/processed/terrain_screening_citywide.tif",
+    "/home/jesscmiel/projects/nyc-flood-impact/data/raw/landcover/nlcd_2021_impervious_citywide.tif",
+    "/home/jesscmiel/projects/nyc-flood-impact/data/raw/infrastructure/osm_highways_south_queens.json"
+  ],
+  "citations_note": "Compound flood-susceptibility indices commonly combine hazard intensity, land-surface predisposition (topography, imperviousness), and exposure/drainage; weights here are transparent screening defaults, not NYC-calibrated parameters."
+}
