@@ -310,8 +310,8 @@ const stormPaths = manifest.storm_paths || [{{
 
 const mapLeft = L.map("mapLeft", {{ zoomControl: true }});
 window.mapLeft = mapLeft;
-L.tileLayer("https://{{s}}.basemaps.cartocdn.com/light_all/{{z}}/{{x}}/{{y}}{{r}}.png", {{
-  maxZoom: 19, attribution: "&copy; OpenStreetMap &copy; CARTO"
+L.tileLayer("https://{{s}}.tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png", {{
+  maxZoom: 19, attribution: "&copy; OpenStreetMap contributors"
 }}).addTo(mapLeft);
 
 const eventSel = document.getElementById("eventSelect");
