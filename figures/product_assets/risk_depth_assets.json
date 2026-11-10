@@ -173,5 +173,46 @@
     "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_citywide_mrms_qpe_ida_storm_total_m.tif",
     "png": "depth_citywide_mrms_qpe_ida_storm_total_m.png",
     "honesty": "Research borough spike (pysheds). NOT official NWS. SFINCS/LISFLOOD-FP blocked without binaries."
+  },
+  "disruption_score": {
+    "roads_wet_fraction": 0.19454545454545455,
+    "stations_wet_fraction": 0.9838187702265372,
+    "facilities_wet_fraction": 0.5769230769230769,
+    "note": "Simple wet-asset fractions \u2014 research screening only."
+  },
+  "return_period": {
+    "file": "risk_return_period_placeholders.json",
+    "event_placeholder": {
+      "min_mm": 150,
+      "max_mm": 200,
+      "rp_years": 50,
+      "label": "~50-yr class (placeholder)"
+    },
+    "p99_precip_mm": 175.97085464477544,
+    "era5_status": "hook",
+    "honesty": "Return-period values are research placeholders for UI/scenario cards. ERA5 remains a hook until CDS fetch is configured."
+  },
+  "scenario_card": {
+    "title": "Ida \u00b7 MRMS QPE \u00b7 NYC metro / citywide (research)",
+    "extent": "citywide",
+    "max_depth_m": 0.15213757753372192,
+    "wet_assets": {
+      "roads": 428,
+      "stations": 304,
+      "facilities": 15
+    },
+    "disruption_score": {
+      "roads_wet_fraction": 0.19454545454545455,
+      "stations_wet_fraction": 0.9838187702265372,
+      "facilities_wet_fraction": 0.5769230769230769,
+      "note": "Simple wet-asset fractions \u2014 research screening only."
+    },
+    "return_period_placeholder": {
+      "min_mm": 150,
+      "max_mm": 200,
+      "rp_years": 50,
+      "label": "~50-yr class (placeholder)"
+    },
+    "confidence": "low \u2014 research prototype, uncalibrated RP placeholder, pysheds depth"
   }
 }

@@ -20,6 +20,7 @@ from flood_risk.hazard.catalog import write_catalog
 from flood_risk.inundation.engine_spike import try_build_sfincs_schema, write_spike_report
 from flood_risk.inundation.pysheds_borough import run_borough_spike
 from flood_risk.risk.depth_asset_tables import DEPTH_BANDS, summarize_assets
+from flood_risk.risk.return_period import build_rp_placeholders
 from nyc_flash_flood_case_study.config import FIGURES_DIR, OUTPUTS_DIR, PROCESSED_DIR, PROJECT_ROOT
 from nyc_flash_flood_case_study.extents import EXTENTS
 
@@ -244,6 +245,35 @@ def main() -> None:
     city_risk["citywide_inundation"] = city_meta
     sq_risk["borough_inundation"] = sq_meta
 
+    # Richer metrics + RP placeholders
+    rp = build_rp_placeholders(PROJECT_ROOT, ASSETS)
+    (OUTPUTS_DIR / "risk_return_period_placeholders.json").write_text(json.dumps(rp, indent=2))
+    mrms_rp = next((s for s in rp["scenarios"] if s["id"] == "mrms_qpe_ida"), None)
+    totals = city_risk["totals"]
+    wet = city_risk["wet_assets"]
+    city_risk["disruption_score"] = {
+        "roads_wet_fraction": (wet["roads"] / totals["roads"]) if totals["roads"] else 0.0,
+        "stations_wet_fraction": (wet["stations"] / totals["stations"]) if totals["stations"] else 0.0,
+        "facilities_wet_fraction": (wet["facilities"] / totals["facilities"]) if totals["facilities"] else 0.0,
+        "note": "Simple wet-asset fractions — research screening only.",
+    }
+    city_risk["return_period"] = {
+        "file": "risk_return_period_placeholders.json",
+        "event_placeholder": (mrms_rp or {}).get("return_period_placeholder"),
+        "p99_precip_mm": (mrms_rp or {}).get("p99_precip_mm"),
+        "era5_status": rp.get("era5", {}).get("status"),
+        "honesty": rp.get("honesty"),
+    }
+    city_risk["scenario_card"] = {
+        "title": city_risk["scenario"]["label"],
+        "extent": "citywide",
+        "max_depth_m": city_risk["scenario"].get("max_depth_m"),
+        "wet_assets": wet,
+        "disruption_score": city_risk["disruption_score"],
+        "return_period_placeholder": city_risk["return_period"]["event_placeholder"],
+        "confidence": "low — research prototype, uncalibrated RP placeholder, pysheds depth",
+    }
+
     # Primary product file = citywide
     (ASSETS / "risk_depth_assets.json").write_text(json.dumps(city_risk, indent=2))
     (OUTPUTS_DIR / "risk_depth_assets.json").write_text(json.dumps(city_risk, indent=2))
@@ -279,6 +309,7 @@ def main() -> None:
             "depth_assets": "risk_depth_assets.json",
             "depth_assets_south_queens": "risk_depth_assets_south_queens.json",
             "scenarios": "risk_scenarios.json",
+            "return_period": "risk_return_period_placeholders.json",
             "scenario_id": city_risk["scenario"]["id"],
             "extent_default": "citywide",
             "official_nws": False,

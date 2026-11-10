@@ -66,7 +66,7 @@ Hazard forcing  →  Inundation / hydrology  →  Exposure  →  Risk metrics  �
 4. **Hazard catalog v0** — MRMS event packs + ERA5/GFS hooks; optional open FCN if installable. ✅ hooks in `hazard_catalog.json` (MRMS+Earth2 available; ERA5/GFS hook-only).
 5. **Inundation v1** — keep pysheds; spike SFINCS or LISFLOOD-FP on one borough DEM. ✅ spike attempted — **binaries blocked**; pysheds shipped. **User install cmds:** `docs/sfincs-lisflood-user-install.md` (Docker/EXE/compile — no fake run).
 6. **Exposure v1** — citywide roads/stations/facilities GeoPackage + intersect API. ✅ `exposure_citywide.gpkg` + `exposure_depth_intersects.json` (no err counts)
-7. **Risk metrics v0** — depth×asset tables + scenario cards; RP placeholders with caveats. ✅ **citywide primary** + South Queens nested; UI scenario switcher
+7. **Risk metrics v0** — depth×asset tables + scenario cards; RP placeholders with caveats. ✅ citywide + disruption % + MRMS RP placeholders (ERA5 hook); richer scenario card
 8. **Validation dashboard** — 311/gauge overlays with quantitative scores + confidence language.
 9. **Only then** consider multi-city templates (same architecture, new fixtures).
 

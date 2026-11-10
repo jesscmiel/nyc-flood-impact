@@ -969,13 +969,21 @@ function renderRiskCard(risk) {{
   }}
   const sc = risk.scenario || {{}};
   const wet = risk.wet_assets || {{}};
+  const tot = risk.totals || {{}};
+  const dscore = risk.disruption_score || {{}};
+  const rp = (risk.return_period && risk.return_period.event_placeholder) || null;
+  const conf = (risk.scenario_card && risk.scenario_card.confidence) || "low — research prototype";
+  const pct = (num, den) => (den ? ((100 * num) / den).toFixed(1) + "%" : "n/a");
   card.innerHTML = `
     <div class="metric"><span>Scenario</span><b style="font-size:.72rem">${{sc.label || sc.id || "n/a"}}</b></div>
     <div class="metric"><span>Extent</span><b style="font-size:.72rem">${{sc.extent_id || risk.extent_id || "citywide"}}</b></div>
     <div class="metric"><span>Engine</span><b style="font-size:.72rem">${{sc.inundation_engine || "pysheds"}}</b></div>
     <div class="metric"><span>Max depth</span><b>${{sc.max_depth_m != null ? Number(sc.max_depth_m).toFixed(3) + " m" : "n/a"}}</b></div>
     <div class="metric"><span>Wet roads / sta / fac</span><b>${{wet.roads||0}} / ${{wet.stations||0}} / ${{wet.facilities||0}}</b></div>
-    <div style="margin-top:6px;color:var(--muted);font-size:.72rem;line-height:1.35">${{risk.honesty || ""}}</div>`;
+    <div class="metric"><span>Disruption (wet %)</span><b style="font-size:.72rem">${{pct(wet.roads||0, tot.roads||0)}} / ${{pct(wet.stations||0, tot.stations||0)}} / ${{pct(wet.facilities||0, tot.facilities||0)}}</b></div>
+    <div class="metric"><span>RP placeholder</span><b style="font-size:.72rem">${{rp ? (rp.label || ("~" + rp.rp_years + "-yr")) : "n/a (ERA5 hook)"}}</b></div>
+    <div class="metric"><span>Confidence</span><b style="font-size:.68rem;color:#a16207">${{conf}}</b></div>
+    <div style="margin-top:6px;color:var(--muted);font-size:.72rem;line-height:1.35">${{risk.honesty || ""}} ${{(risk.return_period && risk.return_period.honesty) || ""}}</div>`;
   const rows = (risk.table || []).map(r => `
     <tr>
       <td>${{r.label}}</td>

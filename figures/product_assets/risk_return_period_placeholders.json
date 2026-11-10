@@ -1,0 +1,89 @@
+{
+  "product": "flood_risk_research_prototype",
+  "official_nws": false,
+  "decision_grade": false,
+  "enterprise": false,
+  "hens": false,
+  "updated_utc": "2026-11-10T19:28:32Z",
+  "method": "Placeholder RP classes from event p99 precip (mm) lookup table. NOT calibrated IDF / NOT USGS / NOT NWS frequency analysis.",
+  "lookup_table": [
+    {
+      "min_mm": 0,
+      "max_mm": 25,
+      "rp_years": 1,
+      "label": "~1-yr class (placeholder)"
+    },
+    {
+      "min_mm": 25,
+      "max_mm": 50,
+      "rp_years": 2,
+      "label": "~2-yr class (placeholder)"
+    },
+    {
+      "min_mm": 50,
+      "max_mm": 75,
+      "rp_years": 5,
+      "label": "~5-yr class (placeholder)"
+    },
+    {
+      "min_mm": 75,
+      "max_mm": 100,
+      "rp_years": 10,
+      "label": "~10-yr class (placeholder)"
+    },
+    {
+      "min_mm": 100,
+      "max_mm": 150,
+      "rp_years": 25,
+      "label": "~25-yr class (placeholder)"
+    },
+    {
+      "min_mm": 150,
+      "max_mm": 200,
+      "rp_years": 50,
+      "label": "~50-yr class (placeholder)"
+    },
+    {
+      "min_mm": 200,
+      "max_mm": null,
+      "rp_years": 100,
+      "label": "~100-yr+ class (placeholder)"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "mrms_qpe_ida",
+      "label": "MRMS QPE Ida storm total",
+      "path": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_storm_total.tif",
+      "p99_precip_mm": 175.97085464477544,
+      "status": "available",
+      "return_period_placeholder": {
+        "min_mm": 150,
+        "max_mm": 200,
+        "rp_years": 50,
+        "label": "~50-yr class (placeholder)"
+      }
+    },
+    {
+      "id": "earth2_open",
+      "label": "Earth2 open scenario storm total",
+      "path": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/precip_storm_total.tif",
+      "p99_precip_mm": 44.68461990356445,
+      "status": "available",
+      "return_period_placeholder": {
+        "min_mm": 25,
+        "max_mm": 50,
+        "rp_years": 2,
+        "label": "~2-yr class (placeholder)"
+      }
+    }
+  ],
+  "era5": {
+    "status": "hook",
+    "source": "era5",
+    "fetched": false,
+    "reason": "CDS credentials / download not configured in this environment",
+    "fetch_hint": "cdsapi retrieve reanalysis-era5-single-levels variable=total_precipitation for NYC bbox"
+  },
+  "honesty": "Return-period values are research placeholders for UI/scenario cards. ERA5 remains a hook until CDS fetch is configured."
+}

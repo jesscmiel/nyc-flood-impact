@@ -2510,6 +2510,7 @@
     "depth_assets": "risk_depth_assets.json",
     "depth_assets_south_queens": "risk_depth_assets_south_queens.json",
     "scenarios": "risk_scenarios.json",
+    "return_period": "risk_return_period_placeholders.json",
     "scenario_id": "ida_mrms_citywide",
     "extent_default": "citywide",
     "official_nws": false,
