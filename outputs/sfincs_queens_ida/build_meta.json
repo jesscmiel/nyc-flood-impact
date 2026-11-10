@@ -1,0 +1,13 @@
+{
+  "model_dir": "/home/jesscmiel/projects/nyc-flood-impact/outputs/sfincs_queens_ida",
+  "extent": "south_queens",
+  "res_m": 50,
+  "precip_mm_hr": 10.2652290432983,
+  "precip_source": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_storm_total.tif",
+  "dem": "/home/jesscmiel/projects/nyc-flood-impact/data/raw/terrain/dem_usgs_citywide.tif",
+  "tstart": "20210901 120000",
+  "tstop": "20210902 000000",
+  "enterprise": false,
+  "hens": false,
+  "official_nws": false
+}

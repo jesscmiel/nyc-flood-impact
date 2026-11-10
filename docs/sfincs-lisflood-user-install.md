@@ -65,7 +65,7 @@ Docs: https://deltares.github.io/hydromt_sfincs/
 3. Export max-depth GeoTIFF → drop into `data/processed/inundation/` and re-run `scripts/build_risk_tables.py`.  
 4. Keep UI labels: research / not NWS / not decision-grade.
 
-This cloud/agent environment: `hydromt-sfincs` ✅ schema; `sfincs` binary ❌; Docker present but **no SFINCS run was executed** for the case study.
+This cloud/agent environment: `hydromt-sfincs` ✅ schema; Docker SFINCS ✅ run against Queens/Ida model — see **`docs/sfincs-docker-run.md`** for exact commands and depth outputs. No Enterprise / HENS.
 
 ---
 

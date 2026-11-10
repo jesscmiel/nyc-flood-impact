@@ -1111,7 +1111,10 @@ if (manifest.inundation_citywide && manifest.inundation_citywide.png) {{
   addDepthOverlayToggle("lyCityDepth", "Citywide depth (MRMS/pysheds)", manifest.inundation_citywide.png, EXTENTS.citywide?.bounds);
 }}
 if (manifest.inundation_borough_spike && manifest.inundation_borough_spike.png) {{
-  addDepthOverlayToggle("lyBoroughDepth", "Queens nested depth spike", manifest.inundation_borough_spike.png, EXTENTS.south_queens?.bounds);
+  addDepthOverlayToggle("lyBoroughDepth", "Queens pysheds depth", manifest.inundation_borough_spike.png, EXTENTS.south_queens?.bounds);
+}}
+if (manifest.inundation_sfincs && manifest.inundation_sfincs.png) {{
+  addDepthOverlayToggle("lySfincsDepth", "SFINCS Queens (Docker)", manifest.inundation_sfincs.png, EXTENTS.south_queens?.bounds);
 }}
 // Default play speed slightly faster for denser loops
 const playSpeedEl = document.getElementById("playSpeed");

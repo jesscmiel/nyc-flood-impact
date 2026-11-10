@@ -1,0 +1,2 @@
+sg docker -c 'docker pull deltares/sfincs-cpu:sfincs-v2.1.1-Dollerup-Release'
+sg docker -c 'docker run --rm -v /home/jesscmiel/projects/nyc-flood-impact/outputs/sfincs_queens_ida:/data deltares/sfincs-cpu:sfincs-v2.1.1-Dollerup-Release'

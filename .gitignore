@@ -67,6 +67,12 @@ __pycache__/
 !/data/processed/susceptibility/
 !/data/processed/susceptibility/**
 !/data/processed/terrain_screening_citywide.tif
+!/data/processed/inundation/
+!/data/processed/inundation/**
+!/outputs/sfincs_queens_docker_commands.txt
+!/outputs/sfincs_queens_docker_log.json
+!/outputs/sfincs_queens_ida/
+!/outputs/sfincs_queens_ida/**
 !/data/raw/terrain/dem_usgs_citywide.tif
 !/data/raw/terrain/dem_citywide_fetch.json
 !/data/processed/susceptibility_factors/

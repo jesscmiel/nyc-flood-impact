@@ -2547,5 +2547,14 @@
     "scores": "validation_scores.json",
     "official": false,
     "certified_skill": false
+  },
+  "inundation_sfincs": {
+    "png": "depth_sfincs_queens_ida_m.png",
+    "meta": "depth_sfincs_queens_ida_meta.json",
+    "engine": "sfincs_docker_v2.1.1_Dollerup",
+    "extent": "south_queens",
+    "compare_with": "inundation_borough_spike",
+    "max_m": 3.757063865661621,
+    "docker_image": "deltares/sfincs-cpu:sfincs-v2.1.1-Dollerup-Release"
   }
 }
