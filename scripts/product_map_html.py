@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Earth2-primary product map — radar loop, multi-factor susceptibility, alt storm paths."""
+"""Flood-risk research product map — case-study storm loop + exposure layers.
+
+NYC / Hurricane Ida is a case study only. Not Earth2Studio Enterprise / HENS.
+"""
 
 from __future__ import annotations
 
@@ -21,7 +24,8 @@ def write_product_html(manifest: dict, pluvial: dict, validation: dict) -> Path:
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>NYC Flood Impact</title>
+<title>Flood Risk · research prototype (Ida case study)</title>
+<meta name="description" content="Research flood-risk prototype. NYC Hurricane Ida is a case study only. Not official NWS guidance. No Earth2Studio Enterprise / HENS.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=IBM+Plex+Mono:wght@500&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -32,7 +36,7 @@ def write_product_html(manifest: dict, pluvial: dict, validation: dict) -> Path:
 :root {{
   --ink:#071018; --ink-soft:#152433; --muted:#6a7f90; --paper:#f3f7f9;
   --panel:rgba(255,255,255,.92); --line:#c5d3de; --line-soft:#dde6ed;
-  --accent:#0a8a96; --accent-deep:#056 dig 068; --accent-soft:#d4eef1;
+  --accent:#0a8a96; --accent-deep:#056068; --accent-soft:#d4eef1;
   --sea:#083b48; --sea-2:#0c6170; --warn:#8d3d14; --warn-bg:#fff3e6; --warn-line:#efc49a;
   --hud:#07141c; --chip:#e7eef3; --shadow:0 18px 50px rgba(7,16,24,.16);
   --radius:14px;
@@ -162,15 +166,16 @@ details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft);
 <body>
 <aside>
   <div class="brand">
-    <div class="brand-kicker">NYC · research flood-warning prototype</div>
-    <div class="brand-mark">Flood Impact</div>
-    <div class="brand-tag">High-res Ida storm viz + estimated depth alerts. Not an official NWS product.</div>
+    <div class="brand-kicker">Flood risk · research prototype</div>
+    <div class="brand-mark">Flood Risk</div>
+    <div class="brand-tag">Infrastructure / response–informing risk screening. NYC Hurricane Ida is a case study only — not the product scope.</div>
   </div>
   <div class="disclaimer-bar">
-    <b>Research flood-warning prototype — NOT an official NWS product. NOT emergency guidance.</b>
-    Ida storm viz defaults to higher-res <b>MRMS QPE (~1&nbsp;km)</b>. Earth2 remains a labeled scenario track.
-    Depth/alerts are estimated research thresholds (pysheds HAND/bathtub) — not agency-calibrated.
+    <b>NOT decision-grade. NOT an official NWS flood warning. NOT emergency guidance.</b>
+    Open-stack research prototype (no Earth2Studio Enterprise / HENS). Case study forcing: MRMS QPE + open Earth2-class scenarios when available.
+    Depth/alerts are estimated (pysheds) — not agency-calibrated return-period risk.
   </div>
+  <div id="assetBanner" class="disclaimer-bar" style="display:none;background:#3b0d0d;border-color:#7f1d1d;color:#fecaca"></div>
 
   <div class="panel">
     <h2>Product mode</h2>
@@ -303,8 +308,8 @@ details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft);
 </aside>
 
 <div class="map-stage" id="mapStage">
-  <div class="map-pane"><div class="pane-label" id="leftLabel">Storm · Earth2</div><div id="mapLeft" class="map-el"></div></div>
-  <div class="footer-note">Earth2-primary prototype. Alt paths are scenario tracks. Susceptibility is screening, not depth.</div>
+  <div class="map-pane"><div class="pane-label" id="leftLabel">Flood risk · case study</div><div id="mapLeft" class="map-el"></div></div>
+  <div class="footer-note">Flood-risk research prototype (open stack). NYC/Ida is a case study. Not decision-grade. No Enterprise/HENS.</div>
   <div class="radar-hud">
     <button type="button" class="play" id="hudPlay">▶</button>
     <div>
@@ -326,9 +331,24 @@ const EXTENTS = {json.dumps(EXTENTS)};
 const manifest = {json.dumps(manifest)};
 const pluvial = {json.dumps(pluvial)};
 const validation = {json.dumps(validation)};
-const assets = "product_assets/";
+// Resolve asset base relative to this HTML file (works under /figures, /docs, nested hosts).
+// file:// will fail fetch — banner instructs to use scripts/serve_product.py.
+function resolveAssetBase() {{
+  const here = window.location.href;
+  if (here.startsWith("file:")) {{
+    const b = document.getElementById("assetBanner");
+    if (b) {{
+      b.style.display = "block";
+      b.innerHTML = "<b>Open via local HTTP server</b> — file:// cannot fetch GeoJSON. From repo root: <code>python scripts/serve_product.py</code> then open the printed URL.";
+    }}
+  }}
+  try {{ return new URL("product_assets/", here).href; }}
+  catch (e) {{ return "product_assets/"; }}
+}}
+const assets = resolveAssetBase();
+window.__productAssetsBase = assets;
 const stormPaths = manifest.storm_paths || [{{
-  id: "earth2_control", label: "Earth2 (primary)", primary: true, scenario_kind: "earth2_primary",
+  id: "earth2_control", label: "Earth2 open scenario", primary: false, scenario_kind: "earth2_open_scenario",
   precip: manifest.precip, susceptibility: manifest.susceptibility, infra_highlights: manifest.infra_highlights
 }}];
 
@@ -561,8 +581,8 @@ function setLead(i) {{
       ? ("Est. research inundation · " + depthForce + " · NOT flood warning · +" + f.lead_hours + "h")
       : (activePath.label + " · +" + f.lead_hours + "h · " + (f.temporal_blend ? "blend" : "native") + " · not NEXRAD");
   document.getElementById("leftLabel").textContent =
-    (productMode === "susceptibility" ? "Susceptibility" : productMode === "coupled" ? "Coupled" : productMode === "depth" ? ("Depth · " + depthForce) : "Storm")
-    + " · " + (activePath.primary ? "Earth2" : "Alt path");
+    (productMode === "susceptibility" ? "Susceptibility" : productMode === "coupled" ? "Coupled" : productMode === "depth" ? ("Depth · " + depthForce) : "Flood risk")
+    + " · " + ((activePath && activePath.label) ? activePath.label : "case study");
   raiseVectors();
   writeUrl();
 }}
@@ -704,15 +724,17 @@ function registerVector(layer) {{
   if (layer && !vectorLayers.includes(layer)) vectorLayers.push(layer);
   return layer;
 }}
-function setCount(id, n) {{
+function setCount(id, n, title) {{
   const el = document.getElementById(id);
-  if (el) el.textContent = n != null ? String(n) : "err";
+  if (!el) return;
+  el.textContent = n != null ? String(n) : "!";
+  if (title) el.title = title;
 }}
 function bindLayer(id, layer, {{ label, n, countId }} = {{}}) {{
   const el = document.getElementById(id);
   if (!el || !layer) return;
   layerRegistry[id] = {{ layer, n: n ?? 0, label: label || id }};
-  if (countId) setCount(countId, n);
+  if (countId) setCount(countId, n, label + " loaded");
   const sync = () => {{
     if (el.checked) {{
       pendingChecked.delete(id);
@@ -725,7 +747,6 @@ function bindLayer(id, layer, {{ label, n, countId }} = {{}}) {{
     ensureVectorsVisible();
     writeUrl();
   }};
-  // Avoid duplicate listeners if bindLayer called twice
   if (!el.dataset.bound) {{
     el.dataset.bound = "1";
     el.addEventListener("change", () => {{
@@ -740,16 +761,52 @@ function bindLayer(id, layer, {{ label, n, countId }} = {{}}) {{
     sync();
   }}
 }}
-function loadGeo(path, onOk, onFail) {{
-  fetch(assets + path).then(r => {{
-    if (!r.ok) throw new Error(path + " HTTP " + r.status);
-    return r.json();
-  }}).then(geo => {{
-    if (!geo || !Array.isArray(geo.features)) throw new Error(path + " empty/invalid");
-    onOk(geo);
+async function fetchGeoJSON(path) {{
+  const bases = [
+    assets,
+    (() => {{ try {{ return new URL("product_assets/", window.location.href).href; }} catch(e) {{ return null; }} }})(),
+    "product_assets/",
+    "./product_assets/",
+    "../product_assets/",
+    "/product_assets/",
+  ].filter(Boolean);
+  const tried = [];
+  let lastErr = null;
+  for (const base of bases) {{
+    const url = base.endsWith("/") ? base + path : base + "/" + path;
+    if (tried.includes(url)) continue;
+    tried.push(url);
+    try {{
+      const r = await fetch(url, {{ cache: "no-cache" }});
+      if (!r.ok) {{ lastErr = new Error(url + " → HTTP " + r.status); continue; }}
+      const geo = await r.json();
+      if (!geo || !Array.isArray(geo.features)) {{ lastErr = new Error(url + " → not a FeatureCollection"); continue; }}
+      return {{ geo, url }};
+    }} catch (e) {{
+      lastErr = e;
+    }}
+  }}
+  throw lastErr || new Error("failed to load " + path + " from " + tried.join(", "));
+}}
+function loadGeo(path, onOk, countId) {{
+  fetchGeoJSON(path).then(({{ geo, url }}) => {{
+    try {{
+      onOk(geo, url);
+    }} catch (e) {{
+      console.error("layer build failed", path, e);
+      if (countId) setCount(countId, "!", String(e));
+      const b = document.getElementById("assetBanner");
+      if (b) {{ b.style.display = "block"; b.textContent = "Layer build failed for " + path + ": " + e; }}
+    }}
   }}).catch(err => {{
-    console.error("layer load failed", err);
-    if (onFail) onFail(err);
+    console.error("layer load failed", path, err);
+    if (countId) setCount(countId, "!", String(err));
+    const b = document.getElementById("assetBanner");
+    if (b) {{
+      b.style.display = "block";
+      b.innerHTML = "<b>GeoJSON load failed:</b> " + path + " — " + String(err) +
+        "<br>Serve <code>figures/</code> over HTTP (repo: <code>python scripts/serve_product.py</code>). Asset base: " + assets;
+    }}
   }});
 }}
 
@@ -792,7 +849,7 @@ document.getElementById("opDepth").oninput = () => {{
 }};
 bindLayer("lyBuilt", builtLayer, {{ label: "Built", n: builtLayer ? 1 : 0 }});
 
-// High-contrast citywide-visible styles (halo via heavy dark stroke under bright color).
+// High-contrast citywide-visible styles. Canvas for dense roads (SVG can fail/OOM → "err").
 loadGeo("fema_nfhl.geojson", geo => {{
   femaLayer = registerVector(L.geoJSON(geo, {{
     pane:"vectorPane", renderer: makeVectorRenderer(),
@@ -802,7 +859,7 @@ loadGeo("fema_nfhl.geojson", geo => {{
     }}
   }}));
   bindLayer("lyFema", femaLayer, {{ label:"FEMA", n: geo.features.length, countId:"cntFema" }});
-}}, () => setCount("cntFema", "err"));
+}}, "cntFema");
 
 loadGeo("nwm_high_flow.geojson", geo => {{
   nwmLayer = registerVector(L.geoJSON(geo, {{
@@ -810,7 +867,7 @@ loadGeo("nwm_high_flow.geojson", geo => {{
     style: {{ color:"#00c2ff", weight:7, opacity:1 }}
   }}));
   bindLayer("lyNwm", nwmLayer, {{ label:"NWM", n: geo.features.length, countId:"cntNwm" }});
-}}, () => setCount("cntNwm", "err"));
+}}, "cntNwm");
 
 loadGeo("nwm_ahps_gauges.geojson", geo => {{
   const pr = makePointRenderer();
@@ -819,15 +876,15 @@ loadGeo("nwm_ahps_gauges.geojson", geo => {{
     pointToLayer: (f,ll) => L.circleMarker(ll, {{ radius:9, color:"#003d5c", fillColor:"#37d6ff", fillOpacity:1, weight:3, pane:"pointPane", renderer: pr }})
   }}));
   bindLayer("lyGauges", gaugesLayer, {{ label:"Gauges", n: geo.features.length, countId:"cntGauges" }});
-}}, () => setCount("cntGauges", "err"));
+}}, "cntGauges");
 
 loadGeo("drainage_conduits.geojson", geo => {{
   drainEdges = registerVector(L.geoJSON(geo, {{
-    pane:"vectorPane", renderer: makeVectorRenderer(),
+    pane:"vectorPane", renderer: L.canvas({{ pane: "vectorPane", padding: 0.5 }}),
     style: {{ color:"#ffb020", weight:3.5, opacity:1 }}
   }}));
   bindLayer("lyDrainE", drainEdges, {{ label:"Conduits", n: geo.features.length, countId:"cntDrainE" }});
-}}, () => setCount("cntDrainE", "err"));
+}}, "cntDrainE");
 
 loadGeo("drainage_nodes.geojson", geo => {{
   const pr = makePointRenderer();
@@ -836,21 +893,16 @@ loadGeo("drainage_nodes.geojson", geo => {{
     pointToLayer: (f,ll) => L.circleMarker(ll, {{ radius:5, color:"#7a4e00", fillColor:"#ffd60a", fillOpacity:1, weight:2, pane:"pointPane", renderer: pr }})
   }}));
   bindLayer("lyDrainN", drainNodes, {{ label:"Nodes", n: geo.features.length, countId:"cntDrainN" }});
-}}, () => setCount("cntDrainN", "err"));
+}}, "cntDrainN");
 
 loadGeo((manifest.infra?.roads_geojson || "roads.geojson"), geo => {{
-  // Dual-pass casing: dark understroke + bright orange top for citywide readability
-  const under = L.geoJSON(geo, {{
-    pane:"vectorPane", renderer: makeVectorRenderer(),
-    style: {{ color:"#111827", weight:6, opacity:0.9, lineCap:"round", lineJoin:"round" }}
-  }});
-  const over = L.geoJSON(geo, {{
-    pane:"vectorPane", renderer: makeVectorRenderer(),
-    style: {{ color:"#ff6b00", weight:3.2, opacity:1, lineCap:"round", lineJoin:"round" }}
-  }});
-  roadsLayer = registerVector(L.layerGroup([under, over]));
+  const roadCanvas = L.canvas({{ pane: "vectorPane", padding: 0.5 }});
+  roadsLayer = registerVector(L.geoJSON(geo, {{
+    pane:"vectorPane", renderer: roadCanvas,
+    style: {{ color:"#ff6b00", weight:4, opacity:1, lineCap:"round", lineJoin:"round" }}
+  }}));
   bindLayer("lyRoads", roadsLayer, {{ label:"Roads", n: geo.features.length, countId:"cntRoads" }});
-}}, () => setCount("cntRoads", "err"));
+}}, "cntRoads");
 
 loadGeo((manifest.disruption?.disrupted_geojson || "roads_potential_disruption.geojson"), geo => {{
   disruptLayer = registerVector(L.geoJSON(geo, {{
@@ -858,7 +910,7 @@ loadGeo((manifest.disruption?.disrupted_geojson || "roads_potential_disruption.g
     style: {{ color:"#ff2d55", weight:6, opacity:1 }}
   }}));
   bindLayer("lyHot", disruptLayer, {{ label:"Hotspot", n: geo.features.length, countId:"cntHot" }});
-}}, () => setCount("cntHot", "err"));
+}}, "cntHot");
 
 loadGeo((manifest.infra?.stations_geojson || "subway_stations.geojson"), geo => {{
   const pr = makePointRenderer();
@@ -867,7 +919,7 @@ loadGeo((manifest.infra?.stations_geojson || "subway_stations.geojson"), geo => 
     pointToLayer: (f,ll) => L.circleMarker(ll, {{ radius:7, color:"#004d40", fillColor:"#00e5a8", fillOpacity:1, weight:2, pane:"pointPane", renderer: pr }})
   }}));
   bindLayer("lySta", stationsLayer, {{ label:"Stations", n: geo.features.length, countId:"cntSta" }});
-}}, () => setCount("cntSta", "err"));
+}}, "cntSta");
 
 loadGeo((manifest.reports?.geojson || "observed_311.geojson"), geo => {{
   L.geoJSON(geo, {{
@@ -876,7 +928,7 @@ loadGeo((manifest.reports?.geojson || "observed_311.geojson"), geo => {{
   }}).eachLayer(l => reports.addLayer(l));
   registerVector(reports);
   bindLayer("ly311", reports, {{ label:"311", n: geo.features.length, countId:"cnt311" }});
-}}, () => setCount("cnt311", "err"));
+}}, "cnt311");
 
 function updateAlerts() {{
   const panel = document.getElementById("alertPanel");

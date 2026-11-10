@@ -1,6 +1,6 @@
 {
   "product_policy": "ida_hires_viz_with_earth2_scenarios",
-  "product_kind": "research_flood_warning_prototype",
+  "product_kind": "flood_risk_research_prototype",
   "note": "For Hurricane Ida, default storm visualization is MRMS QPE (~1 km). Earth2 (+ ensemble) remain labeled AI scenario tracks. Depth/alerts are research prototypes \u2014 NOT official NWS flood warnings.",
   "honesty": "Research flood-warning prototype. NOT official NWS. NOT emergency guidance. MRMS QPE is radar+gauge QPE (~1 km), not NEXRAD reflectivity tiles.",
   "default_storm_path": "mrms_qpe_ida",
@@ -2496,7 +2496,14 @@
   },
   "infra": {
     "roads_geojson": "roads.geojson",
-    "roads_note": "Citywide OSM major roads (motorway/trunk/primary/secondary), capped for web",
+    "roads_note": "Citywide OSM majors (trunk/primary/motorway mix), web-capped",
     "stations_geojson": "subway_stations.geojson"
-  }
+  },
+  "case_study": {
+    "event": "ida-2021",
+    "region": "nyc",
+    "note": "Case study fixture only"
+  },
+  "enterprise": false,
+  "hens": false
 }
