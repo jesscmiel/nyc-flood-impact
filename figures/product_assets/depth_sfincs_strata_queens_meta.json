@@ -1,0 +1,13 @@
+{
+  "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_sfincs_strata_queens_m.tif",
+  "max_m": 2.80017352104187,
+  "p50_m": 1.2504208087921143,
+  "p90_m": 1.6220018863677979,
+  "wet_fraction_gt_5cm": 0.0990927119959378,
+  "variable": "hmax",
+  "source_nc": "outputs/strata_sfincs_spike/sfincs_model/sfincs_map.nc",
+  "extent": "south_queens",
+  "official_nws": false,
+  "enterprise": false,
+  "hens": false
+}

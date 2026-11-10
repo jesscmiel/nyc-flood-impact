@@ -78,3 +78,7 @@ __pycache__/
 !/data/processed/susceptibility_factors/
 !/data/processed/susceptibility_factors/**
 !/data/forecasts/nyc_precip_ida_ens2_citywide.nc
+
+# STRATA aux / spike outputs (HF weights + generated SCRIP; local only)
+data/raw/strata_v1/
+outputs/strata_sfincs_spike/
