@@ -29,6 +29,6 @@
     "path": "/home/jesscmiel/projects/nyc-flood-impact/outputs/sfincs_spike_queens",
     "note": "Schema written only \u2014 SFINCS binary missing; not a completed inundation run."
   },
-  "borough": "south_queens",
+  "primary_extent": "citywide",
   "forcing": "mrms_qpe_ida"
 }

@@ -288,9 +288,15 @@ details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft);
 
   <div class="panel">
     <h2>Scenario risk card</h2>
-    <div class="honesty" style="margin-top:0">Depth × asset counts — research only. <b>NOT decision-grade. NOT NWS.</b> No Enterprise/HENS.</div>
+    <div class="honesty" style="margin-top:0">Citywide depth × asset counts — research only. <b>NOT decision-grade. NOT NWS.</b> No Enterprise/HENS.</div>
+    <label class="caption" for="riskScenarioSelect">Risk scenario extent</label>
+    <select id="riskScenarioSelect" aria-label="Risk scenario">
+      <option value="citywide" selected>NYC metro / citywide</option>
+      <option value="south_queens">South Queens (nested case study)</option>
+    </select>
     <div class="validation" id="riskCard" style="margin-top:8px">Loading…</div>
     <div id="riskTableWrap" style="margin-top:8px;overflow:auto"></div>
+    <div class="honesty" id="hazardCatalogNote" style="margin-top:8px">Hazard catalog: loading…</div>
   </div>
 
   <div class="panel">
@@ -954,6 +960,7 @@ function renderRiskCard(risk) {{
   const wet = risk.wet_assets || {{}};
   card.innerHTML = `
     <div class="metric"><span>Scenario</span><b style="font-size:.72rem">${{sc.label || sc.id || "n/a"}}</b></div>
+    <div class="metric"><span>Extent</span><b style="font-size:.72rem">${{sc.extent_id || risk.extent_id || "citywide"}}</b></div>
     <div class="metric"><span>Engine</span><b style="font-size:.72rem">${{sc.inundation_engine || "pysheds"}}</b></div>
     <div class="metric"><span>Max depth</span><b>${{sc.max_depth_m != null ? Number(sc.max_depth_m).toFixed(3) + " m" : "n/a"}}</b></div>
     <div class="metric"><span>Wet roads / sta / fac</span><b>${{wet.roads||0}} / ${{wet.stations||0}} / ${{wet.facilities||0}}</b></div>
@@ -971,9 +978,28 @@ function renderRiskCard(risk) {{
       <tbody>${{rows}}</tbody>
     </table>`;
 }}
-function loadRiskCard() {{
-  const name = (manifest.risk && manifest.risk.depth_assets) || "risk_depth_assets.json";
-  fetch(assets + name, {{ cache: "no-cache" }}).then(r => r.ok ? r.json() : null).then(renderRiskCard).catch(() => renderRiskCard(null));
+function riskAssetName(extent) {{
+  if (extent === "south_queens") {{
+    return (manifest.risk && manifest.risk.depth_assets_south_queens) || "risk_depth_assets_south_queens.json";
+  }}
+  return (manifest.risk && manifest.risk.depth_assets) || "risk_depth_assets.json";
+}}
+function loadRiskCard(extent) {{
+  const ext = extent || document.getElementById("riskScenarioSelect")?.value || "citywide";
+  fetch(assets + riskAssetName(ext), {{ cache: "no-cache" }})
+    .then(r => r.ok ? r.json() : null)
+    .then(renderRiskCard)
+    .catch(() => renderRiskCard(null));
+}}
+function loadHazardCatalog() {{
+  const note = document.getElementById("hazardCatalogNote");
+  if (!note) return;
+  const name = manifest.hazard_catalog || "hazard_catalog.json";
+  fetch(assets + name, {{ cache: "no-cache" }}).then(r => r.ok ? r.json() : null).then(cat => {{
+    if (!cat) {{ note.textContent = "Hazard catalog unavailable."; return; }}
+    const bits = (cat.sources || []).map(s => `${{s.kind}}:${{s.status}}`);
+    note.innerHTML = `<b>Hazard catalog</b> (open stack): ${{bits.join(" · ")}}. ERA5/GFS are hooks until fetched. No Enterprise/HENS.`;
+  }}).catch(() => {{ note.textContent = "Hazard catalog unavailable."; }});
 }}
 
 function updateAlerts() {{
@@ -1019,29 +1045,33 @@ if (!inundation) {{
   ["lyDepth","lyDepthTot","productDepth"].forEach(id => {{ const el = document.getElementById(id); if (el) el.disabled = true; }});
 }}
 updateAlerts();
-loadRiskCard();
-// Optional borough depth spike overlay
+loadRiskCard("citywide");
+loadHazardCatalog();
+const riskSel = document.getElementById("riskScenarioSelect");
+if (riskSel) riskSel.onchange = () => loadRiskCard(riskSel.value);
+
+function addDepthOverlayToggle(id, label, png, boundsObj) {{
+  if (!png || !boundsObj || document.getElementById(id)) return;
+  const bBounds = [[boundsObj.ymin, boundsObj.xmin],[boundsObj.ymax, boundsObj.xmax]];
+  const layer = L.imageOverlay(assets + png, bBounds, {{ opacity: 0.75, pane:"depthPane", interactive:false }});
+  const grid = document.querySelector(".layer-grid");
+  if (!grid) return;
+  const lab = document.createElement("label");
+  lab.className = "layer-btn";
+  lab.innerHTML = `<input id="${{id}}" type="checkbox"><span class="dot" style="background:#2171b5"></span>${{label}}`;
+  const depthLbl = [...grid.querySelectorAll(".group-label")].find(el => /Depth/i.test(el.textContent));
+  if (depthLbl && depthLbl.nextSibling) grid.insertBefore(lab, depthLbl.nextSibling.nextSibling);
+  else grid.appendChild(lab);
+  document.getElementById(id).addEventListener("change", (e) => {{
+    if (e.target.checked) layer.addTo(mapLeft); else mapLeft.removeLayer(layer);
+    ensureVectorsVisible();
+  }});
+}}
+if (manifest.inundation_citywide && manifest.inundation_citywide.png) {{
+  addDepthOverlayToggle("lyCityDepth", "Citywide depth (MRMS/pysheds)", manifest.inundation_citywide.png, EXTENTS.citywide?.bounds);
+}}
 if (manifest.inundation_borough_spike && manifest.inundation_borough_spike.png) {{
-  const bpng = manifest.inundation_borough_spike.png;
-  const bb = EXTENTS.south_queens?.bounds;
-  if (bb) {{
-    const bBounds = [[bb.ymin, bb.xmin],[bb.ymax, bb.xmax]];
-    const boroughDepth = L.imageOverlay(assets + bpng, bBounds, {{ opacity: 0.75, pane:"depthPane", interactive:false }});
-    // expose via depth mode helper: add checkbox dynamically if missing
-    const grid = document.querySelector(".layer-grid");
-    if (grid && !document.getElementById("lyBoroughDepth")) {{
-      const lab = document.createElement("label");
-      lab.className = "layer-btn";
-      lab.innerHTML = '<input id="lyBoroughDepth" type="checkbox"><span class="dot" style="background:#2171b5"></span>Queens borough depth spike';
-      const depthLbl = [...grid.querySelectorAll(".group-label")].find(el => /Depth/i.test(el.textContent));
-      if (depthLbl && depthLbl.nextSibling) grid.insertBefore(lab, depthLbl.nextSibling.nextSibling);
-      else grid.appendChild(lab);
-      document.getElementById("lyBoroughDepth").addEventListener("change", (e) => {{
-        if (e.target.checked) boroughDepth.addTo(mapLeft); else mapLeft.removeLayer(boroughDepth);
-        ensureVectorsVisible();
-      }});
-    }}
-  }}
+  addDepthOverlayToggle("lyBoroughDepth", "Queens nested depth spike", manifest.inundation_borough_spike.png, EXTENTS.south_queens?.bounds);
 }}
 // Default play speed slightly faster for denser loops
 const playSpeedEl = document.getElementById("playSpeed");

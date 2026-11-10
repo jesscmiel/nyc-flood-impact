@@ -1,0 +1,19 @@
+{
+  "primary": "citywide",
+  "scenarios": [
+    {
+      "id": "ida_mrms_citywide",
+      "file": "risk_depth_assets.json",
+      "extent": "citywide"
+    },
+    {
+      "id": "ida_mrms_south_queens",
+      "file": "risk_depth_assets_south_queens.json",
+      "extent": "south_queens"
+    }
+  ],
+  "official_nws": false,
+  "decision_grade": false,
+  "enterprise": false,
+  "hens": false
+}

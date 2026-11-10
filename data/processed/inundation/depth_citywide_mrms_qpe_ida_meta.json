@@ -1,0 +1,26 @@
+{
+  "borough_id": "citywide",
+  "forcing_id": "mrms_qpe_ida",
+  "engine": "pysheds_hand_bathtub_v2",
+  "official_nws": false,
+  "decision_grade": false,
+  "enterprise": false,
+  "hens": false,
+  "runoff_coeff": 0.75,
+  "bounds": {
+    "xmin": -74.28,
+    "ymin": 40.48,
+    "xmax": -73.68,
+    "ymax": 40.93
+  },
+  "shape": [
+    540,
+    720
+  ],
+  "max_m": 0.15213757753372192,
+  "mean_wet_m": 0.09220906347036362,
+  "wet_fraction": 0.16771862139917695,
+  "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_citywide_mrms_qpe_ida_storm_total_m.tif",
+  "png": "depth_citywide_mrms_qpe_ida_storm_total_m.png",
+  "honesty": "Research borough spike (pysheds). NOT official NWS. SFINCS/LISFLOOD-FP blocked without binaries."
+}

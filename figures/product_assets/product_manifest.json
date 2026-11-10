@@ -2508,7 +2508,10 @@
   "hens": false,
   "risk": {
     "depth_assets": "risk_depth_assets.json",
-    "scenario_id": "ida_mrms_south_queens",
+    "depth_assets_south_queens": "risk_depth_assets_south_queens.json",
+    "scenarios": "risk_scenarios.json",
+    "scenario_id": "ida_mrms_citywide",
+    "extent_default": "citywide",
     "official_nws": false,
     "decision_grade": false,
     "enterprise": false,
@@ -2520,5 +2523,12 @@
     "meta": "depth_south_queens_mrms_qpe_ida_meta.json",
     "engine": "pysheds_hand_bathtub_v2"
   },
-  "inundation_engine_spike": "inundation_engine_spike.json"
+  "inundation_engine_spike": "inundation_engine_spike.json",
+  "hazard_catalog": "hazard_catalog.json",
+  "inundation_citywide": {
+    "png": "depth_citywide_mrms_qpe_ida_storm_total_m.png",
+    "meta": "depth_citywide_mrms_qpe_ida_meta.json",
+    "engine": "pysheds_hand_bathtub_v2",
+    "extent": "citywide"
+  }
 }

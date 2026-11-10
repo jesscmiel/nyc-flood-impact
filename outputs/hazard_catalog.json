@@ -1,0 +1,124 @@
+{
+  "product": "flood_risk_research_prototype",
+  "official_nws": false,
+  "decision_grade": false,
+  "enterprise": false,
+  "hens": false,
+  "updated_utc": "2026-11-10T18:54:32Z",
+  "region_default": "nyc_metro_citywide",
+  "bbox_default": {
+    "xmin": -74.28,
+    "ymin": 40.48,
+    "xmax": -73.68,
+    "ymax": 40.93
+  },
+  "sources": [
+    {
+      "id": "mrms_qpe_ida",
+      "kind": "mrms_qpe",
+      "label": "NOAA MRMS Multi-Sensor QPE (Ida case study)",
+      "status": "available",
+      "description": "Radar+gauge QPE (~1 km) for 2021-09-01 Ida remnants over NYC metro.",
+      "variables": [
+        "precip_mm"
+      ],
+      "approx_resolution": "~1 km",
+      "access": "Local processed GeoTIFFs (case-study fixture)",
+      "local_paths": [
+        "data/processed/mrms_qpe/mrms_qpe_lead_06h.tif",
+        "data/processed/mrms_qpe/mrms_qpe_lead_06h_citywide.tif",
+        "data/processed/mrms_qpe/mrms_qpe_lead_12h.tif",
+        "data/processed/mrms_qpe/mrms_qpe_lead_12h_citywide.tif",
+        "data/processed/mrms_qpe/mrms_qpe_lead_18h.tif",
+        "data/processed/mrms_qpe/mrms_qpe_lead_18h_citywide.tif",
+        "data/processed/mrms_qpe/mrms_qpe_lead_24h.tif",
+        "data/processed/mrms_qpe/mrms_qpe_lead_24h_citywide.tif",
+        "data/processed/mrms_qpe/mrms_qpe_storm_total.tif",
+        "data/processed/earth2_precip/mrms_qpe_ida_precip_lead_06h.tif",
+        "data/processed/earth2_precip/mrms_qpe_ida_precip_lead_07h_blend.tif",
+        "data/processed/earth2_precip/mrms_qpe_ida_precip_lead_08h_blend.tif",
+        "data/processed/earth2_precip/mrms_qpe_ida_precip_lead_09h_blend.tif",
+        "data/processed/earth2_precip/mrms_qpe_ida_precip_lead_10h_blend.tif",
+        "data/processed/earth2_precip/mrms_qpe_ida_precip_lead_11h_blend.tif",
+        "data/processed/earth2_precip/mrms_qpe_ida_precip_lead_12h.tif",
+        "data/processed/earth2_precip/mrms_qpe_ida_precip_lead_13h_blend.tif",
+        "data/processed/earth2_precip/mrms_qpe_ida_precip_lead_14h_blend.tif",
+        "data/processed/earth2_precip/mrms_qpe_ida_precip_lead_15h_blend.tif",
+        "data/processed/earth2_precip/mrms_qpe_ida_precip_lead_16h_blend.tif",
+        "data/processed/earth2_precip/mrms_qpe_ida_precip_lead_17h_blend.tif",
+        "data/processed/earth2_precip/mrms_qpe_ida_precip_lead_18h.tif",
+        "data/processed/earth2_precip/mrms_qpe_ida_precip_lead_19h_blend.tif",
+        "data/processed/earth2_precip/mrms_qpe_ida_precip_lead_20h_blend.tif",
+        "data/processed/earth2_precip/mrms_qpe_ida_precip_lead_21h_blend.tif",
+        "data/processed/earth2_precip/mrms_qpe_ida_precip_lead_22h_blend.tif",
+        "data/processed/earth2_precip/mrms_qpe_ida_precip_lead_23h_blend.tif",
+        "data/processed/earth2_precip/mrms_qpe_ida_precip_lead_24h.tif",
+        "data/processed/earth2_precip/mrms_qpe_ida_precip_storm_total.tif"
+      ],
+      "fetch_hint": "Re-export via scripts that ingest MRMS MultiSensor_QPE; no Enterprise required.",
+      "case_study_event": "ida-2021"
+    },
+    {
+      "id": "era5_precip_hook",
+      "kind": "era5",
+      "label": "ERA5 total precipitation (hook)",
+      "status": "hook",
+      "description": "CDS/ERA5 hourly or daily precip for climatology / analogs. Not downloaded in this MVP.",
+      "variables": [
+        "tp"
+      ],
+      "approx_resolution": "0.25\u00b0",
+      "access": "Copernicus CDS API (open)",
+      "local_paths": [],
+      "fetch_hint": "cdsapi retrieve reanalysis-era5-single-levels variable=total_precipitation area=NYC bbox; write netCDF \u2192 GeoTIFF.",
+      "case_study_event": null
+    },
+    {
+      "id": "gfs_precip_hook",
+      "kind": "gfs",
+      "label": "GFS precipitation (hook)",
+      "status": "hook",
+      "description": "NCEP GFS forecast precip APCP for scenario / ops-style forcing. Not downloaded in this MVP.",
+      "variables": [
+        "tp",
+        "apcp"
+      ],
+      "approx_resolution": "~0.25\u00b0",
+      "access": "NOMADS / AWS open data",
+      "local_paths": [],
+      "fetch_hint": "Herbie or earth2studio data sources (open) \u2192 APCP; clip to metro bbox.",
+      "case_study_event": null
+    },
+    {
+      "id": "earth2_open_scenario",
+      "kind": "earth2_open",
+      "label": "Open Earth2-class AI precip scenario",
+      "status": "available",
+      "description": "Labeled AI scenario track from open Earth2Studio-class outputs (not Enterprise/HENS).",
+      "variables": [
+        "precip_mm"
+      ],
+      "approx_resolution": "~0.25\u00b0",
+      "access": "Local processed GeoTIFFs",
+      "local_paths": [
+        "data/processed/earth2_precip/precip_lead_06h.tif",
+        "data/processed/earth2_precip/precip_lead_08h_blend.tif",
+        "data/processed/earth2_precip/precip_lead_09h_blend.tif",
+        "data/processed/earth2_precip/precip_lead_10h_blend.tif",
+        "data/processed/earth2_precip/precip_lead_12h.tif",
+        "data/processed/earth2_precip/precip_lead_14h_blend.tif",
+        "data/processed/earth2_precip/precip_lead_15h_blend.tif",
+        "data/processed/earth2_precip/precip_lead_16h_blend.tif",
+        "data/processed/earth2_precip/precip_lead_18h.tif",
+        "data/processed/earth2_precip/precip_lead_20h_blend.tif",
+        "data/processed/earth2_precip/precip_lead_21h_blend.tif",
+        "data/processed/earth2_precip/precip_lead_22h_blend.tif",
+        "data/processed/earth2_precip/precip_lead_24h.tif",
+        "data/processed/earth2_precip/precip_storm_total.tif"
+      ],
+      "fetch_hint": "Optional open FCN/PrecipitationAFNO when env installs; never claim NEXRAD.",
+      "case_study_event": "ida-2021"
+    }
+  ],
+  "honesty": "Hazard catalog lists available fixtures and open-data hooks. ERA5/GFS entries are hooks only until fetched. NOT official NWS guidance."
+}

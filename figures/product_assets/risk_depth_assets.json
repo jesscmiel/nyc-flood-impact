@@ -6,14 +6,14 @@
   "hens": false,
   "honesty": "Depth\u00d7asset counts from research inundation (pysheds) \u00d7 OSM/demo exposure. NOT official NWS thresholds. NOT decision-grade infrastructure guidance.",
   "scenario": {
-    "id": "ida_mrms_south_queens",
-    "label": "Ida \u00b7 MRMS QPE \u00b7 South Queens (research)",
+    "id": "ida_mrms_citywide",
+    "label": "Ida \u00b7 MRMS QPE \u00b7 NYC metro / citywide (research)",
     "case_study": "Hurricane Ida remnants 2021-09-01",
     "forcing": "mrms_qpe_ida",
     "inundation_engine": "pysheds_hand_bathtub_v2",
-    "borough": "south_queens",
+    "extent_id": "citywide",
     "max_depth_m": 0.15213757753372192,
-    "wet_fraction": 0.6171187138929074
+    "wet_fraction": 0.16771862139917695
   },
   "depth_bands_m": [
     {
@@ -38,12 +38,12 @@
   "totals": {
     "roads": 2200,
     "stations": 309,
-    "facilities": 15
+    "facilities": 26
   },
   "wet_assets": {
     "roads": 428,
     "stations": 304,
-    "facilities": 11
+    "facilities": 15
   },
   "max_depth_on_asset_m": {
     "roads": 0.13832485675811768,
@@ -67,7 +67,7 @@
       "max_m": 0.15,
       "roads": 349,
       "stations": 274,
-      "facilities": 9
+      "facilities": 13
     },
     {
       "band": "hazard",
@@ -79,32 +79,12 @@
       "facilities": 0
     }
   ],
-  "borough_inundation": {
-    "borough_id": "south_queens",
-    "forcing_id": "mrms_qpe_ida",
-    "engine": "pysheds_hand_bathtub_v2",
-    "official_nws": false,
-    "decision_grade": false,
-    "enterprise": false,
-    "hens": false,
-    "runoff_coeff": 0.75,
-    "bounds": {
-      "xmin": -74.12,
-      "ymin": 40.55,
-      "xmax": -73.72,
-      "ymax": 40.73
-    },
-    "shape": [
-      217,
-      481
-    ],
-    "max_m": 0.15213757753372192,
-    "mean_wet_m": 0.09314242750406265,
-    "wet_fraction": 0.6171187138929074,
-    "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_south_queens_mrms_qpe_ida_storm_total_m.tif",
-    "png": "depth_south_queens_mrms_qpe_ida_storm_total_m.png",
-    "honesty": "Research borough spike (pysheds). NOT official NWS. SFINCS/LISFLOOD-FP blocked without binaries."
+  "extent_id": "citywide",
+  "depth_tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_citywide_mrms_qpe_ida_storm_total_m.tif",
+  "nested_case_studies": {
+    "south_queens": "risk_depth_assets_south_queens.json"
   },
+  "hazard_catalog": "hazard_catalog.json",
   "engine_spike": {
     "conclusion": "SFINCS/LISFLOOD-FP blocked without native binaries. MVP inundation remains improved pysheds HAND/bathtub.",
     "probes": [
@@ -127,5 +107,31 @@
         "detail": "HAND + bathtub research inundation (fallback / MVP engine)."
       }
     ]
+  },
+  "citywide_inundation": {
+    "borough_id": "citywide",
+    "forcing_id": "mrms_qpe_ida",
+    "engine": "pysheds_hand_bathtub_v2",
+    "official_nws": false,
+    "decision_grade": false,
+    "enterprise": false,
+    "hens": false,
+    "runoff_coeff": 0.75,
+    "bounds": {
+      "xmin": -74.28,
+      "ymin": 40.48,
+      "xmax": -73.68,
+      "ymax": 40.93
+    },
+    "shape": [
+      540,
+      720
+    ],
+    "max_m": 0.15213757753372192,
+    "mean_wet_m": 0.09220906347036362,
+    "wet_fraction": 0.16771862139917695,
+    "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_citywide_mrms_qpe_ida_storm_total_m.tif",
+    "png": "depth_citywide_mrms_qpe_ida_storm_total_m.png",
+    "honesty": "Research borough spike (pysheds). NOT official NWS. SFINCS/LISFLOOD-FP blocked without binaries."
   }
 }
