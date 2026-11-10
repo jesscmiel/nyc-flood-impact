@@ -158,12 +158,12 @@ details.about summary { cursor:pointer; font-weight:700; color:var(--ink-soft); 
       <button type="button" id="productCoupled" data-mode="coupled">Coupled</button>
       <button type="button" id="productDepth" data-mode="depth">Depth</button>
     </div>
-    <div class="chain" aria-hidden="true">
+    <div class="chain" aria-label="Product chain — always available; modes only change default overlays">
       <span class="step" id="chainPrecip">Weather</span><span>→</span>
-      <span class="step dim" id="chainSusc">Landscape×Infra</span><span>→</span>
-      <span class="step dim" id="chainInfra">Exposure</span>
+      <span class="step" id="chainSusc">Landscape×Infra</span><span>→</span>
+      <span class="step" id="chainInfra">Exposure</span>
     </div>
-    <p class="mode-hint" id="modeHint">Storm mode: animate Earth2 precip. Susceptibility stays off until you switch modes.</p>
+    <p class="mode-hint" id="modeHint">Modes set default overlays only. Roads, 311, FEMA, and all other layer toggles stay available in every mode.</p>
   </div>
 
   <div class="panel">
@@ -223,6 +223,7 @@ details.about summary { cursor:pointer; font-weight:700; color:var(--ink-soft); 
 
   <div class="panel">
     <h2>Layers</h2>
+    <div class="honesty" style="margin-top:0;margin-bottom:8px">Full checklist stays usable in Storm, Susceptibility, Coupled, and Depth — modes never lock or grey these toggles.</div>
     <div class="layer-grid">
       <div class="group-label">Storm</div>
       <label class="layer-btn"><input id="lyE2" type="checkbox" checked><span class="dot" style="background:#4662d8"></span>Precip (active path)</label>
@@ -526,28 +527,30 @@ function applyProductMode(mode) {
     const el = document.getElementById(id);
     if (el) el.classList.toggle("active", el.dataset.mode === mode);
   });
-  document.getElementById("chainPrecip").classList.toggle("dim", mode === "susceptibility" || mode === "depth");
-  document.getElementById("chainSusc").classList.toggle("dim", mode === "storm" || mode === "depth");
-  document.getElementById("chainInfra").classList.toggle("dim", mode !== "coupled");
+  // Never dim Weather / Landscape×Infra / Exposure — those chips are not locks on the layer checklist.
+  ["chainPrecip","chainSusc","chainInfra"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove("dim");
+  });
   const bar = document.getElementById("hudLegendBar");
   const legend = document.getElementById("hudLegendLabel");
   bar.classList.remove("susc", "depth");
   // Only toggle product rasters/infra-sync — never wipe Roads/311/FEMA/context checkboxes.
   if (mode === "susceptibility") {
     bar.classList.add("susc"); legend.textContent = "Susceptibility (screening)";
-    document.getElementById("modeHint").textContent = "Susceptibility screening. Context layers (roads/311/FEMA…) stay independently toggleable.";
+    document.getElementById("modeHint").textContent = "Susceptibility defaults on. Full layer checklist (roads/311/FEMA…) stays usable.";
     setLayerChecks(["lySusc"]); setPlaying(false);
   } else if (mode === "coupled") {
     legend.textContent = "Precip (mm)";
-    document.getElementById("modeHint").textContent = "Coupled: precip → susceptibility → storm-synced roads. Context toggles remain available.";
+    document.getElementById("modeHint").textContent = "Coupled defaults: precip + susceptibility + storm-synced roads. All other layers stay independently toggleable.";
     setLayerChecks(["lyE2","lySusc","lyInfra","lySta"]);
   } else if (mode === "depth") {
     bar.classList.add("depth"); legend.textContent = "Est. depth (m) — research prototype";
-    document.getElementById("modeHint").textContent = "Research flood-warning prototype depth (pysheds). NOT official NWS. Context layers stay toggleable.";
+    document.getElementById("modeHint").textContent = "Depth defaults on (research prototype, NOT NWS). Roads/311/FEMA and all layers stay usable.";
     setLayerChecks(["lyDepth","lyDepthTot"]); setPlaying(false);
   } else {
     legend.textContent = (activePath && activePath.precip && activePath.precip.colorbar && activePath.precip.colorbar.label) || "Precip (mm)";
-    document.getElementById("modeHint").textContent = "Storm mode: denser high-res Ida loop when MRMS path selected. Infra/context toggles do not reset.";
+    document.getElementById("modeHint").textContent = "Storm defaults to precip only. Landscape×Infra/Exposure chips stay lit — use the Layers checklist any time.";
     setLayerChecks(["lyE2"]);
   }
   updateAlerts();
