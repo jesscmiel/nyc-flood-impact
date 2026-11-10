@@ -112,6 +112,10 @@ input[type=range] {{ width:100%; accent-color:var(--accent); }}
 .layer-btn .dot {{ width:9px; height:9px; border-radius:50%; flex:0 0 auto; box-shadow:0 0 0 2px #fff; }}
 .layer-btn:has(input:checked) {{ background:linear-gradient(180deg,#f5fcfd,#d9eef1); border-color:var(--accent); color:#045963; }}
 .layer-btn:has(input:disabled) {{ opacity:.4; cursor:not-allowed; transform:none; }}
+.layer-btn .count {{ margin-left:auto; font:600 .68rem "IBM Plex Mono",monospace; color:#7d91a1; }}
+.layer-btn:has(input:checked) .count {{ color:#045963; }}
+.layer-status {{ margin-top:8px; padding:8px 10px; border-radius:10px; background:#07141c; color:#e8f4f6; font-size:.74rem; line-height:1.35; display:none; }}
+.layer-status.on {{ display:block; }}
 .validation {{ display:grid; gap:6px; }}
 .validation b {{ font:600 .82rem "IBM Plex Mono",monospace; }}
 details.about {{ font-size:.76rem; color:var(--muted); line-height:1.45; }}
@@ -241,7 +245,7 @@ details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft);
 
   <div class="panel">
     <h2>Layers</h2>
-    <div class="honesty" style="margin-top:0;margin-bottom:8px">Full checklist stays usable in Storm, Susceptibility, Coupled, and Depth — modes never lock or grey these toggles.</div>
+    <div class="honesty" style="margin-top:0;margin-bottom:8px">Full checklist usable in every mode. Enabling an infra/context layer dims precip so vectors stay visible at citywide zoom.</div>
     <div class="layer-grid">
       <div class="group-label">Storm</div>
       <label class="layer-btn"><input id="lyE2" type="checkbox" checked><span class="dot" style="background:#4662d8"></span>Precip (active path)</label>
@@ -258,18 +262,19 @@ details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft);
 
       <div class="group-label">Infrastructure / obs</div>
       <label class="layer-btn"><input id="lyInfra" type="checkbox"><span class="dot" style="background:#b91c1c"></span>Storm-synced roads</label>
-      <label class="layer-btn"><input id="lyHot" type="checkbox"><span class="dot" style="background:#dc2626"></span>Hotspot roads</label>
-      <label class="layer-btn"><input id="ly311" type="checkbox"><span class="dot" style="background:#e11d48"></span>311 reports</label>
-      <label class="layer-btn"><input id="lySta" type="checkbox"><span class="dot" style="background:#0f766e"></span>Stations</label>
-      <label class="layer-btn"><input id="lyRoads" type="checkbox"><span class="dot" style="background:#64748b"></span>Roads</label>
+      <label class="layer-btn"><input id="lyHot" type="checkbox"><span class="dot" style="background:#ff2d55"></span>Hotspot roads<span class="count" id="cntHot">…</span></label>
+      <label class="layer-btn"><input id="ly311" type="checkbox"><span class="dot" style="background:#ff3b5c"></span>311 reports<span class="count" id="cnt311">…</span></label>
+      <label class="layer-btn"><input id="lySta" type="checkbox"><span class="dot" style="background:#00e5a8"></span>Stations<span class="count" id="cntSta">…</span></label>
+      <label class="layer-btn"><input id="lyRoads" type="checkbox"><span class="dot" style="background:#ff6b00"></span>Roads<span class="count" id="cntRoads">…</span></label>
 
       <div class="group-label">Context</div>
-      <label class="layer-btn"><input id="lyFema" type="checkbox"><span class="dot" style="background:#1d4ed8"></span>FEMA NFHL</label>
-      <label class="layer-btn"><input id="lyNwm" type="checkbox"><span class="dot" style="background:#0ea5e9"></span>NWM reaches</label>
-      <label class="layer-btn"><input id="lyGauges" type="checkbox"><span class="dot" style="background:#0369a1"></span>AHPS gauges</label>
-      <label class="layer-btn"><input id="lyDrainE" type="checkbox"><span class="dot" style="background:#a16207"></span>Demo conduits</label>
-      <label class="layer-btn"><input id="lyDrainN" type="checkbox"><span class="dot" style="background:#ca8a04"></span>Demo nodes</label>
+      <label class="layer-btn"><input id="lyFema" type="checkbox"><span class="dot" style="background:#4f7cff"></span>FEMA NFHL<span class="count" id="cntFema">…</span></label>
+      <label class="layer-btn"><input id="lyNwm" type="checkbox"><span class="dot" style="background:#00c2ff"></span>NWM reaches<span class="count" id="cntNwm">…</span></label>
+      <label class="layer-btn"><input id="lyGauges" type="checkbox"><span class="dot" style="background:#37d6ff"></span>AHPS gauges<span class="count" id="cntGauges">…</span></label>
+      <label class="layer-btn"><input id="lyDrainE" type="checkbox"><span class="dot" style="background:#ffb020"></span>Demo conduits<span class="count" id="cntDrainE">…</span></label>
+      <label class="layer-btn"><input id="lyDrainN" type="checkbox"><span class="dot" style="background:#ffd60a"></span>Demo nodes<span class="count" id="cntDrainN">…</span></label>
     </div>
+    <div class="layer-status" id="layerStatus">No infra/context layer on.</div>
   </div>
 
   <div class="panel">
@@ -334,14 +339,14 @@ mapLeft.getPane("rasterPane").style.zIndex = 350;
 mapLeft.createPane("depthPane");
 mapLeft.getPane("depthPane").style.zIndex = 400;
 mapLeft.createPane("vectorPane");
-mapLeft.getPane("vectorPane").style.zIndex = 650; // above markerPane (600) so roads stay visible
+mapLeft.getPane("vectorPane").style.zIndex = 650; // above markerPane (600)
 mapLeft.getPane("vectorPane").style.pointerEvents = "none";
 mapLeft.createPane("pointPane");
-mapLeft.getPane("pointPane").style.zIndex = 660;
+mapLeft.getPane("pointPane").style.zIndex = 670;
 mapLeft.getPane("pointPane").style.pointerEvents = "auto";
-// Custom panes need dedicated SVG renderers or GeoJSON paths never paint.
-const vectorRenderer = L.svg({{ pane: "vectorPane" }});
-const pointRenderer = L.svg({{ pane: "pointPane" }});
+// Per-layer SVG renderers avoid Leaflet shared-renderer wipe bugs.
+function makeVectorRenderer() {{ return L.svg({{ pane: "vectorPane", padding: 0.5 }}); }}
+function makePointRenderer() {{ return L.svg({{ pane: "pointPane", padding: 0.5 }}); }}
 L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{{z}}/{{y}}/{{x}}", {{
   maxZoom: 19,
   attribution: "Tiles &copy; Esri &mdash; Source: Esri, OpenStreetMap"
@@ -402,9 +407,18 @@ const hotspot = (manifest.disruption?.hotspot_png)
   ? L.imageOverlay(assets + manifest.disruption.hotspot_png, hotspotBounds, {{ opacity: 0.55, pane:"rasterPane", interactive:false }})
   : null;
 let roadsLayer=null, disruptLayer=null, stationsLayer=null, drainNodes=null, drainEdges=null, femaLayer=null, nwmLayer=null, gaugesLayer=null;
-const reports = L.markerClusterGroup({{ showCoverageOnHover:false, pane:"pointPane" }});
+// MarkerCluster uses default marker panes (not custom SVG panes) — more reliable visibility.
+const reports = L.markerClusterGroup({{
+  showCoverageOnHover: false,
+  maxClusterRadius: 50,
+  spiderfyOnMaxZoom: true,
+  disableClusteringAtZoom: 15
+}});
 let productMode = "storm", playing = false, playTimer = null;
 const vectorLayers = [];
+const layerRegistry = {{}}; // id -> {{ layer, n, label }}
+const pendingChecked = new Set();
+let savedPrecipOpacity = null;
 
 function precipOpacity() {{ return (+document.getElementById("opPrecip").value) / 100; }}
 function suscOpacity() {{ return (+document.getElementById("opSusc").value) / 100; }}
@@ -413,6 +427,44 @@ function raiseVectors() {{
   vectorLayers.forEach(l => {{ if (l && mapLeft.hasLayer(l) && l.bringToFront) l.bringToFront(); }});
   if (activeInfra && mapLeft.hasLayer(activeInfra) && activeInfra.bringToFront) activeInfra.bringToFront();
   if (reports && mapLeft.hasLayer(reports)) reports.bringToFront();
+}}
+function contextLayerOn() {{
+  return ["lyHot","ly311","lySta","lyRoads","lyFema","lyNwm","lyGauges","lyDrainE","lyDrainN","lyInfra"]
+    .some(id => document.getElementById(id)?.checked);
+}}
+function updateLayerStatus() {{
+  const el = document.getElementById("layerStatus");
+  if (!el) return;
+  const on = Object.entries(layerRegistry)
+    .filter(([id]) => document.getElementById(id)?.checked)
+    .map(([id, meta]) => `${{meta.label}} (${{meta.n}})`);
+  if (!on.length) {{
+    el.classList.remove("on");
+    el.textContent = "No infra/context layer on.";
+    return;
+  }}
+  el.classList.add("on");
+  el.textContent = "On map: " + on.join(" · ") + " — precip auto-dimmed for visibility.";
+}}
+function ensureVectorsVisible() {{
+  const op = document.getElementById("opPrecip");
+  if (!op) return;
+  if (contextLayerOn()) {{
+    if (savedPrecipOpacity == null) savedPrecipOpacity = op.value;
+    if (+op.value > 35) {{
+      op.value = "32";
+      document.getElementById("opPrecipVal").textContent = "32%";
+      if (activeE2) activeE2.setOpacity(precipOpacity());
+      if (e2Total) e2Total.setOpacity(precipOpacity());
+    }}
+  }} else if (savedPrecipOpacity != null) {{
+    op.value = savedPrecipOpacity;
+    document.getElementById("opPrecipVal").textContent = savedPrecipOpacity + "%";
+    if (activeE2) activeE2.setOpacity(precipOpacity());
+    if (e2Total) e2Total.setOpacity(precipOpacity());
+    savedPrecipOpacity = null;
+  }}
+  updateLayerStatus();
 }}
 
 function rebuildPathLayers() {{
@@ -470,8 +522,8 @@ function setLead(i) {{
     fetch(assets + infraMeta.geojson).then(r => r.ok ? r.json() : null).then(geo => {{
       if (!geo || +document.getElementById("leadSlider").value !== i) return;
       activeInfra = L.geoJSON(geo, {{
-        pane: "vectorPane", renderer: vectorRenderer,
-        style: {{ color:"#b91c1c", weight:3.5, opacity:0.95 }},
+        pane: "vectorPane", renderer: makeVectorRenderer(),
+        style: {{ color:"#ff1744", weight:5, opacity:1 }},
         onEachFeature: (ft, layer) => layer.bindTooltip("Storm-synced · multi-factor susceptibility (demo)")
       }}).addTo(mapLeft);
       raiseVectors();
@@ -648,25 +700,59 @@ document.getElementById("resampleSelect").onchange = () => {{
   writeUrl();
 }};
 
-function bind(id, getLayer) {{
-  const el = document.getElementById(id);
-  if (!el) return;
-  const sync = () => {{
-    const layer = typeof getLayer === "function" ? getLayer() : getLayer;
-    if (!layer) return;
-    if (el.checked) {{ layer.addTo(mapLeft); if (layer.bringToFront) layer.bringToFront(); }}
-    else if (mapLeft.hasLayer(layer)) mapLeft.removeLayer(layer);
-    raiseVectors();
-    writeUrl();
-  }};
-  el.addEventListener("change", sync);
-  // Apply immediately if already checked once layer exists
-  sync();
-}}
 function registerVector(layer) {{
   if (layer && !vectorLayers.includes(layer)) vectorLayers.push(layer);
   return layer;
 }}
+function setCount(id, n) {{
+  const el = document.getElementById(id);
+  if (el) el.textContent = n != null ? String(n) : "err";
+}}
+function bindLayer(id, layer, {{ label, n, countId }} = {{}}) {{
+  const el = document.getElementById(id);
+  if (!el || !layer) return;
+  layerRegistry[id] = {{ layer, n: n ?? 0, label: label || id }};
+  if (countId) setCount(countId, n);
+  const sync = () => {{
+    if (el.checked) {{
+      pendingChecked.delete(id);
+      layer.addTo(mapLeft);
+      if (layer.bringToFront) layer.bringToFront();
+    }} else if (mapLeft.hasLayer(layer)) {{
+      mapLeft.removeLayer(layer);
+    }}
+    raiseVectors();
+    ensureVectorsVisible();
+    writeUrl();
+  }};
+  // Avoid duplicate listeners if bindLayer called twice
+  if (!el.dataset.bound) {{
+    el.dataset.bound = "1";
+    el.addEventListener("change", () => {{
+      if (el.checked && !layerRegistry[id]) pendingChecked.add(id);
+      const meta = layerRegistry[id];
+      if (!meta) {{ ensureVectorsVisible(); writeUrl(); return; }}
+      sync();
+    }});
+  }}
+  if (el.checked || pendingChecked.has(id)) {{
+    el.checked = true;
+    sync();
+  }}
+}}
+function loadGeo(path, onOk, onFail) {{
+  fetch(assets + path).then(r => {{
+    if (!r.ok) throw new Error(path + " HTTP " + r.status);
+    return r.json();
+  }}).then(geo => {{
+    if (!geo || !Array.isArray(geo.features)) throw new Error(path + " empty/invalid");
+    onOk(geo);
+  }}).catch(err => {{
+    console.error("layer load failed", err);
+    if (onFail) onFail(err);
+  }});
+}}
+
 document.getElementById("lyE2").onchange = () => {{
   if (!activeE2) return;
   if (document.getElementById("lyE2").checked) {{ activeE2.setOpacity(precipOpacity()); activeE2.addTo(mapLeft); }}
@@ -679,7 +765,7 @@ document.getElementById("lySusc").onchange = () => {{
   else mapLeft.removeLayer(activeSusc);
   writeUrl();
 }};
-document.getElementById("lyInfra").onchange = () => setLead(+document.getElementById("leadSlider").value);
+document.getElementById("lyInfra").onchange = () => {{ setLead(+document.getElementById("leadSlider").value); ensureVectorsVisible(); }};
 document.getElementById("lyE2Tot").onchange = () => {{
   if (!e2Total) return;
   if (document.getElementById("lyE2Tot").checked) {{ e2Total.setOpacity(precipOpacity()); e2Total.addTo(mapLeft); }}
@@ -704,76 +790,93 @@ document.getElementById("opDepth").oninput = () => {{
   if (depthTotal) depthTotal.setOpacity(depthOpacity());
   writeUrl();
 }};
-bind("lyBuilt", builtLayer);
-const hotBound = {{ done: false }};
-function bindHotOnce() {{
-  if (hotBound.done) return;
-  hotBound.done = true;
-  bind("lyHot", () => disruptLayer || hotspot);
-}}
-bindHotOnce();
+bindLayer("lyBuilt", builtLayer, {{ label: "Built", n: builtLayer ? 1 : 0 }});
 
-fetch(assets + "fema_nfhl.geojson").then(r => r.ok ? r.json() : null).then(geo => {{
-  if (!geo) return;
+// High-contrast citywide-visible styles (halo via heavy dark stroke under bright color).
+loadGeo("fema_nfhl.geojson", geo => {{
   femaLayer = registerVector(L.geoJSON(geo, {{
-    pane:"vectorPane", renderer: vectorRenderer,
-    style: f => {{ const sfha=(f.properties&&f.properties.SFHA_TF)==="T"; return {{ color: sfha?"#1d4ed8":"#93c5fd", weight:2, fillColor: sfha?"#3b82f6":"#bfdbfe", fillOpacity: sfha?0.35:0.15 }}; }}
+    pane:"vectorPane", renderer: makeVectorRenderer(),
+    style: f => {{
+      const sfha=(f.properties&&f.properties.SFHA_TF)==="T";
+      return {{ color: sfha?"#1d4ed8":"#93c5fd", weight: sfha?3:2, fillColor: sfha?"#3b82f6":"#bfdbfe", fillOpacity: sfha?0.45:0.2, opacity:1 }};
+    }}
   }}));
-  bind("lyFema", femaLayer);
-}}).catch(()=>{{}});
-fetch(assets + "nwm_high_flow.geojson").then(r => r.ok ? r.json() : null).then(geo => {{
-  if (!geo) return;
-  nwmLayer = registerVector(L.geoJSON(geo, {{ pane:"vectorPane", renderer: vectorRenderer, style: {{ color:"#0ea5e9", weight:4, opacity:0.95 }} }}));
-  bind("lyNwm", nwmLayer);
-}}).catch(()=>{{}});
-fetch(assets + "nwm_ahps_gauges.geojson").then(r => r.ok ? r.json() : null).then(geo => {{
-  if (!geo) return;
+  bindLayer("lyFema", femaLayer, {{ label:"FEMA", n: geo.features.length, countId:"cntFema" }});
+}}, () => setCount("cntFema", "err"));
+
+loadGeo("nwm_high_flow.geojson", geo => {{
+  nwmLayer = registerVector(L.geoJSON(geo, {{
+    pane:"vectorPane", renderer: makeVectorRenderer(),
+    style: {{ color:"#00c2ff", weight:7, opacity:1 }}
+  }}));
+  bindLayer("lyNwm", nwmLayer, {{ label:"NWM", n: geo.features.length, countId:"cntNwm" }});
+}}, () => setCount("cntNwm", "err"));
+
+loadGeo("nwm_ahps_gauges.geojson", geo => {{
+  const pr = makePointRenderer();
   gaugesLayer = registerVector(L.geoJSON(geo, {{
-    pane:"pointPane", renderer: pointRenderer,
-    pointToLayer: (f,ll) => L.circleMarker(ll, {{ radius:7, color:"#0369a1", fillColor:"#38bdf8", fillOpacity:0.95, weight:2, pane:"pointPane", renderer: pointRenderer }})
+    pane:"pointPane", renderer: pr,
+    pointToLayer: (f,ll) => L.circleMarker(ll, {{ radius:9, color:"#003d5c", fillColor:"#37d6ff", fillOpacity:1, weight:3, pane:"pointPane", renderer: pr }})
   }}));
-  bind("lyGauges", gaugesLayer);
-}}).catch(()=>{{}});
-fetch(assets + "drainage_conduits.geojson").then(r => r.ok ? r.json() : null).then(geo => {{
-  if (!geo) return;
-  drainEdges = registerVector(L.geoJSON(geo, {{ pane:"vectorPane", renderer: vectorRenderer, style: {{ color:"#a16207", weight:2.5, opacity:0.85 }} }}));
-  bind("lyDrainE", drainEdges);
-}}).catch(()=>{{}});
-fetch(assets + "drainage_nodes.geojson").then(r => r.ok ? r.json() : null).then(geo => {{
-  if (!geo) return;
+  bindLayer("lyGauges", gaugesLayer, {{ label:"Gauges", n: geo.features.length, countId:"cntGauges" }});
+}}, () => setCount("cntGauges", "err"));
+
+loadGeo("drainage_conduits.geojson", geo => {{
+  drainEdges = registerVector(L.geoJSON(geo, {{
+    pane:"vectorPane", renderer: makeVectorRenderer(),
+    style: {{ color:"#ffb020", weight:3.5, opacity:1 }}
+  }}));
+  bindLayer("lyDrainE", drainEdges, {{ label:"Conduits", n: geo.features.length, countId:"cntDrainE" }});
+}}, () => setCount("cntDrainE", "err"));
+
+loadGeo("drainage_nodes.geojson", geo => {{
+  const pr = makePointRenderer();
   drainNodes = registerVector(L.geoJSON(geo, {{
-    pane:"pointPane", renderer: pointRenderer,
-    pointToLayer: (f,ll) => L.circleMarker(ll, {{ radius:4, color:"#854d0e", fillColor:"#facc15", fillOpacity:0.95, weight:1, pane:"pointPane", renderer: pointRenderer }})
+    pane:"pointPane", renderer: pr,
+    pointToLayer: (f,ll) => L.circleMarker(ll, {{ radius:5, color:"#7a4e00", fillColor:"#ffd60a", fillOpacity:1, weight:2, pane:"pointPane", renderer: pr }})
   }}));
-  bind("lyDrainN", drainNodes);
-}}).catch(()=>{{}});
-fetch(assets + (manifest.infra?.roads_geojson || "roads.geojson")).then(r => r.ok ? r.json() : null).then(geo => {{
-  if (!geo) return;
-  roadsLayer = registerVector(L.geoJSON(geo, {{ pane:"vectorPane", renderer: vectorRenderer, style: {{ color:"#0f172a", weight:2.8, opacity:0.9 }} }}));
-  bind("lyRoads", roadsLayer);
-}}).catch(err => console.warn("roads load failed", err));
-fetch(assets + (manifest.disruption?.disrupted_geojson || "roads_potential_disruption.geojson")).then(r => r.ok ? r.json() : null).then(geo => {{
-  if (!geo) return;
-  disruptLayer = registerVector(L.geoJSON(geo, {{ pane:"vectorPane", renderer: vectorRenderer, style: {{ color:"#b91c1c", weight:4, opacity:0.95 }} }}));
-  if (document.getElementById("lyHot").checked) document.getElementById("lyHot").dispatchEvent(new Event("change"));
-}}).catch(()=>{{}});
-fetch(assets + (manifest.infra?.stations_geojson || "subway_stations.geojson")).then(r => r.ok ? r.json() : null).then(geo => {{
-  if (!geo) return;
+  bindLayer("lyDrainN", drainNodes, {{ label:"Nodes", n: geo.features.length, countId:"cntDrainN" }});
+}}, () => setCount("cntDrainN", "err"));
+
+loadGeo((manifest.infra?.roads_geojson || "roads.geojson"), geo => {{
+  // Dual-pass casing: dark understroke + bright orange top for citywide readability
+  const under = L.geoJSON(geo, {{
+    pane:"vectorPane", renderer: makeVectorRenderer(),
+    style: {{ color:"#111827", weight:6, opacity:0.9, lineCap:"round", lineJoin:"round" }}
+  }});
+  const over = L.geoJSON(geo, {{
+    pane:"vectorPane", renderer: makeVectorRenderer(),
+    style: {{ color:"#ff6b00", weight:3.2, opacity:1, lineCap:"round", lineJoin:"round" }}
+  }});
+  roadsLayer = registerVector(L.layerGroup([under, over]));
+  bindLayer("lyRoads", roadsLayer, {{ label:"Roads", n: geo.features.length, countId:"cntRoads" }});
+}}, () => setCount("cntRoads", "err"));
+
+loadGeo((manifest.disruption?.disrupted_geojson || "roads_potential_disruption.geojson"), geo => {{
+  disruptLayer = registerVector(L.geoJSON(geo, {{
+    pane:"vectorPane", renderer: makeVectorRenderer(),
+    style: {{ color:"#ff2d55", weight:6, opacity:1 }}
+  }}));
+  bindLayer("lyHot", disruptLayer, {{ label:"Hotspot", n: geo.features.length, countId:"cntHot" }});
+}}, () => setCount("cntHot", "err"));
+
+loadGeo((manifest.infra?.stations_geojson || "subway_stations.geojson"), geo => {{
+  const pr = makePointRenderer();
   stationsLayer = registerVector(L.geoJSON(geo, {{
-    pane:"pointPane", renderer: pointRenderer,
-    pointToLayer: (f,ll) => L.circleMarker(ll, {{ radius:6, color:"#0f766e", fillColor:"#14b8a6", fillOpacity:0.95, weight:2, pane:"pointPane", renderer: pointRenderer }})
+    pane:"pointPane", renderer: pr,
+    pointToLayer: (f,ll) => L.circleMarker(ll, {{ radius:7, color:"#004d40", fillColor:"#00e5a8", fillOpacity:1, weight:2, pane:"pointPane", renderer: pr }})
   }}));
-  bind("lySta", stationsLayer);
-}}).catch(()=>{{}});
-fetch(assets + (manifest.reports?.geojson || "observed_311.geojson")).then(r => r.ok ? r.json() : null).then(geo => {{
-  if (!geo) return;
+  bindLayer("lySta", stationsLayer, {{ label:"Stations", n: geo.features.length, countId:"cntSta" }});
+}}, () => setCount("cntSta", "err"));
+
+loadGeo((manifest.reports?.geojson || "observed_311.geojson"), geo => {{
   L.geoJSON(geo, {{
-    pointToLayer: (f,ll) => L.circleMarker(ll, {{ radius:6, color:"#9f1239", fillColor:"#e11d48", fillOpacity:0.95, weight:1, pane:"pointPane", renderer: pointRenderer }}),
+    pointToLayer: (f,ll) => L.circleMarker(ll, {{ radius:7, color:"#7f0020", fillColor:"#ff3b5c", fillOpacity:1, weight:2 }}),
     onEachFeature: (f,l) => l.bindTooltip((f.properties.descriptor||"311") + " · " + (f.properties.created_date||""))
   }}).eachLayer(l => reports.addLayer(l));
   registerVector(reports);
-  bind("ly311", reports);
-}}).catch(err => console.warn("311 load failed", err));
+  bindLayer("ly311", reports, {{ label:"311", n: geo.features.length, countId:"cnt311" }});
+}}, () => setCount("cnt311", "err"));
 
 function updateAlerts() {{
   const panel = document.getElementById("alertPanel");

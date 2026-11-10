@@ -2493,5 +2493,10 @@
     "status": "skipped",
     "reason": "natten unavailable \u2014 see outputs/stormcast_corrdiff_attempt.json",
     "ida_hires_viz": "mrms_qpe_ida"
+  },
+  "infra": {
+    "roads_geojson": "roads.geojson",
+    "roads_note": "Citywide OSM major roads (motorway/trunk/primary/secondary), capped for web",
+    "stations_geojson": "subway_stations.geojson"
   }
 }
