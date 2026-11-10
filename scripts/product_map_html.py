@@ -246,9 +246,10 @@ details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft);
       <label class="layer-btn"><input id="lyE2" type="checkbox" checked><span class="dot" style="background:#4662d8"></span>Precip (active path)</label>
       <label class="layer-btn"><input id="lyE2Tot" type="checkbox"><span class="dot" style="background:#30123b"></span>Storm total</label>
 
-      <div class="group-label">Depth (research)</div>
+      <div class="group-label">Depth (research · NOT flood warning)</div>
       <label class="layer-btn"><input id="lyDepth" type="checkbox"><span class="dot" style="background:#2171b5"></span>Est. inundation depth</label>
       <label class="layer-btn"><input id="lyDepthTot" type="checkbox"><span class="dot" style="background:#08306b"></span>Storm-total depth</label>
+      <div class="honesty" id="depthForceNote" style="grid-column:1/-1;margin-top:4px">Depth forcing follows selected storm path.</div>
 
       <div class="group-label">Susceptibility</div>
       <label class="layer-btn"><input id="lySusc" type="checkbox"><span class="dot" style="background:#d95f0e"></span>Multi-factor heatmap</label>
@@ -374,6 +375,16 @@ let activeE2 = null, activeSusc = null, activeInfra = null, activeDepth = null;
 let e2Total = null, depthTotal = null;
 const inundation = manifest.inundation || null;
 const depthBounds = (inundation && inundation.bounds) || precipBounds;
+function depthSetForPath(pathId) {{
+  if (!inundation) return null;
+  const by = inundation.by_path || {{}};
+  if (pathId && by[pathId]) return by[pathId];
+  // Earth2 ensemble shares Earth2 depth forcing
+  if (pathId && String(pathId).startsWith("earth2") && by.earth2_control) return by.earth2_control;
+  if (by[inundation.default_depth_path]) return by[inundation.default_depth_path];
+  return inundation; // legacy flat shape
+}}
+let activeDepthSet = depthSetForPath(activePath && activePath.id);
 const builtLayer = pluvial?.built_surface_png ? L.imageOverlay(assets + pluvial.built_surface_png, suscBounds, {{ opacity: 0.5, pane:"rasterPane", interactive:false }}) : null;
 const hotspot = (manifest.disruption?.hotspot_png)
   ? L.imageOverlay(assets + manifest.disruption.hotspot_png, hotspotBounds, {{ opacity: 0.55, pane:"rasterPane", interactive:false }})
@@ -405,12 +416,13 @@ function rebuildPathLayers() {{
   e2Layers = frames.map(f => L.imageOverlay(assets + f.png, precipBounds, {{ opacity: precipOpacity(), interactive:false, pane:"rasterPane", className:"precip-nearest" }}));
   suscLayers = suscFrames.map(f => L.imageOverlay(assets + f.png, suscBounds, {{ opacity: suscOpacity(), interactive:false, pane:"rasterPane" }}));
   e2Total = activePath.precip?.storm_total_png ? L.imageOverlay(assets + activePath.precip.storm_total_png, precipBounds, {{ opacity: precipOpacity(), pane:"rasterPane", interactive:false }}) : null;
-  // Depth frames follow cumulative Earth2 HAND series when available (independent of alt precip path).
-  const depthFrames = (inundation && inundation.cumulative_frames) || [];
-  depthLayers = depthFrames.map(f => L.imageOverlay(assets + f.png, depthBounds, {{ opacity: depthOpacity(), interactive:false, pane:"depthPane" }}));
+  // Depth set follows selected storm path forcing (Earth2 vs MRMS QPE Ida alt).
+  activeDepthSet = depthSetForPath(activePath.id);
+  const depthFrames = (activeDepthSet && activeDepthSet.cumulative_frames) || [];
+  depthLayers = depthFrames.map(f => L.imageOverlay(assets + f.png, (activeDepthSet.bounds || depthBounds), {{ opacity: depthOpacity(), interactive:false, pane:"depthPane" }}));
   if (depthTotal && mapLeft.hasLayer(depthTotal)) mapLeft.removeLayer(depthTotal);
-  depthTotal = (inundation && inundation.storm_total && inundation.storm_total.png)
-    ? L.imageOverlay(assets + inundation.storm_total.png, depthBounds, {{ opacity: depthOpacity(), interactive:false, pane:"depthPane" }})
+  depthTotal = (activeDepthSet && activeDepthSet.storm_total && activeDepthSet.storm_total.png)
+    ? L.imageOverlay(assets + activeDepthSet.storm_total.png, (activeDepthSet.bounds || depthBounds), {{ opacity: depthOpacity(), interactive:false, pane:"depthPane" }})
     : null;
   document.getElementById("leadSlider").max = Math.max(frames.length - 1, 0);
   document.getElementById("tickRow").innerHTML = frames.map(f => `<span>+${{Number(f.lead_hours)}}</span>`).join("");
@@ -418,6 +430,13 @@ function rebuildPathLayers() {{
   document.getElementById("pathHonesty").textContent = activePath.primary
     ? "Primary Earth2 control path. Alternate tracks are labeled scenarios (ensemble / higher-res Ida), not a validation split-screen."
     : (activePath.honesty || "Alternate storm scenario — clearly labeled; not a live competing weather product.");
+  const depthNote = document.getElementById("depthForceNote");
+  if (depthNote) {{
+    const ds = activeDepthSet;
+    depthNote.textContent = ds
+      ? (`Depth forcing: ${{ds.label || ds.id}} · max≈${{ds.storm_total?.max_m != null ? ds.storm_total.max_m.toFixed(2) : "—"}} m · NOT flood warning`)
+      : "Depth set unavailable for this path.";
+  }}
 }}
 
 function setLead(i) {{
@@ -449,9 +468,8 @@ function setLead(i) {{
   if (activeDepth && mapLeft.hasLayer(activeDepth)) mapLeft.removeLayer(activeDepth);
   activeDepth = null;
   if (depthLayers.length) {{
-    // Map precip frame lead to nearest cumulative depth frame
     const lead = Number(f.lead_hours);
-    const depthFrames = inundation.cumulative_frames || [];
+    const depthFrames = (activeDepthSet && activeDepthSet.cumulative_frames) || [];
     let best = 0, bestAbs = Infinity;
     depthFrames.forEach((df, di) => {{
       const d = Math.abs(Number(df.lead_hours) - lead);
@@ -462,19 +480,24 @@ function setLead(i) {{
       activeDepth.setOpacity(depthOpacity()); activeDepth.addTo(mapLeft);
     }}
   }}
+  if (document.getElementById("lyDepthTot").checked && depthTotal) {{
+    depthTotal.setOpacity(depthOpacity());
+    if (!mapLeft.hasLayer(depthTotal)) depthTotal.addTo(mapLeft);
+  }}
   const clock = (f.valid_time || "").replace("T", " ");
   document.getElementById("clockReadout").textContent = clock;
   document.getElementById("leadReadout").textContent = "+" + f.lead_hours + " h";
   document.getElementById("e2Readout").textContent = (f.max_mm != null ? f.max_mm.toFixed(1) : "—") + " mm";
   document.getElementById("frameTypeReadout").textContent = f.temporal_blend ? "temporal blend" : (f.resolution_note ? "hi-res alt" : "native");
   document.getElementById("hudClock").textContent = clock + " UTC";
+  const depthForce = activeDepthSet ? (activeDepthSet.id === "mrms_qpe_ida" ? "MRMS-forced" : "Earth2-forced") : "";
   document.getElementById("hudSub").textContent = productMode === "susceptibility"
     ? ("Multi-factor susceptibility · +" + f.lead_hours + "h · screening only")
     : productMode === "depth"
-      ? ("Est. research inundation depth · NOT flood warning · +" + f.lead_hours + "h")
+      ? ("Est. research inundation · " + depthForce + " · NOT flood warning · +" + f.lead_hours + "h")
       : (activePath.label + " · +" + f.lead_hours + "h · " + (f.temporal_blend ? "blend" : "native") + " · not NEXRAD");
   document.getElementById("leftLabel").textContent =
-    (productMode === "susceptibility" ? "Susceptibility" : productMode === "coupled" ? "Coupled" : productMode === "depth" ? "Depth (research)" : "Storm")
+    (productMode === "susceptibility" ? "Susceptibility" : productMode === "coupled" ? "Coupled" : productMode === "depth" ? ("Depth · " + depthForce) : "Storm")
     + " · " + (activePath.primary ? "Earth2" : "Alt path");
   raiseVectors();
   writeUrl();
@@ -523,7 +546,7 @@ function applyProductMode(mode) {{
     setLayerChecks(["lyE2","lySusc","lyInfra","lySta"]);
   }} else if (mode === "depth") {{
     bar.classList.add("depth"); legend.textContent = "Est. depth (m) — NOT flood warning";
-    document.getElementById("modeHint").textContent = "Estimated research inundation (pysheds HAND/bathtub + Earth2 precip). NOT official NWS flood warning.";
+    document.getElementById("modeHint").textContent = "Estimated research inundation (pysheds HAND/bathtub). Depth forcing follows selected storm path (Earth2 or MRMS QPE Ida alt). NOT official NWS flood warning.";
     setLayerChecks(["lyDepth","lyDepthTot"]); setPlaying(false);
   }} else {{
     legend.textContent = "Precip (mm)";

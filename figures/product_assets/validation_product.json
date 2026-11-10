@@ -3,8 +3,8 @@
   "valid_operational_skill": false,
   "earth2_storm_total": {
     "exists": true,
-    "n": 172800,
-    "mean_mm": 35.672359466552734,
+    "n": 112888,
+    "mean_mm": 36.88090133666992,
     "max_mm": 44.68461990356445,
     "p90_mm": 42.2829704284668
   },
@@ -16,7 +16,7 @@
   "comparison": {},
   "reports_311": {
     "n_reports": 599,
-    "n_with_earth2_sample": 599,
+    "n_with_earth2_sample": 594,
     "median_earth2_mm_at_reports": 35.94919204711914,
     "fraction_reports_above_earth2_p75": 0.18196994991652754,
     "median_mrms_mm_at_reports": null,

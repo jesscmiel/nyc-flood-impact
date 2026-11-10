@@ -1446,15 +1446,211 @@
     "model": "pysheds HAND + depression/relative-elevation rainfall-excess bathtub",
     "engine": "pysheds",
     "dem": "/home/jesscmiel/projects/nyc-flood-impact/data/raw/terrain/dem_usgs_citywide.tif",
-    "forcing": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/precip_storm_total.tif",
     "runoff_coefficient": 0.7,
     "focal_window_cells": 9,
     "formula": "depth_m = max(HAND excess, min(sink_capacity, rain_m), rain_m \u2212 (DEM \u2212 focal_min)); rain_m = runoff_coeff * precip_mm/1000",
     "units": "meters",
-    "disclaimer": "Estimated research inundation only. NOT an official NWS flood warning, NOT a calibrated NYC DEP/SWMM product, NOT emergency guidance.",
+    "disclaimer": "Estimated research inundation only. NOT an official NWS flood warning, NOT a calibrated NYC DEP/SWMM product, NOT emergency guidance. Depth follows the selected storm path forcing when a matching depth set exists (Earth2 primary or MRMS QPE Ida alt).",
     "not_flood_warning": true,
     "hand_tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/hand_citywide.tif",
     "stream_acc_threshold": 553.0,
+    "default_depth_path": "earth2_control",
+    "by_path": {
+      "earth2_control": {
+        "id": "earth2_control",
+        "storm_path_id": "earth2_control",
+        "label": "Earth2 (primary) forcing",
+        "source_note": "Earth2 FCN+PrecipitationAFNO Ida precip",
+        "forcing": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/precip_storm_total.tif",
+        "storm_total": {
+          "png": "depth_storm_total_m.png",
+          "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_storm_total_m.tif",
+          "max_m": 0.03127923235297203,
+          "p95_m": 0.031245142221450806,
+          "wet_fraction": 0.06668467078189301,
+          "display_vmax_m": 0.05,
+          "forcing_max_mm": 44.68461990356445
+        },
+        "interval_frames": [
+          {
+            "lead_hours": 6,
+            "png": "depth_lead_06h_m.png",
+            "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_lead_06h_m.tif",
+            "max_m": 0.00601573521271348,
+            "wet_fraction": 0.006350308641975309
+          },
+          {
+            "lead_hours": 12,
+            "png": "depth_lead_12h_m.png",
+            "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_lead_12h_m.tif",
+            "max_m": 0.02121998555958271,
+            "wet_fraction": 0.0662551440329218
+          },
+          {
+            "lead_hours": 18,
+            "png": "depth_lead_18h_m.png",
+            "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_lead_18h_m.tif",
+            "max_m": 0.007166275288909674,
+            "wet_fraction": 0.04010545267489712
+          },
+          {
+            "lead_hours": 24,
+            "png": "depth_lead_24h_m.png",
+            "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_lead_24h_m.tif",
+            "max_m": null,
+            "wet_fraction": 0.0
+          }
+        ],
+        "cumulative_frames": [
+          {
+            "lead_hours": 6,
+            "png": "depth_cum_lead_06h_m.png",
+            "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_cum_lead_06h_m.tif",
+            "max_m": 0.00601573521271348,
+            "wet_fraction": 0.006350308641975309,
+            "cumulative": true
+          },
+          {
+            "lead_hours": 12,
+            "png": "depth_cum_lead_12h_m.png",
+            "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_cum_lead_12h_m.tif",
+            "max_m": 0.027235720306634903,
+            "wet_fraction": 0.06643261316872429,
+            "cumulative": true
+          },
+          {
+            "lead_hours": 18,
+            "png": "depth_cum_lead_18h_m.png",
+            "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_cum_lead_18h_m.tif",
+            "max_m": 0.03127923235297203,
+            "wet_fraction": 0.06668467078189301,
+            "cumulative": true
+          },
+          {
+            "lead_hours": 24,
+            "png": "depth_cum_lead_24h_m.png",
+            "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_cum_lead_24h_m.tif",
+            "max_m": 0.03127923235297203,
+            "wet_fraction": 0.06668467078189301,
+            "cumulative": true
+          }
+        ],
+        "bounds": [
+          [
+            40.48,
+            -74.28
+          ],
+          [
+            40.93,
+            -73.68
+          ]
+        ],
+        "colorbar": {
+          "cmap": "Blues",
+          "units": "m",
+          "label": "Est. depth (m) \u2014 NOT flood warning"
+        },
+        "opacity_default": 0.75,
+        "not_flood_warning": true
+      },
+      "mrms_qpe_ida": {
+        "id": "mrms_qpe_ida",
+        "storm_path_id": "mrms_qpe_ida",
+        "label": "MRMS QPE Ida (~1 km) alt forcing",
+        "source_note": "NOAA MRMS Multi-Sensor QPE (~1 km) \u2014 labeled alternate Ida scenario forcing. NOT a live competing weather product.",
+        "forcing": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_storm_total.tif",
+        "storm_total": {
+          "png": "depth_mrms_storm_total_m.png",
+          "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_mrms_storm_total_m.tif",
+          "max_m": 0.1377166509628296,
+          "p95_m": 0.11835590749979019,
+          "wet_fraction": 0.01745627572016461,
+          "display_vmax_m": 0.1264611780643463,
+          "forcing_max_mm": 202.85009765625
+        },
+        "interval_frames": [
+          {
+            "lead_hours": 6,
+            "png": "depth_mrms_lead_06h_m.png",
+            "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_mrms_lead_06h_m.tif",
+            "max_m": null,
+            "wet_fraction": 0.0
+          },
+          {
+            "lead_hours": 12,
+            "png": "depth_mrms_lead_12h_m.png",
+            "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_mrms_lead_12h_m.tif",
+            "max_m": 0.04259553924202919,
+            "wet_fraction": 0.016080246913580246
+          },
+          {
+            "lead_hours": 18,
+            "png": "depth_mrms_lead_18h_m.png",
+            "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_mrms_lead_18h_m.tif",
+            "max_m": 0.09624370187520981,
+            "wet_fraction": 0.016941872427983538
+          },
+          {
+            "lead_hours": 24,
+            "png": "depth_mrms_lead_24h_m.png",
+            "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_mrms_lead_24h_m.tif",
+            "max_m": null,
+            "wet_fraction": 0.0
+          }
+        ],
+        "cumulative_frames": [
+          {
+            "lead_hours": 6,
+            "png": "depth_mrms_cum_lead_06h_m.png",
+            "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_mrms_cum_lead_06h_m.tif",
+            "max_m": null,
+            "wet_fraction": 0.0,
+            "cumulative": true
+          },
+          {
+            "lead_hours": 12,
+            "png": "depth_mrms_cum_lead_12h_m.png",
+            "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_mrms_cum_lead_12h_m.tif",
+            "max_m": 0.043344903737306595,
+            "wet_fraction": 0.016136831275720166,
+            "cumulative": true
+          },
+          {
+            "lead_hours": 18,
+            "png": "depth_mrms_cum_lead_18h_m.png",
+            "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_mrms_cum_lead_18h_m.tif",
+            "max_m": 0.1377166509628296,
+            "wet_fraction": 0.017209362139917694,
+            "cumulative": true
+          },
+          {
+            "lead_hours": 24,
+            "png": "depth_mrms_cum_lead_24h_m.png",
+            "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_mrms_cum_lead_24h_m.tif",
+            "max_m": 0.1377166509628296,
+            "wet_fraction": 0.0172119341563786,
+            "cumulative": true
+          }
+        ],
+        "bounds": [
+          [
+            40.48,
+            -74.28
+          ],
+          [
+            40.93,
+            -73.68
+          ]
+        ],
+        "colorbar": {
+          "cmap": "Blues",
+          "units": "m",
+          "label": "Est. depth (m) \u2014 NOT flood warning"
+        },
+        "opacity_default": 0.75,
+        "not_flood_warning": true
+      }
+    },
     "storm_total": {
       "png": "depth_storm_total_m.png",
       "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_storm_total_m.tif",
@@ -1470,32 +1666,28 @@
         "png": "depth_lead_06h_m.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_lead_06h_m.tif",
         "max_m": 0.00601573521271348,
-        "wet_fraction": 0.006350308641975309,
-        "note": "Interval precip \u2192 exploratory depth (not cumulative routing)."
+        "wet_fraction": 0.006350308641975309
       },
       {
         "lead_hours": 12,
         "png": "depth_lead_12h_m.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_lead_12h_m.tif",
         "max_m": 0.02121998555958271,
-        "wet_fraction": 0.0662551440329218,
-        "note": "Interval precip \u2192 exploratory depth (not cumulative routing)."
+        "wet_fraction": 0.0662551440329218
       },
       {
         "lead_hours": 18,
         "png": "depth_lead_18h_m.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_lead_18h_m.tif",
         "max_m": 0.007166275288909674,
-        "wet_fraction": 0.04010545267489712,
-        "note": "Interval precip \u2192 exploratory depth (not cumulative routing)."
+        "wet_fraction": 0.04010545267489712
       },
       {
         "lead_hours": 24,
         "png": "depth_lead_24h_m.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_lead_24h_m.tif",
         "max_m": null,
-        "wet_fraction": 0.0,
-        "note": "Interval precip \u2192 exploratory depth (not cumulative routing)."
+        "wet_fraction": 0.0
       }
     ],
     "cumulative_frames": [
@@ -1545,9 +1737,10 @@
     "colorbar": {
       "cmap": "Blues",
       "units": "m",
-      "label": "Est. depth (m) \u2014 research only"
+      "label": "Est. depth (m) \u2014 NOT flood warning"
     },
-    "opacity_default": 0.75
+    "opacity_default": 0.75,
+    "hires_alt_depth_path": "mrms_qpe_ida"
   },
   "layer_bounds": {
     "map_extent_default": "citywide",
