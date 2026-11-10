@@ -1,0 +1,108 @@
+{
+  "product": "estimated_research_inundation_depth",
+  "model": "pysheds HAND + depression/relative-elevation rainfall-excess bathtub",
+  "engine": "pysheds",
+  "dem": "/home/jesscmiel/projects/nyc-flood-impact/data/raw/terrain/dem_usgs_citywide.tif",
+  "forcing": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/precip_storm_total.tif",
+  "runoff_coefficient": 0.7,
+  "focal_window_cells": 9,
+  "formula": "depth_m = max(HAND excess, min(sink_capacity, rain_m), rain_m \u2212 (DEM \u2212 focal_min)); rain_m = runoff_coeff * precip_mm/1000",
+  "units": "meters",
+  "disclaimer": "Estimated research inundation only. NOT an official NWS flood warning, NOT a calibrated NYC DEP/SWMM product, NOT emergency guidance.",
+  "not_flood_warning": true,
+  "hand_tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/hand_citywide.tif",
+  "stream_acc_threshold": 553.0,
+  "storm_total": {
+    "png": "depth_storm_total_m.png",
+    "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_storm_total_m.tif",
+    "max_m": 0.03127923235297203,
+    "p95_m": 0.031245142221450806,
+    "wet_fraction": 0.06668467078189301,
+    "display_vmax_m": 0.05,
+    "forcing_max_mm": 44.68461990356445
+  },
+  "interval_frames": [
+    {
+      "lead_hours": 6,
+      "png": "depth_lead_06h_m.png",
+      "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_lead_06h_m.tif",
+      "max_m": 0.00601573521271348,
+      "wet_fraction": 0.006350308641975309,
+      "note": "Interval precip \u2192 exploratory depth (not cumulative routing)."
+    },
+    {
+      "lead_hours": 12,
+      "png": "depth_lead_12h_m.png",
+      "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_lead_12h_m.tif",
+      "max_m": 0.02121998555958271,
+      "wet_fraction": 0.0662551440329218,
+      "note": "Interval precip \u2192 exploratory depth (not cumulative routing)."
+    },
+    {
+      "lead_hours": 18,
+      "png": "depth_lead_18h_m.png",
+      "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_lead_18h_m.tif",
+      "max_m": 0.007166275288909674,
+      "wet_fraction": 0.04010545267489712,
+      "note": "Interval precip \u2192 exploratory depth (not cumulative routing)."
+    },
+    {
+      "lead_hours": 24,
+      "png": "depth_lead_24h_m.png",
+      "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_lead_24h_m.tif",
+      "max_m": null,
+      "wet_fraction": 0.0,
+      "note": "Interval precip \u2192 exploratory depth (not cumulative routing)."
+    }
+  ],
+  "cumulative_frames": [
+    {
+      "lead_hours": 6,
+      "png": "depth_cum_lead_06h_m.png",
+      "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_cum_lead_06h_m.tif",
+      "max_m": 0.00601573521271348,
+      "wet_fraction": 0.006350308641975309,
+      "cumulative": true
+    },
+    {
+      "lead_hours": 12,
+      "png": "depth_cum_lead_12h_m.png",
+      "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_cum_lead_12h_m.tif",
+      "max_m": 0.027235720306634903,
+      "wet_fraction": 0.06643261316872429,
+      "cumulative": true
+    },
+    {
+      "lead_hours": 18,
+      "png": "depth_cum_lead_18h_m.png",
+      "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_cum_lead_18h_m.tif",
+      "max_m": 0.03127923235297203,
+      "wet_fraction": 0.06668467078189301,
+      "cumulative": true
+    },
+    {
+      "lead_hours": 24,
+      "png": "depth_cum_lead_24h_m.png",
+      "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_cum_lead_24h_m.tif",
+      "max_m": 0.03127923235297203,
+      "wet_fraction": 0.06668467078189301,
+      "cumulative": true
+    }
+  ],
+  "bounds": [
+    [
+      40.48,
+      -74.28
+    ],
+    [
+      40.93,
+      -73.68
+    ]
+  ],
+  "colorbar": {
+    "cmap": "Blues",
+    "units": "m",
+    "label": "Est. depth (m) \u2014 research only"
+  },
+  "opacity_default": 0.75
+}

@@ -27,6 +27,7 @@ dependencies = [
   "folium>=0.14",
   "joblib>=1.3",
   "Pillow>=10.0",
+  "pysheds>=0.4",
 ]
 
 [project.optional-dependencies]
@@ -34,6 +35,7 @@ dependencies = [
 # Forecast script needs a working earth2studio + GPU torch environment.
 earth2 = []
 swmm = ["pyswmm>=2.1"]
+inundation = ["pysheds>=0.4"]
 test = ["pytest>=8"]
 
 [project.urls]

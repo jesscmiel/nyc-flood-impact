@@ -55,10 +55,22 @@ def main() -> None:
     print("Staging vector/infra assets…")
     _stage_assets()
 
-    # Earth2-only denser radar stack + time-varying susceptibility (no MRMS).
-    print("Building Earth2 radar stack…")
     import importlib.util
 
+    # Estimated research inundation (pysheds HAND/bathtub) before radar stack so meta is available.
+    print("Building estimated inundation depth (pysheds)…")
+    inund_path = Path(__file__).resolve().parent / "build_inundation_depth.py"
+    try:
+        spec = importlib.util.spec_from_file_location("build_inundation_depth", inund_path)
+        inund_mod = importlib.util.module_from_spec(spec)
+        assert spec.loader is not None
+        spec.loader.exec_module(inund_mod)
+        inund_mod.main()
+    except Exception as exc:  # noqa: BLE001
+        print(f"  inundation step skipped: {exc}")
+
+    # Earth2 primary + alt storm paths (ensemble / labeled MRMS QPE hi-res scenario).
+    print("Building Earth2 radar stack…")
     stack_path = Path(__file__).resolve().parent / "build_earth2_radar_stack.py"
     spec = importlib.util.spec_from_file_location("build_earth2_radar_stack", stack_path)
     stack_mod = importlib.util.module_from_spec(spec)
