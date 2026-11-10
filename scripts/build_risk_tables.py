@@ -15,10 +15,11 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 
+from flood_risk.exposure.geopackage import build_exposure_gpkg, intersect_depth_gpkg
 from flood_risk.hazard.catalog import write_catalog
 from flood_risk.inundation.engine_spike import try_build_sfincs_schema, write_spike_report
 from flood_risk.inundation.pysheds_borough import run_borough_spike
-from flood_risk.risk.depth_asset_tables import summarize_assets
+from flood_risk.risk.depth_asset_tables import DEPTH_BANDS, summarize_assets
 from nyc_flash_flood_case_study.config import FIGURES_DIR, OUTPUTS_DIR, PROCESSED_DIR, PROJECT_ROOT
 from nyc_flash_flood_case_study.extents import EXTENTS
 
@@ -129,6 +130,16 @@ def main() -> None:
     roads = ASSETS / "roads.geojson"
     stations = ASSETS / "subway_stations.geojson"
 
+    # Exposure GeoPackage (citywide) + reliable intersects
+    gpkg = ASSETS / "exposure_citywide.gpkg"
+    exp_meta = build_exposure_gpkg(
+        roads_geojson=roads,
+        stations_geojson=stations,
+        facilities_geojson=facilities,
+        out_gpkg=gpkg,
+    )
+    (ASSETS / "exposure_citywide.json").write_text(json.dumps(exp_meta, indent=2))
+
     # Hazard catalog hooks (MRMS available; ERA5/GFS hooks)
     catalog = write_catalog(ASSETS / "hazard_catalog.json", PROJECT_ROOT)
     (OUTPUTS_DIR / "hazard_catalog.json").write_text(json.dumps(catalog, indent=2))
@@ -196,6 +207,37 @@ def main() -> None:
         meta=sq_meta,
     )
 
+    # Prefer GPKG intersects for citywide (authoritative exposure path)
+    gpkg_inter = intersect_depth_gpkg(gpkg, city_depth, DEPTH_BANDS)
+    city_risk["exposure_gpkg"] = "exposure_citywide.gpkg"
+    city_risk["exposure_intersects"] = gpkg_inter
+    # Rebuild table rows from GPKG intersects for consistency
+    city_risk["table"] = [
+        {
+            "band": b["id"],
+            "label": b["label"],
+            "min_m": b["min_m"],
+            "max_m": b["max_m"],
+            "roads": gpkg_inter["layers"]["roads"]["band_counts"][b["id"]],
+            "stations": gpkg_inter["layers"]["stations"]["band_counts"][b["id"]],
+            "facilities": gpkg_inter["layers"]["facilities"]["band_counts"][b["id"]],
+        }
+        for b in DEPTH_BANDS
+    ]
+    city_risk["wet_assets"] = {
+        "roads": gpkg_inter["layers"]["roads"]["wet"],
+        "stations": gpkg_inter["layers"]["stations"]["wet"],
+        "facilities": gpkg_inter["layers"]["facilities"]["wet"],
+    }
+    city_risk["totals"] = {
+        "roads": gpkg_inter["layers"]["roads"]["n"],
+        "stations": gpkg_inter["layers"]["stations"]["n"],
+        "facilities": gpkg_inter["layers"]["facilities"]["n"],
+    }
+    city_risk["max_depth_on_asset_m"] = {
+        k: gpkg_inter["layers"][k]["max_depth_m"] for k in ("roads", "stations", "facilities")
+    }
+
     city_risk["nested_case_studies"] = {"south_queens": "risk_depth_assets_south_queens.json"}
     city_risk["hazard_catalog"] = "hazard_catalog.json"
     city_risk["engine_spike"] = {"conclusion": spike.get("conclusion"), "probes": spike.get("probes")}
@@ -245,6 +287,13 @@ def main() -> None:
             "hens": False,
         }
         manifest["hazard_catalog"] = "hazard_catalog.json"
+        manifest["exposure"] = {
+            "gpkg": "exposure_citywide.gpkg",
+            "meta": "exposure_citywide.json",
+            "intersects": "exposure_depth_intersects.json",
+            "layers": ["roads", "stations", "facilities"],
+            "official": False,
+        }
         manifest["inundation_citywide"] = {
             "png": city_meta.get("png"),
             "meta": "depth_citywide_mrms_qpe_ida_meta.json",

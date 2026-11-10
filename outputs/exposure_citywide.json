@@ -1,0 +1,25 @@
+{
+  "layers": {
+    "roads": {
+      "n": 2200,
+      "geom_types": [
+        "LineString"
+      ]
+    },
+    "stations": {
+      "n": 309,
+      "geom_types": [
+        "Point"
+      ]
+    },
+    "facilities": {
+      "n": 26,
+      "geom_types": [
+        "Point"
+      ]
+    }
+  },
+  "path": "/home/jesscmiel/projects/nyc-flood-impact/figures/product_assets/exposure_citywide.gpkg",
+  "crs": "EPSG:4326",
+  "official": false
+}

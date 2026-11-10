@@ -2530,5 +2530,16 @@
     "meta": "depth_citywide_mrms_qpe_ida_meta.json",
     "engine": "pysheds_hand_bathtub_v2",
     "extent": "citywide"
+  },
+  "exposure": {
+    "gpkg": "exposure_citywide.gpkg",
+    "meta": "exposure_citywide.json",
+    "intersects": "exposure_depth_intersects.json",
+    "layers": [
+      "roads",
+      "stations",
+      "facilities"
+    ],
+    "official": false
   }
 }

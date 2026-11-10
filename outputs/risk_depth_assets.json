@@ -81,6 +81,46 @@
   ],
   "extent_id": "citywide",
   "depth_tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_citywide_mrms_qpe_ida_storm_total_m.tif",
+  "exposure_gpkg": "exposure_citywide.gpkg",
+  "exposure_intersects": {
+    "gpkg": "/home/jesscmiel/projects/nyc-flood-impact/figures/product_assets/exposure_citywide.gpkg",
+    "depth_tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_citywide_mrms_qpe_ida_storm_total_m.tif",
+    "layers": {
+      "roads": {
+        "n": 2200,
+        "wet": 428,
+        "max_depth_m": 0.13832485675811768,
+        "mean_wet_m": 0.09953794914741661,
+        "band_counts": {
+          "ponding": 79,
+          "deep_ponding": 349,
+          "hazard": 0
+        }
+      },
+      "stations": {
+        "n": 309,
+        "wet": 304,
+        "max_depth_m": 0.13607600331306458,
+        "mean_wet_m": 0.09972239023466643,
+        "band_counts": {
+          "ponding": 30,
+          "deep_ponding": 274,
+          "hazard": 0
+        }
+      },
+      "facilities": {
+        "n": 26,
+        "wet": 15,
+        "max_depth_m": 0.12651056051254272,
+        "mean_wet_m": 0.09409758895635605,
+        "band_counts": {
+          "ponding": 2,
+          "deep_ponding": 13,
+          "hazard": 0
+        }
+      }
+    }
+  },
   "nested_case_studies": {
     "south_queens": "risk_depth_assets_south_queens.json"
   },

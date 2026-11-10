@@ -275,6 +275,7 @@ details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft);
       <label class="layer-btn"><input id="ly311" type="checkbox"><span class="dot" style="background:#ff3b5c"></span>311 reports<span class="count" id="cnt311">…</span></label>
       <label class="layer-btn"><input id="lySta" type="checkbox"><span class="dot" style="background:#00e5a8"></span>Stations<span class="count" id="cntSta">…</span></label>
       <label class="layer-btn"><input id="lyRoads" type="checkbox"><span class="dot" style="background:#ff6b00"></span>Roads<span class="count" id="cntRoads">…</span></label>
+      <label class="layer-btn"><input id="lyFac" type="checkbox"><span class="dot" style="background:#a855f7"></span>Facilities<span class="count" id="cntFac">…</span></label>
 
       <div class="group-label">Context</div>
       <label class="layer-btn"><input id="lyFema" type="checkbox"><span class="dot" style="background:#4f7cff"></span>FEMA NFHL<span class="count" id="cntFema">…</span></label>
@@ -467,7 +468,7 @@ function raiseVectors() {{
   if (reports && mapLeft.hasLayer(reports)) reports.bringToFront();
 }}
 function contextLayerOn() {{
-  return ["lyHot","ly311","lySta","lyRoads","lyFema","lyNwm","lyGauges","lyDrainE","lyDrainN","lyInfra"]
+  return ["lyHot","ly311","lySta","lyRoads","lyFac","lyFema","lyNwm","lyGauges","lyDrainE","lyDrainN","lyInfra"]
     .some(id => document.getElementById(id)?.checked);
 }}
 function updateLayerStatus() {{
@@ -617,7 +618,7 @@ function setPlaying(on) {{
 }}
 
 const PRODUCT_LAYER_IDS = ["lyE2","lyE2Tot","lyDepth","lyDepthTot","lySusc","lyBuilt","lyInfra"];
-const CONTEXT_LAYER_IDS = ["lyHot","ly311","lySta","lyRoads","lyFema","lyNwm","lyGauges","lyDrainE","lyDrainN"];
+const CONTEXT_LAYER_IDS = ["lyHot","ly311","lySta","lyRoads","lyFac","lyFema","lyNwm","lyGauges","lyDrainE","lyDrainN"];
 const LAYER_IDS = PRODUCT_LAYER_IDS.concat(CONTEXT_LAYER_IDS);
 function setLayerChecks(onIds, {{ onlyProduct=true }} = {{}}) {{
   const ids = onlyProduct ? PRODUCT_LAYER_IDS : LAYER_IDS;
@@ -947,6 +948,16 @@ loadGeo((manifest.reports?.geojson || "observed_311.geojson"), geo => {{
   registerVector(reports);
   bindLayer("ly311", reports, {{ label:"311", n: geo.features.length, countId:"cnt311" }});
 }}, "cnt311");
+
+loadGeo("critical_facilities.geojson", geo => {{
+  const pr = makePointRenderer();
+  const facLayer = registerVector(L.geoJSON(geo, {{
+    pane:"pointPane", renderer: pr,
+    pointToLayer: (f,ll) => L.circleMarker(ll, {{ radius:8, color:"#5b21b6", fillColor:"#a855f7", fillOpacity:1, weight:2, pane:"pointPane", renderer: pr }}),
+    onEachFeature: (f,l) => l.bindTooltip((f.properties.name||"facility") + " · " + (f.properties.facility_type||""))
+  }}));
+  bindLayer("lyFac", facLayer, {{ label:"Facilities", n: geo.features.length, countId:"cntFac" }});
+}}, "cntFac");
 
 function renderRiskCard(risk) {{
   const card = document.getElementById("riskCard");
