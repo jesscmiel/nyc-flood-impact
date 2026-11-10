@@ -28,6 +28,7 @@ dependencies = [
   "joblib>=1.3",
   "Pillow>=10.0",
   "pysheds>=0.4",
+  "hydromt-sfincs>=1.2",
 ]
 
 [project.optional-dependencies]

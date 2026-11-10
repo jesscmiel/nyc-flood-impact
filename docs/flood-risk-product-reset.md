@@ -60,13 +60,13 @@ Hazard forcing  →  Inundation / hydrology  →  Exposure  →  Risk metrics  �
 
 ## Prioritized MVP rebuild steps
 
-1. **Stabilize product shell** — GeoJSON layers always load over HTTP (`scripts/serve_product.py`); no `err` counts; citywide exposure visible.
-2. **Reframe UI/docs as flood RISK** — Ida = case study fixture; remove Enterprise/HENS implications.
-3. **Package scaffold** — `flood_risk/{{hazard,inundation,exposure,risk,validate}}` (started).
+1. **Stabilize product shell** — GeoJSON layers always load over HTTP (`scripts/serve_product.py`); no `err` counts; citywide exposure visible. ✅
+2. **Reframe UI/docs as flood RISK** — Ida = case study fixture; remove Enterprise/HENS implications. ✅
+3. **Package scaffold** — `flood_risk/{hazard,inundation,exposure,risk,validate}` (started). ✅
 4. **Hazard catalog v0** — MRMS event packs + ERA5/GFS hooks; optional open FCN if installable.
-5. **Inundation v1** — keep pysheds; spike SFINCS or LISFLOOD-FP on one borough DEM.
-6. **Exposure v1** — citywide roads/stations/facilities GeoPackage + intersect API.
-7. **Risk metrics v0** — depth×asset tables + scenario cards; RP placeholders with caveats.
+5. **Inundation v1** — keep pysheds; spike SFINCS or LISFLOOD-FP on one borough DEM. ✅ spike attempted — **binaries blocked**; pysheds borough v2 shipped (see `docs/inundation-engine-spike.md`).
+6. **Exposure v1** — citywide roads/stations/facilities GeoPackage + intersect API. (demo facilities stub ✅)
+7. **Risk metrics v0** — depth×asset tables + scenario cards; RP placeholders with caveats. ✅ tables + UI card
 8. **Validation dashboard** — 311/gauge overlays with quantitative scores + confidence language.
 9. **Only then** consider multi-city templates (same architecture, new fixtures).
 

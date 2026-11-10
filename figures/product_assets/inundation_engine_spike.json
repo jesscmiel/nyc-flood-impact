@@ -1,0 +1,34 @@
+{
+  "product": "flood_risk_research_prototype",
+  "enterprise": false,
+  "hens": false,
+  "probes": [
+    {
+      "name": "LISFLOOD-FP",
+      "installable": false,
+      "runnable": false,
+      "detail": "No pip package; no lisflood binary on PATH. Needs compiled LISFLOOD-FP."
+    },
+    {
+      "name": "SFINCS",
+      "installable": true,
+      "runnable": false,
+      "detail": "hydromt-sfincs importable (model builder). No sfincs executable on PATH / release assets \u2014 cannot run simulation."
+    },
+    {
+      "name": "pysheds",
+      "installable": true,
+      "runnable": true,
+      "detail": "HAND + bathtub research inundation (fallback / MVP engine)."
+    }
+  ],
+  "conclusion": "SFINCS/LISFLOOD-FP blocked without native binaries. MVP inundation remains improved pysheds HAND/bathtub.",
+  "sfincs_schema": {
+    "attempted": true,
+    "wrote": true,
+    "path": "/home/jesscmiel/projects/nyc-flood-impact/outputs/sfincs_spike_queens",
+    "note": "Schema written only \u2014 SFINCS binary missing; not a completed inundation run."
+  },
+  "borough": "south_queens",
+  "forcing": "mrms_qpe_ida"
+}

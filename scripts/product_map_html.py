@@ -120,6 +120,10 @@ input[type=range] {{ width:100%; accent-color:var(--accent); }}
 .layer-btn:has(input:checked) .count {{ color:#045963; }}
 .layer-status {{ margin-top:8px; padding:8px 10px; border-radius:10px; background:#07141c; color:#e8f4f6; font-size:.74rem; line-height:1.35; display:none; }}
 .layer-status.on {{ display:block; }}
+.risk-table {{ width:100%; border-collapse:collapse; font-size:.72rem; }}
+.risk-table th, .risk-table td {{ padding:6px 8px; border-bottom:1px solid var(--line-soft); text-align:right; }}
+.risk-table th:first-child, .risk-table td:first-child {{ text-align:left; }}
+.risk-table th {{ color:var(--muted); font-weight:600; letter-spacing:.04em; text-transform:uppercase; font-size:.65rem; }}
 .validation {{ display:grid; gap:6px; }}
 .validation b {{ font:600 .82rem "IBM Plex Mono",monospace; }}
 details.about {{ font-size:.76rem; color:var(--muted); line-height:1.45; }}
@@ -283,6 +287,13 @@ details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft);
   </div>
 
   <div class="panel">
+    <h2>Scenario risk card</h2>
+    <div class="honesty" style="margin-top:0">Depth × asset counts — research only. <b>NOT decision-grade. NOT NWS.</b> No Enterprise/HENS.</div>
+    <div class="validation" id="riskCard" style="margin-top:8px">Loading…</div>
+    <div id="riskTableWrap" style="margin-top:8px;overflow:auto"></div>
+  </div>
+
+  <div class="panel">
     <h2>Research alerts (prototype)</h2>
     <div class="honesty" style="margin-top:0">Threshold chips from estimated depth — <b>NOT official NWS watches/warnings</b>.</div>
     <div class="validation" id="alertPanel" style="margin-top:8px">Loading…</div>
@@ -297,11 +308,12 @@ details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft);
     <details class="about" open>
       <summary>Science notes</summary>
       <p>
+        <b>Product</b> = flood <b>risk</b> research prototype. NYC/Ida is a case study fixture only.<br>
         <b>Susceptibility</b> = weather × landscape × infrastructure screening:<br>
         <code style="font-size:.68rem">{formula}</code><br><br>
-        <b>Storm paths</b> = Earth2 primary + Earth2 ensemble / labeled MRMS QPE alt scenarios.<br>
-        <b>Depth</b> = pysheds HAND + depression bathtub forced by Earth2 precip — research estimate only.<br>
-        <b>Cannot claim</b> = official NWS flood warning, calibrated NYC DEP inundation, emergency guidance.
+        <b>Inundation</b> = improved pysheds HAND/bathtub (SFINCS schema spike only — binary missing; LISFLOOD-FP not installable).<br>
+        <b>Risk card</b> = depth×asset band counts for roads/stations/facilities.<br>
+        <b>Cannot claim</b> = official NWS warning, calibrated DEP inundation, Enterprise/HENS, decision-grade guidance.
       </p>
     </details>
   </div>
@@ -930,6 +942,40 @@ loadGeo((manifest.reports?.geojson || "observed_311.geojson"), geo => {{
   bindLayer("ly311", reports, {{ label:"311", n: geo.features.length, countId:"cnt311" }});
 }}, "cnt311");
 
+function renderRiskCard(risk) {{
+  const card = document.getElementById("riskCard");
+  const wrap = document.getElementById("riskTableWrap");
+  if (!card || !wrap) return;
+  if (!risk) {{
+    card.textContent = "Risk table unavailable.";
+    return;
+  }}
+  const sc = risk.scenario || {{}};
+  const wet = risk.wet_assets || {{}};
+  card.innerHTML = `
+    <div class="metric"><span>Scenario</span><b style="font-size:.72rem">${{sc.label || sc.id || "n/a"}}</b></div>
+    <div class="metric"><span>Engine</span><b style="font-size:.72rem">${{sc.inundation_engine || "pysheds"}}</b></div>
+    <div class="metric"><span>Max depth</span><b>${{sc.max_depth_m != null ? Number(sc.max_depth_m).toFixed(3) + " m" : "n/a"}}</b></div>
+    <div class="metric"><span>Wet roads / sta / fac</span><b>${{wet.roads||0}} / ${{wet.stations||0}} / ${{wet.facilities||0}}</b></div>
+    <div style="margin-top:6px;color:var(--muted);font-size:.72rem;line-height:1.35">${{risk.honesty || ""}}</div>`;
+  const rows = (risk.table || []).map(r => `
+    <tr>
+      <td>${{r.label}}</td>
+      <td>${{r.roads}}</td>
+      <td>${{r.stations}}</td>
+      <td>${{r.facilities}}</td>
+    </tr>`).join("");
+  wrap.innerHTML = `
+    <table class="risk-table" aria-label="Depth band asset counts">
+      <thead><tr><th>Depth band</th><th>Roads</th><th>Stations</th><th>Facilities</th></tr></thead>
+      <tbody>${{rows}}</tbody>
+    </table>`;
+}}
+function loadRiskCard() {{
+  const name = (manifest.risk && manifest.risk.depth_assets) || "risk_depth_assets.json";
+  fetch(assets + name, {{ cache: "no-cache" }}).then(r => r.ok ? r.json() : null).then(renderRiskCard).catch(() => renderRiskCard(null));
+}}
+
 function updateAlerts() {{
   const panel = document.getElementById("alertPanel");
   if (!panel) return;
@@ -973,6 +1019,30 @@ if (!inundation) {{
   ["lyDepth","lyDepthTot","productDepth"].forEach(id => {{ const el = document.getElementById(id); if (el) el.disabled = true; }});
 }}
 updateAlerts();
+loadRiskCard();
+// Optional borough depth spike overlay
+if (manifest.inundation_borough_spike && manifest.inundation_borough_spike.png) {{
+  const bpng = manifest.inundation_borough_spike.png;
+  const bb = EXTENTS.south_queens?.bounds;
+  if (bb) {{
+    const bBounds = [[bb.ymin, bb.xmin],[bb.ymax, bb.xmax]];
+    const boroughDepth = L.imageOverlay(assets + bpng, bBounds, {{ opacity: 0.75, pane:"depthPane", interactive:false }});
+    // expose via depth mode helper: add checkbox dynamically if missing
+    const grid = document.querySelector(".layer-grid");
+    if (grid && !document.getElementById("lyBoroughDepth")) {{
+      const lab = document.createElement("label");
+      lab.className = "layer-btn";
+      lab.innerHTML = '<input id="lyBoroughDepth" type="checkbox"><span class="dot" style="background:#2171b5"></span>Queens borough depth spike';
+      const depthLbl = [...grid.querySelectorAll(".group-label")].find(el => /Depth/i.test(el.textContent));
+      if (depthLbl && depthLbl.nextSibling) grid.insertBefore(lab, depthLbl.nextSibling.nextSibling);
+      else grid.appendChild(lab);
+      document.getElementById("lyBoroughDepth").addEventListener("change", (e) => {{
+        if (e.target.checked) boroughDepth.addTo(mapLeft); else mapLeft.removeLayer(boroughDepth);
+        ensureVectorsVisible();
+      }});
+    }}
+  }}
+}}
 // Default play speed slightly faster for denser loops
 const playSpeedEl = document.getElementById("playSpeed");
 if (playSpeedEl && (frames.length || 0) >= 12) playSpeedEl.value = "450";

@@ -2505,5 +2505,20 @@
     "note": "Case study fixture only"
   },
   "enterprise": false,
-  "hens": false
+  "hens": false,
+  "risk": {
+    "depth_assets": "risk_depth_assets.json",
+    "scenario_id": "ida_mrms_south_queens",
+    "official_nws": false,
+    "decision_grade": false,
+    "enterprise": false,
+    "hens": false
+  },
+  "inundation_borough_spike": {
+    "borough": "south_queens",
+    "png": "depth_south_queens_mrms_qpe_ida_storm_total_m.png",
+    "meta": "depth_south_queens_mrms_qpe_ida_meta.json",
+    "engine": "pysheds_hand_bathtub_v2"
+  },
+  "inundation_engine_spike": "inundation_engine_spike.json"
 }
