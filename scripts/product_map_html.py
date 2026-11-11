@@ -11,7 +11,7 @@ import json
 from pathlib import Path
 
 from nyc_flash_flood_case_study.config import FIGURES_DIR
-from nyc_flash_flood_case_study.extents import EVENTS, EXTENTS
+from nyc_flash_flood_case_study.extents import DEFAULT_MAP_EXTENT, EVENTS, EXTENTS
 
 
 def write_product_html(manifest: dict, pluvial: dict, validation: dict) -> Path:
@@ -273,6 +273,7 @@ details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft);
       <p>
         <b>Product</b> = Asset Decision Desk for infrastructure/response <i>research</i> screening.<br>
         <b>Primary depth</b> = pysheds HAND/bathtub citywide forced by MRMS QPE Ida.<br>
+        <b>Map frame</b> = metro continuous viewport; rasters still on five-borough data domain until DEM/forcing rebuild.<br>
         <b>Bands</b> = research ≥3 / ≥8 / ≥15 cm — renamed away from NWS watch/warning language.<br>
         <b>Cannot claim</b> = official NWS warning, calibrated DEP sewer, decision-grade guidance, Enterprise/HENS.
       </p>
@@ -345,7 +346,7 @@ const extentSel = document.getElementById("extentSelect");
 Object.values(EXTENTS).forEach(ex => {{
   const opt = document.createElement("option"); opt.value = ex.id; opt.textContent = ex.label; extentSel.appendChild(opt);
 }});
-extentSel.value = (manifest.layer_bounds && manifest.layer_bounds.map_extent_default) || "citywide";
+extentSel.value = (manifest.layer_bounds && manifest.layer_bounds.map_extent_default) || "{DEFAULT_MAP_EXTENT}";
 
 const stormPaths = manifest.storm_paths || [{{
   id: "mrms_qpe_ida", label: "MRMS QPE Ida", primary: true,
@@ -362,8 +363,16 @@ stormPaths.forEach(p => {{
 pathSel.value = manifest.default_storm_path || "mrms_qpe_ida";
 
 function currentBounds() {{
-  const b = (EXTENTS[extentSel.value] || EXTENTS.citywide).bounds;
+  const b = (EXTENTS[extentSel.value] || EXTENTS.metro || EXTENTS.citywide).bounds;
   return [[b.ymin, b.xmin],[b.ymax, b.xmax]];
+}}
+/** Data overlays keep native georef; map frame can be larger (metro) without hard crop. */
+function dataDomainBounds() {{
+  const b = (EXTENTS.citywide || EXTENTS.metro).bounds;
+  return [[b.ymin, b.xmin],[b.ymax, b.xmax]];
+}}
+function fitMapFrame() {{
+  mapLeft.fitBounds(currentBounds(), {{ padding: [28, 28], maxZoom: 11, animate: false }});
 }}
 function precipOpacity() {{ return (+document.getElementById("opPrecip").value) / 100; }}
 function suscOpacity() {{ return (+document.getElementById("opSusc").value) / 100; }}
@@ -665,7 +674,7 @@ document.getElementById("typeChips").addEventListener("click", e => {{
 document.getElementById("bandFilter").onchange = renderAssetList;
 document.getElementById("assetSearch").oninput = renderAssetList;
 document.getElementById("hudPlay").onclick = () => setPlaying(!playing);
-document.getElementById("extentSelect").onchange = () => mapLeft.fitBounds(currentBounds());
+document.getElementById("extentSelect").onchange = () => fitMapFrame();
 document.getElementById("eventSelect").onchange = () => {{ if (!EVENTS[eventSel.value].available) alert("Only Ida is loaded."); }};
 document.getElementById("stormPathSelect").onchange = () => {{
   activePath = stormPaths.find(p => p.id === pathSel.value) || stormPaths[0];
@@ -712,7 +721,7 @@ document.getElementById("lyE2Tot").onchange = () => {{
 }};
 
 rebuildPathLayers();
-mapLeft.fitBounds(currentBounds());
+fitMapFrame();
 setLead(0);
 loadDecisionDesk();
 loadOptionalLayers();

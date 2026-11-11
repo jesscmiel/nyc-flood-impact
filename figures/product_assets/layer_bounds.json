@@ -29,5 +29,7 @@
       -73.68
     ]
   ],
-  "map_extent_default": "citywide"
+  "map_extent_default": "metro",
+  "data_domain": "citywide",
+  "note": "metro = continuous map frame; citywide = raster data domain until DEM/forcing rebuild"
 }

@@ -2553,7 +2553,7 @@
     "meta": "depth_sfincs_queens_ida_meta.json",
     "engine": "sfincs_docker_v2.1.1_Dollerup",
     "role": "alternate_hydro_track",
-    "honesty": "NOT peer-authoritative with pysheds citywide; Queens domain; uniform forcing.",
+    "honesty": "NOT peer-authoritative with pysheds citywide.",
     "extent": "south_queens"
   },
   "asset_decision_desk": {

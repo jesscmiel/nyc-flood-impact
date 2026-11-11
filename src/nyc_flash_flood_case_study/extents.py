@@ -26,17 +26,32 @@ EVENTS = {
 }
 
 EXTENTS = {
+    # Data-domain rectangle used by existing DEM / MRMS / pysheds rasters (~90 m DEM).
+    # Overlays stay georeferenced to these bounds until a continuous-domain rebuild.
     "citywide": {
         "id": "citywide",
-        "label": "NYC metro / citywide",
+        "label": "NYC five-borough data domain",
         "bounds": {"xmin": -74.28, "ymin": 40.48, "xmax": -73.68, "ymax": 40.93},
+        "role": "data_domain",
+    },
+    # Map framing only — larger continuous viewport so the UI is not a tight Queens/box crop.
+    # Raster products still cover `citywide` until DEM + forcing are re-fetched for metro.
+    "metro": {
+        "id": "metro",
+        "label": "NYC metro continuous (map frame)",
+        "bounds": {"xmin": -74.45, "ymin": 40.40, "xmax": -73.50, "ymax": 41.05},
+        "role": "map_frame",
     },
     "south_queens": {
         "id": "south_queens",
-        "label": "South Queens / Jamaica Bay",
+        "label": "South Queens / Jamaica Bay (SFINCS spike)",
         "bounds": {"xmin": -74.12, "ymin": 40.55, "xmax": -73.72, "ymax": 40.73},
+        "role": "sfincs_spike",
     },
 }
+
+# Default map framing prefers continuous metro view over the hard data rectangle.
+DEFAULT_MAP_EXTENT = "metro"
 
 
 def bounds_list(extent_id: str) -> list[list[float]]:

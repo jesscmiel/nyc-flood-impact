@@ -1,0 +1,158 @@
+{
+  "product": "flood_risk_research_prototype",
+  "official_nws": false,
+  "decision_grade": false,
+  "ida_precip_truth_preference": "mrms_qpe",
+  "earth2_role": "scenario_only",
+  "extents": {
+    "default_map_extent": "metro",
+    "data_domain": {
+      "xmin": -74.28,
+      "ymin": 40.48,
+      "xmax": -73.68,
+      "ymax": 40.93
+    },
+    "map_frame_metro": {
+      "xmin": -74.45,
+      "ymin": 40.4,
+      "xmax": -73.5,
+      "ymax": 41.05
+    },
+    "sfincs_spike": {
+      "xmin": -74.12,
+      "ymin": 40.55,
+      "xmax": -73.72,
+      "ymax": 40.73
+    }
+  },
+  "validation": {
+    "product": "flood_risk_research_prototype",
+    "official_nws": false,
+    "decision_grade": false,
+    "enterprise": false,
+    "hens": false,
+    "updated_utc": "2026-11-11T15:24:06Z",
+    "depth_tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_citywide_mrms_qpe_ida_storm_total_m.tif",
+    "scores": {
+      "reports_311": {
+        "name": "311_reports",
+        "n_points": 599,
+        "n_sampled": 599,
+        "n_hits_depth_ge": 593,
+        "depth_threshold_m": 0.03,
+        "hit_rate": 0.989983305509182,
+        "mean_depth_at_points_m": 0.10245042520642081,
+        "max_depth_at_points_m": 0.14311082661151886
+      },
+      "gauges": {
+        "name": "ahps_gauges",
+        "n_points": 21,
+        "n_sampled": 21,
+        "n_hits_depth_ge": 1,
+        "depth_threshold_m": 0.03,
+        "hit_rate": 0.047619047619047616,
+        "mean_depth_at_points_m": 0.001992275140115193,
+        "max_depth_at_points_m": 0.04183777794241905
+      }
+    },
+    "summary": {
+      "hit_rate_311": 0.989983305509182,
+      "hit_rate_gauges": 0.047619047619047616,
+      "n_311": 599,
+      "n_gauges": 21
+    },
+    "confidence": {
+      "level": "low",
+      "note": "Low hit rates vs depth \u2014 expect false alarms / misses; research only."
+    },
+    "honesty": "Exploratory collocation of 311/AHPS points on research depth. Not certified verification skill. NOT NWS validation."
+  },
+  "random_land_hit_rate_ge_3cm": 0.172,
+  "pysheds_citywide_mrms": {
+    "path": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_citywide_mrms_qpe_ida_storm_total_m.tif",
+    "shape": [
+      540,
+      720
+    ],
+    "bounds": [
+      -74.28,
+      40.48,
+      -73.67999999999999,
+      40.93
+    ],
+    "max_m": 0.15213757753372192,
+    "p50_wet_m": 0.09739576280117035,
+    "p90_wet_m": 0.12253753244876864,
+    "wet_fraction_ge_3cm": 0.1656738683127572,
+    "wet_fraction_ge_5cm": 0.15290895061728396
+  },
+  "sfincs_queens_uniform": {
+    "path": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_sfincs_queens_ida_m.tif",
+    "shape": [
+      217,
+      481
+    ],
+    "bounds": [
+      -74.12083333333334,
+      40.549166666666665,
+      -73.72,
+      40.73
+    ],
+    "max_m": 3.757063865661621,
+    "p50_wet_m": 0.04779544845223427,
+    "p90_wet_m": 0.7418124318122863,
+    "wet_fraction_ge_3cm": 0.5582264291941711,
+    "wet_fraction_ge_5cm": 0.4949941078973337
+  },
+  "overlap_queens": {
+    "n_cells": 104284,
+    "mean_sfincs_m": 0.23077189238142357,
+    "mean_pysheds_m": 0.05756186307494067,
+    "ratio_mean_sfincs_over_pysheds": 4.009110894846786,
+    "max_sfincs_m": 3.757063865661621,
+    "max_pysheds_m": 0.15213757753372192
+  },
+  "mrms_storm_total": {
+    "path": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_storm_total.tif",
+    "shape": [
+      360,
+      480
+    ],
+    "bounds": [
+      -74.28,
+      40.48,
+      -73.68,
+      40.93
+    ],
+    "mean_pos_mm": 123.1827485195796,
+    "min_mm": 4.1498915415161264e-10,
+    "max_mm": 203.38075256347656,
+    "p10_mm": 70.69151306152344,
+    "p90_mm": 163.72643432617187,
+    "cv": 0.28768125817088835,
+    "uniform_sfincs_mm_hr_12h": 10.2652290432983,
+    "forcing_note": "SFINCS Queens used domain-mean rate, not this spatial field"
+  },
+  "dem": {
+    "path": "/home/jesscmiel/projects/nyc-flood-impact/data/raw/terrain/dem_usgs_citywide.tif",
+    "shape": [
+      540,
+      720
+    ],
+    "res_deg": [
+      0.0008333333333333452,
+      0.0008333333333333386
+    ],
+    "approx_cell_m": [
+      70.32431597710608,
+      92.11666666666724
+    ],
+    "bounds": [
+      -74.28,
+      40.48,
+      -73.67999999999999,
+      40.93
+    ]
+  },
+  "honesty": "311 hit\u22481 with random-land \u226a 311 shows spatial concentration, but without non-flood controls / magnitude checks this is not certified skill. SFINCS vs pysheds magnitudes are not interchangeable."
+}
