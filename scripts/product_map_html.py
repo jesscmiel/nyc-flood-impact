@@ -219,7 +219,7 @@ details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft);
     <div class="metric"><span>Forcing</span><b style="font-size:.68rem">spatial MRMS QPE</b></div>
     <div class="metric"><span>SFINCS</span><b style="font-size:.68rem">alt hydro only</b></div>
     <div class="honesty">
-      <b>Primary depth</b> = unified pysheds HAND/bathtub on metro DEM × spatially varying MRMS Ida.
+      <b>Primary depth</b> = unified pysheds HAND/bathtub on metro DEM × spatial MRMS Ida after open drainage capacity proxy (NLCD + mm/hr sink; NOT DEP sewer).
       <b>Queens SFINCS</b> = alternate hydro track (spatial precip, not domain-mean) — not peer-authoritative until comparable.
       STRATA→SFINCS is methods-only, not Ida.
     </div>
@@ -273,10 +273,10 @@ details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft);
       <summary>Science notes</summary>
       <p>
         <b>Product</b> = Asset Decision Desk for infrastructure/response <i>research</i> screening.<br>
-        <b>Primary depth</b> = unified pysheds HAND/bathtub on metro DEM × spatial MRMS QPE Ida (soft land mask).<br>
+        <b>Primary depth</b> = unified pysheds HAND/bathtub on metro DEM × spatial MRMS QPE Ida after open drainage capacity proxy (NLCD + optional drain density + literature mm/hr sink with surcharge; soft land mask).<br>
         <b>Map + data domain</b> = metro continuous; SFINCS Queens remains alternate hydro track.<br>
         <b>Bands</b> = research ≥3 / ≥8 / ≥15 cm — renamed away from NWS watch/warning language.<br>
-        <b>Cannot claim</b> = official NWS warning, calibrated DEP sewer, decision-grade guidance, Enterprise/HENS.
+        <b>Cannot claim</b> = official NWS warning, calibrated DEP sewer / SWMM, decision-grade guidance, Enterprise/HENS.
       </p>
     </details>
   </div>

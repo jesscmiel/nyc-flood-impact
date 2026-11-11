@@ -58,10 +58,13 @@ def main() -> None:
             "assets_geojson": "decision_desk_assets.geojson",
             "primary_depth_engine": "pysheds_hand_bathtub_v2",
             "primary_depth_extent": "metro",
-            "primary_forcing": "spatial_mrms_qpe_ida",
+            "primary_forcing": "spatial_mrms_qpe_ida_minus_drainage_capacity_proxy",
+            "drainage_capacity_proxy": "drainage_capacity_proxy_v1",
+            "drainage_capacity_meta": "drainage_capacity_meta.json",
             "default_ux": "susceptibility_then_affected_assets",
             "official_nws": False,
             "decision_grade": False,
+            "not_dep_sewer": True,
             "sfincs_role": "alternate_hydro_track",
         }
         manifest["depth_engines"] = payload.get("depth_engines_reconcile")

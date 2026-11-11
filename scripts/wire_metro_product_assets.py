@@ -49,12 +49,15 @@ def main() -> dict:
         m["primary_depth"] = {
             "engine": "pysheds_hand_bathtub_v2",
             "extent": PRIMARY_DATA_EXTENT,
-            "forcing": "spatial_mrms_qpe_ida",
+            "forcing": depth_meta.get(
+                "forcing_kind", "spatial_mrms_qpe_ida_minus_drainage_capacity_proxy"
+            ),
+            "drainage_capacity_proxy": depth_meta.get("drainage_capacity_proxy"),
             "png": primary_png,
             "meta": depth_meta_path.name,
             "role": "primary",
             "honesty": depth_meta.get("disclaimer")
-            or "Primary research depth — NOT NWS / NOT decision-grade.",
+            or "Primary research depth — NOT NWS / NOT decision-grade / NOT DEP sewer.",
         }
         m["inundation"] = inundation_meta
         m["inundation_citywide"] = {

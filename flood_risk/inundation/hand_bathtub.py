@@ -100,7 +100,12 @@ def depth_from_rain(
     hand_scale: float = HAND_SCALE,
     min_depth_m: float = MIN_DEPTH_M,
 ) -> np.ndarray:
-    """Rainfall-excess depth: max(HAND excess, depression bathtub, relative-elev bathtub)."""
+    """Rainfall-excess depth: max(HAND excess, depression bathtub, relative-elev bathtub).
+
+    ``rain_mm`` should already be *effective* precip when the open drainage capacity
+    proxy is enabled (see ``drainage_capacity.effective_sink_mm``). Terrain
+    ``sink_cap_m`` is depression storage, not sewer capacity.
+    """
     rain_m = np.clip(np.nan_to_num(rain_mm, nan=0.0), 0, None) / 1000.0 * runoff
     hand_depth = rain_m - hand_scale * np.nan_to_num(hand_m, nan=np.inf)
     hand_depth = np.where(np.isfinite(hand_m), hand_depth, np.nan)
@@ -126,9 +131,11 @@ def param_meta() -> dict[str, Any]:
         "hand_scale": HAND_SCALE,
         "min_depth_m": MIN_DEPTH_M,
         "formula": (
-            "depth_m = max(rain_m − HAND, min(sink_capacity, rain_m), rain_m − (DEM − focal_min)); "
-            "rain_m = runoff_coeff * precip_mm/1000"
+            "depth_m = max(rain_m − HAND, min(depression_sink, rain_m), rain_m − (DEM − focal_min)); "
+            "rain_m = runoff_coeff * effective_precip_mm/1000; "
+            "effective_precip from drainage_capacity_proxy_v1 when enabled"
         ),
+        "drainage_proxy": "drainage_capacity_proxy_v1",
         "official_nws": False,
         "decision_grade": False,
     }

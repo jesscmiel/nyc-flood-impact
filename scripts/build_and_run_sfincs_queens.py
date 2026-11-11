@@ -61,23 +61,67 @@ def shlex_quote(s: str) -> str:
     return shlex.quote(s)
 
 
-def write_spatial_precip_netcdf(rain_tif: Path, out_nc: Path, hours: float = 12.0) -> dict:
+def write_spatial_precip_netcdf(
+    rain_tif: Path,
+    out_nc: Path,
+    hours: float = 12.0,
+    *,
+    apply_drainage_proxy: bool = True,
+) -> dict:
     """Build HydroMT-ready NetCDF: spatially varying precip rate [mm/hr] over the event.
 
     Converts storm-total mm → rate = total/hours per cell (spatial field, never domain-mean).
+    Optionally applies open drainage capacity proxy (NLCD + mm/hr sink) — NOT DEP sewer.
     """
     import pandas as pd
     import rioxarray  # noqa: F401 — registers .rio accessor on DataArray
+
+    sys.path.insert(0, str(ROOT))
+    from flood_risk.inundation.drainage_capacity import (
+        apply_capacity_to_rate_mm_hr,
+        capacity_mm_hr,
+        drain_density_norm,
+        load_drain_points,
+        load_impervious_fraction,
+    )
+    from nyc_flash_flood_case_study.config import FIGURES_DIR, RAW_DIR
 
     with rasterio.open(rain_tif) as ds:
         arr = ds.read(1).astype(np.float64)
         if ds.nodata is not None:
             arr = np.where(arr == ds.nodata, np.nan, arr)
         transform = ds.transform
+        crs = ds.crs
         height, width = arr.shape
         xs = np.array([transform.c + (i + 0.5) * transform.a for i in range(width)])
         ys = np.array([transform.f + (j + 0.5) * transform.e for j in range(height)])
-        rate = np.clip(np.nan_to_num(arr, nan=0.0), 0, None) / hours  # mm/hr
+        rate_raw = np.clip(np.nan_to_num(arr, nan=0.0), 0, None) / hours  # mm/hr
+
+    drainage_meta: dict = {"applied": False}
+    rate = rate_raw
+    if apply_drainage_proxy:
+        nlcd = RAW_DIR / "landcover" / "nlcd_2021_impervious_citywide.tif"
+        if nlcd.exists():
+            impervious = load_impervious_fraction((height, width), transform, crs, nlcd)
+            pts, dpath, dstatus = load_drain_points(
+                [
+                    RAW_DIR / "infrastructure" / "osm_drains_south_queens.geojson",
+                    FIGURES_DIR / "product_assets" / "catch_basins.geojson",
+                    RAW_DIR / "infrastructure" / "nycdep_catch_basins_south_queens.json",
+                ]
+            )
+            cap = capacity_mm_hr(impervious, drain_density_norm((height, width), transform, pts))
+            rate, eff = apply_capacity_to_rate_mm_hr(rate_raw, cap)
+            drainage_meta = {
+                "applied": True,
+                "engine": "drainage_capacity_proxy_v1",
+                "drain_points_n": len(pts),
+                "drain_status": dstatus,
+                "drain_path": str(dpath) if dpath else None,
+                "mean_efficiency": float(np.nanmean(eff)) if np.isfinite(eff).any() else None,
+                "mean_rate_raw_mm_hr": float(np.nanmean(rate_raw[rate_raw > 0])) if (rate_raw > 0).any() else None,
+                "not_dep_sewer": True,
+            }
 
     times = pd.date_range("2021-09-01T12:00:00", periods=2, freq=f"{int(hours)}h")
     # Two timesteps with the same spatial rate so HydroMT has a time axis covering the run.
@@ -104,6 +148,7 @@ def write_spatial_precip_netcdf(rain_tif: Path, out_nc: Path, hours: float = 12.
         "cv": float(finite.std() / finite.mean()) if finite.size else None,
         "spatial": True,
         "uniform_mean_forbidden": True,
+        "drainage_capacity_proxy": drainage_meta,
     }
 
 

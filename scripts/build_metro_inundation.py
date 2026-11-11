@@ -30,6 +30,17 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "src"))
 
+from flood_risk.inundation.drainage_capacity import (  # noqa: E402
+    DEFAULT_EVENT_DURATION_HR,
+    EFFECTIVE_DRAINAGE_HOURS,
+    ENGINE_ID as DRAINAGE_PROXY_ID,
+    capacity_mm_hr,
+    drain_density_norm,
+    effective_sink_mm,
+    load_drain_points,
+    load_impervious_fraction,
+    param_meta as drainage_param_meta,
+)
 from flood_risk.inundation.hand_bathtub import (  # noqa: E402
     ENGINE_ID,
     MIN_DEPTH_M,
@@ -42,6 +53,7 @@ from nyc_flash_flood_case_study.config import (  # noqa: E402
     LAND_MASK_DATASETS,
     PROCESSED_DIR,
     PROJECT_ROOT,
+    RAW_DIR,
 )
 from nyc_flash_flood_case_study.extents import EXTENTS, PRIMARY_DATA_EXTENT  # noqa: E402
 
@@ -220,8 +232,53 @@ def main() -> dict:
     ]
 
     rain = _read_rain(rain_total, shape, transform, crs)
-    depth = _apply_land(
+
+    # Open drainage capacity proxy → effective precip (NOT DEP sewer / NOT SWMM)
+    print("Applying open drainage capacity proxy (NLCD + mm/hr sink)…")
+    nlcd = RAW_DIR / "landcover" / "nlcd_2021_impervious_citywide.tif"
+    if not nlcd.exists():
+        raise FileNotFoundError(f"Missing NLCD impervious for drainage proxy: {nlcd}")
+    impervious = load_impervious_fraction(shape, transform, crs, nlcd)
+    # Prefer real OSM inlets; never use synthetic demo drainage_nodes graph.
+    drain_pts, drain_path, drain_status = load_drain_points(
+        [
+            RAW_DIR / "infrastructure" / "osm_drains_south_queens.geojson",
+            ASSETS / "catch_basins.geojson",
+            FIGURES_DIR / "ida_v0_assets" / "catch_basins.geojson",
+            RAW_DIR / "infrastructure" / "nycdep_catch_basins_south_queens.json",
+        ]
+    )
+    drain_norm = drain_density_norm(shape, transform, drain_pts)
+    capacity = capacity_mm_hr(impervious, drain_norm)
+    sink_mm, excess_rain, efficiency = effective_sink_mm(
+        rain,
+        capacity,
+        duration_hr=DEFAULT_EVENT_DURATION_HR,
+        drainage_hours=EFFECTIVE_DRAINAGE_HOURS,
+    )
+    drain_dir = PROCESSED_DIR / "drainage_capacity"
+    drain_dir.mkdir(parents=True, exist_ok=True)
+    _write_tif(drain_dir / "drainage_capacity_mm_hr.tif", capacity, transform, crs)
+    _write_tif(drain_dir / "excess_precip_mm.tif", excess_rain, transform, crs)
+    _write_tif(drain_dir / "drainage_sink_mm.tif", sink_mm, transform, crs)
+    _write_tif(drain_dir / "drainage_efficiency.tif", efficiency, transform, crs)
+
+    # Undrained baseline (diagnostic only — not primary product)
+    depth_undrained = _apply_land(
         depth_from_rain(rain, terrain["hand"], terrain["sink_capacity_m"], terrain["dem"]),
+        land,
+    )
+    _write_tif(
+        OUT_DIR / "depth_metro_mrms_undrained_ida_storm_total_m.tif",
+        depth_undrained,
+        transform,
+        crs,
+    )
+
+    depth = _apply_land(
+        depth_from_rain(
+            excess_rain, terrain["hand"], terrain["sink_capacity_m"], terrain["dem"]
+        ),
         land,
     )
     vmax = float(np.nanpercentile(depth[np.isfinite(depth)], 99)) if np.isfinite(depth).any() else 0.1
@@ -241,8 +298,16 @@ def main() -> dict:
             continue
         rain_l = _read_rain(path, shape, transform, crs)
         cum = cum + np.nan_to_num(rain_l, nan=0.0)
+        _, excess_cum, _ = effective_sink_mm(
+            cum,
+            capacity,
+            duration_hr=DEFAULT_EVENT_DURATION_HR,
+            drainage_hours=EFFECTIVE_DRAINAGE_HOURS,
+        )
         d = _apply_land(
-            depth_from_rain(cum, terrain["hand"], terrain["sink_capacity_m"], terrain["dem"]),
+            depth_from_rain(
+                excess_cum, terrain["hand"], terrain["sink_capacity_m"], terrain["dem"]
+            ),
             land,
         )
         for prefix in ("depth_mrms_cum_lead", "depth_metro_mrms_cum_lead"):
@@ -256,6 +321,7 @@ def main() -> dict:
                 "tif": str(OUT_DIR / f"depth_mrms_cum_lead_{lead:02d}h_m.tif"),
                 "max_m": float(np.nanmax(d)) if np.isfinite(d).any() else None,
                 "wet_fraction": float(np.mean(np.isfinite(d) & (d >= MIN_DEPTH_M))),
+                "drainage_proxy": DRAINAGE_PROXY_ID,
             }
         )
 
@@ -273,6 +339,24 @@ def main() -> dict:
         "shape": list(shape),
     }
 
+    drain_meta = {
+        "engine": DRAINAGE_PROXY_ID,
+        "enabled": True,
+        "event_duration_hr": DEFAULT_EVENT_DURATION_HR,
+        "effective_drainage_hours": EFFECTIVE_DRAINAGE_HOURS,
+        "drain_points_n": len(drain_pts),
+        "drain_points_status": drain_status,
+        "drain_points_path": str(drain_path) if drain_path else None,
+        "nlcd": str(nlcd),
+        "capacity_mean_mm_hr_land": float(np.mean(capacity[land])) if land.any() else None,
+        "excess_mean_mm_land": float(np.nanmean(excess_rain[land])) if land.any() else None,
+        "undrained_max_m": (
+            float(np.nanmax(depth_undrained)) if np.isfinite(depth_undrained).any() else None
+        ),
+        "drained_max_m": float(np.nanmax(depth)) if np.isfinite(depth).any() else None,
+        **drainage_param_meta(),
+    }
+
     meta = {
         "product": "estimated_research_inundation_depth",
         "primary": True,
@@ -286,9 +370,11 @@ def main() -> dict:
             "native 10 m DEM retained for SFINCS / nested hydro."
         ),
         "forcing": str(rain_total),
-        "forcing_kind": "spatial_mrms_qpe_ida",
+        "forcing_kind": "spatial_mrms_qpe_ida_minus_drainage_capacity_proxy",
+        "forcing_raw_mrms": str(rain_total),
         "land_mask": str(mask_path),
         "land_mask_style": "soft_polygon_alpha_nodata_outside_land",
+        "drainage_capacity_proxy": drain_meta,
         "storm_total": storm_total,
         "cumulative_frames": cum_frames,
         "colorbar": {"cmap": DEPTH_CMAP, "units": "m", "label": "Est. depth (m) — NOT flood warning"},
@@ -296,7 +382,9 @@ def main() -> dict:
         "not_flood_warning": True,
         "disclaimer": (
             "Primary research depth = unified pysheds HAND/bathtub on metro DEM forced by "
-            "spatially varying MRMS QPE Ida. Soft land mask (alpha/nodata outside land). "
+            "spatially varying MRMS QPE Ida after an open drainage capacity proxy "
+            "(NLCD impervious + optional drain density + literature mm/hr sink with surcharge). "
+            "NOT a DEP sewer model. Soft land mask (alpha/nodata outside land). "
             "NOT official NWS. NOT decision-grade. SFINCS is an alternate hydro track only."
         ),
         **param_meta(),

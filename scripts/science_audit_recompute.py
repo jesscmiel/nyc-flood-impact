@@ -178,6 +178,16 @@ def main() -> None:
     if sfincs_build.exists():
         sfincs_forcing = json.loads(sfincs_build.read_text())
 
+    drainage_meta_path = PROCESSED_DIR / "drainage_capacity" / "drainage_capacity_meta.json"
+    if not drainage_meta_path.exists():
+        drainage_meta_path = ASSETS / "drainage_capacity_meta.json"
+    drainage = json.loads(drainage_meta_path.read_text()) if drainage_meta_path.exists() else None
+    depth_undrained = INUN / "depth_metro_mrms_undrained_ida_storm_total_m.tif"
+    undrained_stats = _raster_stats(depth_undrained) if depth_undrained.exists() else None
+
+    depth_meta_path = INUN / "depth_metro_mrms_qpe_ida_meta.json"
+    depth_meta = json.loads(depth_meta_path.read_text()) if depth_meta_path.exists() else {}
+
     report = {
         "product": "flood_risk_research_prototype",
         "official_nws": False,
@@ -187,17 +197,26 @@ def main() -> None:
         "primary_depth": {
             "engine": "pysheds_hand_bathtub_v2",
             "extent": PRIMARY_DATA_EXTENT,
-            "forcing": "spatial_mrms_qpe_ida",
+            "forcing": depth_meta.get(
+                "forcing_kind", "spatial_mrms_qpe_ida_minus_drainage_capacity_proxy"
+            ),
             "path": str(depth_primary),
             "role": "primary",
+            "drainage_capacity_proxy": depth_meta.get("drainage_capacity_proxy")
+            or ((drainage or {}).get("engine") if drainage else None),
         },
         "alternate_depth": {
             "engine": "sfincs_docker_queens",
             "extent": "south_queens",
             "forcing": (sfincs_forcing or {}).get("precip_forcing", "spatial_mrms_grid"),
+            "drainage_capacity_proxy": ((sfincs_forcing or {}).get("precip_netcdf") or {}).get(
+                "drainage_capacity_proxy"
+            ),
             "role": "alternate_hydro_track",
             "comparable_to_primary": False,
         },
+        "drainage_capacity_proxy": drainage,
+        "undrained_pysheds_baseline": undrained_stats,
         "extents": {
             "default_map_extent": DEFAULT_MAP_EXTENT,
             "primary_data_extent": PRIMARY_DATA_EXTENT,
@@ -214,7 +233,9 @@ def main() -> None:
         "dem": dem_meta,
         "sfincs_build_meta": sfincs_forcing,
         "honesty": (
-            "Primary depth = metro pysheds × spatial MRMS. SFINCS Queens is alternate hydro only. "
+            "Primary depth = metro pysheds × spatial MRMS after open drainage capacity proxy "
+            "(NLCD + optional drain density + literature mm/hr sink; NOT DEP sewer). "
+            "SFINCS Queens is alternate hydro only. "
             "311 hit rates show spatial concentration, not certified skill / magnitude skill."
         ),
     }
