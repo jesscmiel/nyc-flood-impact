@@ -81,6 +81,9 @@ __pycache__/
 # dem_usgs_metro.tif (~138 MB ≤10 m mosaic) stays local — regenerate via scripts/fetch_metro_dem.py
 !/data/processed/mrms_qpe_metro/
 !/data/processed/mrms_qpe_metro/**
+# Native hourly + cum metro GeoTIFFs are ~1 GB regenerable — keep meta + storm_total + legacy 6h only.
+/data/processed/mrms_qpe_metro/mrms_qpe_metro_1h_lead_*.tif
+/data/processed/mrms_qpe_metro/mrms_qpe_metro_cum_lead_*.tif
 !/data/processed/land_mask_metro.tif
 !/data/processed/susceptibility_factors/
 !/data/processed/susceptibility_factors/**

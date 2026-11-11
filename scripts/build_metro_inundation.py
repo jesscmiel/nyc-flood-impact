@@ -41,6 +41,12 @@ from flood_risk.inundation.drainage_capacity import (  # noqa: E402
     load_impervious_fraction,
     param_meta as drainage_param_meta,
 )
+
+# Cum-depth timeline: every 3 h from 0–36 so buildup + post-peak recession are visible.
+CUM_DEPTH_LEADS_H = list(range(0, 37, 3))
+# After peak pooling (~+18h), grow effective drainage hours so excess can recede.
+RECESSION_START_H = 18.0
+RECESSION_DRAIN_PER_H = 0.35
 from flood_risk.inundation.hand_bathtub import (  # noqa: E402
     ENGINE_ID,
     MIN_DEPTH_M,
@@ -67,6 +73,12 @@ OUT_DIR = PROCESSED_DIR / "inundation"
 ASSETS = FIGURES_DIR / "product_assets"
 BOUNDS = EXTENTS[PRIMARY_DATA_EXTENT]["bounds"]
 DEPTH_CMAP = "Blues"
+
+
+def drainage_hours_for_lead(lead_hours: float) -> float:
+    """Base flash-window drainage, plus post-peak hours so pooling can recede."""
+    extra = max(0.0, float(lead_hours) - RECESSION_START_H) * RECESSION_DRAIN_PER_H
+    return float(EFFECTIVE_DRAINAGE_HOURS) + extra
 
 
 def _land_geometry():
@@ -224,12 +236,18 @@ def main() -> dict:
     _write_tif(OUT_DIR / "hand_metro.tif", terrain["hand"], transform, crs)
     _write_tif(OUT_DIR / "sink_capacity_metro_m.tif", terrain["sink_capacity_m"], transform, crs)
 
-    leads = [
-        (6, MRMS_DIR / "mrms_qpe_metro_lead_06h.tif"),
-        (12, MRMS_DIR / "mrms_qpe_metro_lead_12h.tif"),
-        (18, MRMS_DIR / "mrms_qpe_metro_lead_18h.tif"),
-        (24, MRMS_DIR / "mrms_qpe_metro_lead_24h.tif"),
-    ]
+    # Prefer native hourly cumulatives when present; else legacy 6 h interval stacking.
+    leads: list[tuple[int, Path]] = []
+    for lead in CUM_DEPTH_LEADS_H:
+        cum_path = MRMS_DIR / f"mrms_qpe_metro_cum_lead_{lead:02d}h.tif"
+        if cum_path.exists():
+            leads.append((lead, cum_path))
+    use_cum_rasters = bool(leads)
+    if not leads:
+        for lead in (6, 12, 18, 24):
+            path = MRMS_DIR / f"mrms_qpe_metro_lead_{lead:02d}h.tif"
+            if path.exists():
+                leads.append((lead, path))
 
     rain = _read_rain(rain_total, shape, transform, crs)
 
@@ -297,12 +315,19 @@ def main() -> dict:
         if not path.exists():
             continue
         rain_l = _read_rain(path, shape, transform, crs)
-        cum = cum + np.nan_to_num(rain_l, nan=0.0)
-        _, excess_cum, _ = effective_sink_mm(
+        if use_cum_rasters:
+            cum = np.nan_to_num(rain_l, nan=0.0).astype(np.float32)
+        else:
+            # Legacy path: each file is a 6 h interval → stack into storm cum
+            cum = cum + np.nan_to_num(rain_l, nan=0.0)
+        drain_h = drainage_hours_for_lead(lead)
+        # Duration for surcharge intensity tracks elapsed storm hours (floor at default)
+        duration_h = max(float(DEFAULT_EVENT_DURATION_HR), float(lead), 1.0)
+        _, excess_cum, efficiency = effective_sink_mm(
             cum,
             capacity,
-            duration_hr=DEFAULT_EVENT_DURATION_HR,
-            drainage_hours=EFFECTIVE_DRAINAGE_HOURS,
+            duration_hr=duration_h,
+            drainage_hours=drain_h,
         )
         d = _apply_land(
             depth_from_rain(
@@ -317,11 +342,22 @@ def main() -> dict:
         cum_frames.append(
             {
                 "lead_hours": lead,
-                "png": f"depth_mrms_cum_lead_{lead:02d}h_m.png",
-                "tif": str(OUT_DIR / f"depth_mrms_cum_lead_{lead:02d}h_m.tif"),
+                "png": f"depth_metro_mrms_cum_lead_{lead:02d}h_m.png",
+                "legacy_png": f"depth_mrms_cum_lead_{lead:02d}h_m.png",
+                "tif": str(OUT_DIR / f"depth_metro_mrms_cum_lead_{lead:02d}h_m.tif"),
                 "max_m": float(np.nanmax(d)) if np.isfinite(d).any() else None,
                 "wet_fraction": float(np.mean(np.isfinite(d) & (d >= MIN_DEPTH_M))),
                 "drainage_proxy": DRAINAGE_PROXY_ID,
+                "drainage_hours": drain_h,
+                "cum_precip_max_mm": float(np.nanmax(cum)) if np.isfinite(cum).any() else None,
+                "excess_max_mm": float(np.nanmax(excess_cum)) if np.isfinite(excess_cum).any() else None,
+                "efficiency_mean": float(np.nanmean(efficiency[land])) if land.any() else None,
+                "evolves_with_timeline": True,
+                "phase": (
+                    "buildup"
+                    if lead < RECESSION_START_H
+                    else ("peak" if lead == int(RECESSION_START_H) else "recession")
+                ),
             }
         )
 
@@ -377,6 +413,16 @@ def main() -> dict:
         "drainage_capacity_proxy": drain_meta,
         "storm_total": storm_total,
         "cumulative_frames": cum_frames,
+        "cumulative_lead_hours": [fr["lead_hours"] for fr in cum_frames],
+        "recession": {
+            "start_lead_h": RECESSION_START_H,
+            "extra_drainage_hours_per_clock_h": RECESSION_DRAIN_PER_H,
+            "note": (
+                "After +18h, effective drainage hours grow so HAND excess can recede while "
+                "cum precip plateaus — storytelling recession, not a calibrated hydrograph."
+            ),
+        },
+        "forcing_cum_source": "mrms_qpe_metro_cum_lead_*" if use_cum_rasters else "legacy_interval_stack",
         "colorbar": {"cmap": DEPTH_CMAP, "units": "m", "label": "Est. depth (m) — NOT flood warning"},
         "opacity_default": 0.75,
         "not_flood_warning": True,

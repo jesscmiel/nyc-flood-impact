@@ -233,7 +233,7 @@ details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft);
     <div class="opacity-row"><span>Est. depth</span><input id="opDepth" type="range" min="15" max="90" value="68"><span id="opDepthVal">68%</span></div>
     <div class="legend-swatch precip"></div>
     <div class="legend-swatch depth"></div>
-    <div class="honesty" id="depthTimelineNote">Depth follows nearest cum lead (6/12/18/24h) — early frames dry; wetness concentrates after ~+18h. HAND puddles are heuristic, not street-truth.</div>
+    <div class="honesty" id="depthTimelineNote">Depth follows nearest cum lead (0…36h / 3h steps) — buildup then post-peak recession. HAND puddles are heuristic, not street-truth.</div>
     <div class="honesty" id="pathHonesty" style="display:none">Primary Ida awareness: MRMS QPE (~1 km).</div>
   </div>
 
@@ -283,7 +283,7 @@ details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft);
         <b>Product</b> = Asset Decision Desk for infrastructure/response <i>research</i> screening.<br>
         <b>Primary depth</b> = unified pysheds HAND/bathtub on metro DEM × spatial MRMS QPE Ida after open drainage capacity proxy (NLCD + optional drain density + literature mm/hr sink with surcharge; soft land mask). NOT DEP / SWMM.<br>
         <b>Map + data domain</b> = metro continuous soft-edge overlays (no hard citywide crop); SFINCS Queens remains alternate hydro track under Advanced.<br>
-        <b>Time window</b> = Ida MRMS loop +6h…+24h from 2021-09-01T12:00 UTC (valid 18:00 Sep 1 → 12:00 Sep 2). Depth cum at 6/12/18/24h.<br>
+        <b>Time window</b> = Ida MRMS native hourly +0h…+36h from 2021-09-01T12:00 UTC (valid 12:00 Sep 1 → 00:00 Sep 3). Depth cum every 3h with buildup + recession.<br>
         <b>Bands</b> = research ≥3 / ≥8 / ≥15 cm — not NWS watch/warning language.<br>
         <b>Cannot claim</b> = official NWS warning, calibrated DEP sewer / SWMM, decision-grade guidance, Enterprise/HENS.
       </p>
@@ -303,7 +303,7 @@ details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft);
     <button type="button" class="play" id="hudPlay">▶</button>
     <div>
       <div class="clock" id="hudClock">—</div>
-      <div class="sub" id="hudSub">MRMS soft metro · +6…+24h · not NEXRAD</div>
+      <div class="sub" id="hudSub">MRMS soft metro · +0…+36h native · not NEXRAD</div>
     </div>
     <div class="legend">
       <span id="hudLegendLabel">Precip (mm) · context</span>
@@ -487,13 +487,13 @@ function rebuildPathLayers() {{
     }});
   }}
   document.getElementById("pathHonesty").textContent = activePath.primary || activePath.ida_primary_viz
-    ? "Primary Ida awareness: soft-edge metro MRMS QPE (~1 km). Temporal blends densify the loop — not NEXRAD tiles."
+    ? "Primary Ida awareness: soft-edge metro MRMS MultiSensor QPE (~1 km), native hourly 0–36h — not NEXRAD tiles."
     : (activePath.honesty || "Labeled AI / alternate scenario — coarse cells; not the decision surface.");
   const note = document.getElementById("depthTimelineNote");
   if (note) {{
     note.textContent = depthCumFrames.length
       ? ("Depth follows nearest cum lead (" + depthCumFrames.map(f => "+" + f.lead_hours + "h").join("/") +
-         ") — early frames dry; wetness concentrates after ~+18h. HAND puddles are heuristic, not street-truth.")
+         ") — buildup then post-peak recession. HAND puddles are heuristic, not street-truth.")
       : "Depth is storm-total only on this path (no cum frames) — label as static if it does not change with the loop.";
   }}
   syncTimeWindowLabel();

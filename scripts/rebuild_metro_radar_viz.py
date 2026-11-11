@@ -4,7 +4,7 @@
 Fixes the hard citywide rectangle inset over the continuous metro map frame:
 - Source = data/processed/mrms_qpe_metro (spatial MRMS on DEM grid)
 - Soft edge feather + soft land mask (transparent water / domain rim)
-- 1h temporal blends between native 6/12/18/24h leads
+- Prefer native hourly MRMS 0–36h when present; else 6h leads + 1h blends
 - Updates product manifests so Leaflet bounds match metro depth
 
 Research viz only — NOT NEXRAD tiles / NOT NWS.
@@ -47,7 +47,9 @@ PRECIP_CMAP = "turbo"
 SUSC_CMAP = "YlOrRd"
 FEATHER_PX = 36
 PREFIX = "mrms_qpe_ida_"
-NATIVE_LEADS = (6, 12, 18, 24)
+LEGACY_NATIVE_LEADS = (6, 12, 18, 24)
+HOURLY_LEAD_MIN = 0
+HOURLY_LEAD_MAX = 36
 INIT_TIME = "2021-09-01T12:00"
 
 
@@ -158,11 +160,20 @@ def _write_tif(path: Path, data: np.ndarray, transform) -> None:
 
 
 def _valid_time(lead_hours: float) -> str:
-    # init 2021-09-01T12:00 UTC + lead
+    # init 2021-09-01T12:00 UTC + lead (may cross into Sep 2–3)
     total = 12 + int(round(lead_hours))
     day = 1 + total // 24
     hour = total % 24
     return f"2021-09-{day:02d}T{hour:02d}:00"
+
+
+def _discover_native_hourly() -> list[int]:
+    leads = []
+    for lead in range(HOURLY_LEAD_MIN, HOURLY_LEAD_MAX + 1):
+        path = MRMS_DIR / f"mrms_qpe_metro_1h_lead_{lead:02d}h.tif"
+        if path.exists():
+            leads.append(lead)
+    return leads
 
 
 def _blend_stack(native: list[dict], step_hours: float = 1.0) -> list[dict]:
@@ -222,28 +233,58 @@ def main() -> dict:
         terrain = _warp_factor(factor_dir / "factor_terrain.tif", transform)
         landscape = np.clip(0.55 * np.nan_to_num(terrain, nan=0.0) + 0.45 * np.nan_to_num(imp, nan=0.0), 0, 1)
 
+    hourly_leads = _discover_native_hourly()
+    use_native_hourly = len(hourly_leads) >= (HOURLY_LEAD_MAX - HOURLY_LEAD_MIN + 1)
     native_fields: list[dict] = []
-    for lead in NATIVE_LEADS:
-        path = MRMS_DIR / f"mrms_qpe_metro_lead_{lead:02d}h.tif"
-        if not path.exists():
-            raise FileNotFoundError(f"Missing metro MRMS lead: {path}")
-        field = np.full(DISPLAY_SHAPE, np.nan, dtype=np.float32)
-        _warp_to_display(path, field, transform)
-        native_fields.append(
-            {
-                "lead_hours": float(lead),
-                "valid_time": _valid_time(lead),
-                "field": field,
-                "native": True,
-                "temporal_blend": False,
-            }
-        )
+    if use_native_hourly:
+        for lead in hourly_leads:
+            path = MRMS_DIR / f"mrms_qpe_metro_1h_lead_{lead:02d}h.tif"
+            field = np.full(DISPLAY_SHAPE, np.nan, dtype=np.float32)
+            _warp_to_display(path, field, transform)
+            native_fields.append(
+                {
+                    "lead_hours": float(lead),
+                    "valid_time": _valid_time(lead),
+                    "field": field,
+                    "native": True,
+                    "temporal_blend": False,
+                }
+            )
+        dense = native_fields  # already 1 h — no temporal blends
+        loop_note = "Metro soft-edge MRMS: native hourly MultiSensor QPE 0–36h"
+        native_lead_list = hourly_leads
+    else:
+        for lead in LEGACY_NATIVE_LEADS:
+            path = MRMS_DIR / f"mrms_qpe_metro_lead_{lead:02d}h.tif"
+            if not path.exists():
+                raise FileNotFoundError(f"Missing metro MRMS lead: {path}")
+            field = np.full(DISPLAY_SHAPE, np.nan, dtype=np.float32)
+            _warp_to_display(path, field, transform)
+            native_fields.append(
+                {
+                    "lead_hours": float(lead),
+                    "valid_time": _valid_time(lead),
+                    "field": field,
+                    "native": True,
+                    "temporal_blend": False,
+                }
+            )
+        dense = _blend_stack(native_fields, step_hours=1.0)
+        loop_note = "Metro soft-edge MRMS: native 6h densified with 1h temporal blends (hourly cache missing)"
+        native_lead_list = list(LEGACY_NATIVE_LEADS)
 
-    dense = _blend_stack(native_fields, step_hours=1.0)
     vmax = max(
         (float(np.nanmax(f["field"])) for f in dense if np.isfinite(f["field"]).any()),
         default=1.0,
     )
+
+    # Drop stale blend PNGs when switching to native hourly so the UI cannot
+    # accidentally pick leftover 6–24h blend assets.
+    if use_native_hourly:
+        for stale in ASSETS.glob(f"{PREFIX}precip_lead_*_blend.png"):
+            stale.unlink(missing_ok=True)
+        for stale in ASSETS.glob(f"{PREFIX}susc_lead_*_blend.png"):
+            stale.unlink(missing_ok=True)
 
     precip_frames, susc_frames = [], []
     fields_for_rerender = []
@@ -277,7 +318,10 @@ def main() -> dict:
                 "native": fr["native"],
                 "temporal_blend": fr["temporal_blend"],
                 "blend_of": fr.get("blend_of"),
-                "resolution_note": "~1 km MRMS Multi-Sensor QPE on metro DEM grid — soft land+edge alpha",
+                "resolution_note": (
+                    "~1 km MRMS Multi-Sensor QPE 01H on metro DEM grid — soft land+edge alpha"
+                    + (" · native hourly" if use_native_hourly else " · blend densify")
+                ),
             }
         )
         susc_frames.append(
@@ -304,22 +348,41 @@ def main() -> dict:
     _write_png(ASSETS / total_png, _rgba_precip(total, vmax=max(float(np.nanmax(total)), 10.0), fade=fade))
 
     leaflet = _leaflet_bounds()
+    depth_cum_leads: list[int] = []
+    for p in sorted(ASSETS.glob("depth_metro_mrms_cum_lead_*h_m.png")):
+        try:
+            depth_cum_leads.append(int(p.name.split("lead_")[1].split("h")[0]))
+        except (IndexError, ValueError):
+            continue
+    if not depth_cum_leads:
+        depth_cum_leads = (
+            list(range(0, 37, 3)) if use_native_hourly else list(LEGACY_NATIVE_LEADS)
+        )
+
     time_window = {
         "init_time_utc": INIT_TIME,
         "first_valid_time_utc": precip_frames[0]["valid_time"] if precip_frames else None,
         "last_valid_time_utc": precip_frames[-1]["valid_time"] if precip_frames else None,
         "lead_hours_min": precip_frames[0]["lead_hours"] if precip_frames else None,
         "lead_hours_max": precip_frames[-1]["lead_hours"] if precip_frames else None,
-        "native_leads_h": list(NATIVE_LEADS),
+        "native_leads_h": list(native_lead_list),
+        "native_hourly": use_native_hourly,
         "loop_step_h": 1.0,
         "n_frames": len(precip_frames),
+        "depth_cum_leads_h": depth_cum_leads,
         "note": (
-            "Ida MRMS awareness loop covers +6h…+24h from 2021-09-01T12:00 UTC "
-            "(valid 2021-09-01T18:00 → 2021-09-02T12:00). Depth cum frames exist at 6/12/18/24h only."
+            "Ida MRMS awareness loop covers +0h…+36h from 2021-09-01T12:00 UTC "
+            "(valid 2021-09-01T12:00 → 2021-09-03T00:00) with native hourly MultiSensor QPE "
+            "when cached; depth cum frames step through buildup and post-peak recession."
+            if use_native_hourly
+            else (
+                "Ida MRMS awareness loop covers +6h…+24h from 2021-09-01T12:00 UTC "
+                "(valid 2021-09-01T18:00 → 2021-09-02T12:00). Depth cum frames at native 6h leads."
+            )
         ),
         "longer_modeling_recommendation": (
-            "Extend earlier (0–6h buildup) and later (24–36h drainage/recession) so pooling can "
-            "grow and recede; native 1h MRMS (or 15-min) forcing would reduce blend-only motion."
+            "Native hourly is live for 0–36h. Next: 15-min MRMS where available, and "
+            "time-continuous HAND/SFINCS depth forced on the same clock (not discrete cum snapshots)."
         ),
     }
 
@@ -331,10 +394,10 @@ def main() -> dict:
         "extent": EXTENT_ID,
         "soft_edge": True,
         "land_mask": True,
-        "colorbar": {"cmap": PRECIP_CMAP, "units": "mm", "label": "MRMS QPE (mm)"},
+        "colorbar": {"cmap": PRECIP_CMAP, "units": "mm", "label": "MRMS QPE 1h (mm)"},
         "opacity_default": 0.72,
         "approx_resolution_km": 1.0,
-        "loop_note": "Metro soft-edge MRMS: native 6h densified with 1h temporal blends",
+        "loop_note": loop_note,
         "time_window": time_window,
     }
     susc_meta = {
@@ -356,11 +419,16 @@ def main() -> dict:
         "n_paths": 3,
         "default_storm_path": "mrms_qpe_ida",
         "n_loop_frames_default": len(precip_frames),
-        "step_note": "MRMS metro soft-edge: native 6h + 1h temporal blends; depth cum at 6/12/18/24h",
+        "step_note": (
+            "MRMS metro soft-edge: native hourly 0–36h; depth cum steps show buildup + recession"
+            if use_native_hourly
+            else "MRMS metro soft-edge: native 6h + 1h temporal blends; depth cum at 6/12/18/24h"
+        ),
         "susceptibility_formula": FORMULA,
         "product_policy": "ida_hires_viz_with_earth2_scenarios",
         "extent": EXTENT_ID,
         "soft_edge": True,
+        "native_hourly": use_native_hourly,
         "time_window": time_window,
     }
     (ASSETS / "radar_stack_meta.json").write_text(json.dumps(radar_meta, indent=2))
@@ -380,9 +448,14 @@ def main() -> dict:
             p["susceptibility"] = susc_meta
             p["extent"] = EXTENT_ID
             p["honesty"] = (
-                "PRIMARY Ida storm visualization (~1 km MRMS QPE) on continuous metro domain with "
-                "soft land+edge alpha (no hard citywide crop). Temporal 1h blends densify the loop. "
-                "NOT NEXRAD reflectivity tiles; NOT an official NWS flood warning."
+                "PRIMARY Ida storm visualization (~1 km MRMS MultiSensor QPE) on continuous metro "
+                "domain with soft land+edge alpha (no hard citywide crop). "
+                + (
+                    "Native hourly 0–36h loop (not temporal blends). "
+                    if use_native_hourly
+                    else "Temporal 1h blends densify sparse 6h natives. "
+                )
+                + "NOT NEXRAD reflectivity tiles; NOT an official NWS flood warning."
             )
             updated = True
         if not updated and paths:
@@ -432,7 +505,8 @@ def main() -> dict:
         meta["extent"] = EXTENT_ID
         meta["time_window"] = time_window
         meta["depth_timeline_note"] = (
-            "Cumulative depth frames at +6/+12/+18/+24h (HAND after drainage proxy). "
+            "Cumulative depth frames step with the precip clock (HAND after drainage proxy; "
+            "post-peak drainage hours grow so pooling can recede). "
             "Product map swaps nearest cum frame with precip lead; early leads are dry/near-dry."
         )
         mp.write_text(json.dumps(meta, indent=2))

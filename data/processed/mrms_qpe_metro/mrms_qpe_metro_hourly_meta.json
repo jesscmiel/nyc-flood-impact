@@ -1,0 +1,488 @@
+{
+  "product": "MultiSensor_QPE_01H_Pass1_00.00",
+  "source": "https://noaa-mrms-pds.s3.amazonaws.com/",
+  "init_time_utc": "2021-09-01T12:00",
+  "extent": "metro",
+  "bounds": {
+    "xmin": -74.45,
+    "ymin": 40.4,
+    "xmax": -73.5,
+    "ymax": 41.05
+  },
+  "dem": "/home/jesscmiel/projects/nyc-flood-impact/data/raw/terrain/dem_usgs_metro_work30m.tif",
+  "lead_hours_min": 0,
+  "lead_hours_max": 36,
+  "native_step_h": 1,
+  "method": "native_hourly_mrms_qpe_bilinear_to_metro_dem",
+  "frames": [
+    {
+      "lead_hours": 0,
+      "valid_time": "2021-09-01T12:00",
+      "path_1h": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_1h_lead_00h.tif",
+      "max_mm": 2.367753267288208,
+      "mean_mm": 0.7470816373825073,
+      "source_file": "MRMS_MultiSensor_QPE_01H_Pass1_00.00_20210901-120000.grib2.gz",
+      "path_cum": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_cum_lead_00h.tif",
+      "cum_max_mm": 2.367753267288208,
+      "cum_mean_mm": 0.7470816373825073
+    },
+    {
+      "lead_hours": 1,
+      "valid_time": "2021-09-01T13:00",
+      "path_1h": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_1h_lead_01h.tif",
+      "max_mm": 7.5007147789001465,
+      "mean_mm": 0.7513870000839233,
+      "source_file": "MRMS_MultiSensor_QPE_01H_Pass1_00.00_20210901-130000.grib2.gz",
+      "path_cum": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_cum_lead_01h.tif",
+      "cum_max_mm": 8.411619186401367,
+      "cum_mean_mm": 1.4984686374664307
+    },
+    {
+      "lead_hours": 2,
+      "valid_time": "2021-09-01T14:00",
+      "path_1h": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_1h_lead_02h.tif",
+      "max_mm": 12.684556007385254,
+      "mean_mm": 1.4570081233978271,
+      "source_file": "MRMS_MultiSensor_QPE_01H_Pass1_00.00_20210901-140000.grib2.gz",
+      "path_cum": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_cum_lead_02h.tif",
+      "cum_max_mm": 12.980962753295898,
+      "cum_mean_mm": 2.955476760864258
+    },
+    {
+      "lead_hours": 3,
+      "valid_time": "2021-09-01T15:00",
+      "path_1h": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_1h_lead_03h.tif",
+      "max_mm": 6.6927971839904785,
+      "mean_mm": 0.4377991259098053,
+      "source_file": "MRMS_MultiSensor_QPE_01H_Pass1_00.00_20210901-150000.grib2.gz",
+      "path_cum": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_cum_lead_03h.tif",
+      "cum_max_mm": 12.980962753295898,
+      "cum_mean_mm": 3.393275737762451
+    },
+    {
+      "lead_hours": 4,
+      "valid_time": "2021-09-01T16:00",
+      "path_1h": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_1h_lead_04h.tif",
+      "max_mm": 1.6883236169815063,
+      "mean_mm": 0.16571691632270813,
+      "source_file": "MRMS_MultiSensor_QPE_01H_Pass1_00.00_20210901-160000.grib2.gz",
+      "path_cum": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_cum_lead_04h.tif",
+      "cum_max_mm": 12.980962753295898,
+      "cum_mean_mm": 3.558992624282837
+    },
+    {
+      "lead_hours": 5,
+      "valid_time": "2021-09-01T17:00",
+      "path_1h": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_1h_lead_05h.tif",
+      "max_mm": 2.399930238723755,
+      "mean_mm": 0.17542164027690887,
+      "source_file": "MRMS_MultiSensor_QPE_01H_Pass1_00.00_20210901-170000.grib2.gz",
+      "path_cum": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_cum_lead_05h.tif",
+      "cum_max_mm": 14.389809608459473,
+      "cum_mean_mm": 3.7344143390655518
+    },
+    {
+      "lead_hours": 6,
+      "valid_time": "2021-09-01T18:00",
+      "path_1h": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_1h_lead_06h.tif",
+      "max_mm": 5.691075801849365,
+      "mean_mm": 0.4974832236766815,
+      "source_file": "MRMS_MultiSensor_QPE_01H_Pass1_00.00_20210901-180000.grib2.gz",
+      "path_cum": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_cum_lead_06h.tif",
+      "cum_max_mm": 16.48981475830078,
+      "cum_mean_mm": 4.231897830963135
+    },
+    {
+      "lead_hours": 7,
+      "valid_time": "2021-09-01T19:00",
+      "path_1h": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_1h_lead_07h.tif",
+      "max_mm": 5.993100643157959,
+      "mean_mm": 0.23411960899829865,
+      "source_file": "MRMS_MultiSensor_QPE_01H_Pass1_00.00_20210901-190000.grib2.gz",
+      "path_cum": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_cum_lead_07h.tif",
+      "cum_max_mm": 17.18946075439453,
+      "cum_mean_mm": 4.466017246246338
+    },
+    {
+      "lead_hours": 8,
+      "valid_time": "2021-09-01T20:00",
+      "path_1h": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_1h_lead_08h.tif",
+      "max_mm": 1.6218289136886597,
+      "mean_mm": 0.0092649320140481,
+      "source_file": "MRMS_MultiSensor_QPE_01H_Pass1_00.00_20210901-200000.grib2.gz",
+      "path_cum": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_cum_lead_08h.tif",
+      "cum_max_mm": 17.889816284179688,
+      "cum_mean_mm": 4.475282192230225
+    },
+    {
+      "lead_hours": 9,
+      "valid_time": "2021-09-01T21:00",
+      "path_1h": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_1h_lead_09h.tif",
+      "max_mm": 5.195096492767334,
+      "mean_mm": 0.24741843342781067,
+      "source_file": "MRMS_MultiSensor_QPE_01H_Pass1_00.00_20210901-210000.grib2.gz",
+      "path_cum": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_cum_lead_09h.tif",
+      "cum_max_mm": 19.390684127807617,
+      "cum_mean_mm": 4.722700595855713
+    },
+    {
+      "lead_hours": 10,
+      "valid_time": "2021-09-01T22:00",
+      "path_1h": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_1h_lead_10h.tif",
+      "max_mm": 20.992752075195312,
+      "mean_mm": 3.9892356395721436,
+      "source_file": "MRMS_MultiSensor_QPE_01H_Pass1_00.00_20210901-220000.grib2.gz",
+      "path_cum": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_cum_lead_10h.tif",
+      "cum_max_mm": 26.37281036376953,
+      "cum_mean_mm": 8.711935997009277
+    },
+    {
+      "lead_hours": 11,
+      "valid_time": "2021-09-01T23:00",
+      "path_1h": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_1h_lead_11h.tif",
+      "max_mm": 42.965755462646484,
+      "mean_mm": 9.063674926757812,
+      "source_file": "MRMS_MultiSensor_QPE_01H_Pass1_00.00_20210901-230000.grib2.gz",
+      "path_cum": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_cum_lead_11h.tif",
+      "cum_max_mm": 62.12483596801758,
+      "cum_mean_mm": 17.775609970092773
+    },
+    {
+      "lead_hours": 12,
+      "valid_time": "2021-09-02T00:00",
+      "path_1h": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_1h_lead_12h.tif",
+      "max_mm": 57.767642974853516,
+      "mean_mm": 15.849453926086426,
+      "source_file": "MRMS_MultiSensor_QPE_01H_Pass1_00.00_20210902-000000.grib2.gz",
+      "path_cum": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_cum_lead_12h.tif",
+      "cum_max_mm": 110.76783752441406,
+      "cum_mean_mm": 33.625064849853516
+    },
+    {
+      "lead_hours": 13,
+      "valid_time": "2021-09-02T01:00",
+      "path_1h": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_1h_lead_13h.tif",
+      "max_mm": 79.3864517211914,
+      "mean_mm": 24.21108627319336,
+      "source_file": "MRMS_MultiSensor_QPE_01H_Pass1_00.00_20210902-010000.grib2.gz",
+      "path_cum": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_cum_lead_13h.tif",
+      "cum_max_mm": 174.32247924804688,
+      "cum_mean_mm": 57.836151123046875
+    },
+    {
+      "lead_hours": 14,
+      "valid_time": "2021-09-02T02:00",
+      "path_1h": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_1h_lead_14h.tif",
+      "max_mm": 84.53128814697266,
+      "mean_mm": 29.53730010986328,
+      "source_file": "MRMS_MultiSensor_QPE_01H_Pass1_00.00_20210902-020000.grib2.gz",
+      "path_cum": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_cum_lead_14h.tif",
+      "cum_max_mm": 209.8719482421875,
+      "cum_mean_mm": 87.37344360351562
+    },
+    {
+      "lead_hours": 15,
+      "valid_time": "2021-09-02T03:00",
+      "path_1h": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_1h_lead_15h.tif",
+      "max_mm": 76.96945190429688,
+      "mean_mm": 19.907135009765625,
+      "source_file": "MRMS_MultiSensor_QPE_01H_Pass1_00.00_20210902-030000.grib2.gz",
+      "path_cum": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_cum_lead_15h.tif",
+      "cum_max_mm": 217.69256591796875,
+      "cum_mean_mm": 107.28058624267578
+    },
+    {
+      "lead_hours": 16,
+      "valid_time": "2021-09-02T04:00",
+      "path_1h": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_1h_lead_16h.tif",
+      "max_mm": 39.75986862182617,
+      "mean_mm": 10.243459701538086,
+      "source_file": "MRMS_MultiSensor_QPE_01H_Pass1_00.00_20210902-040000.grib2.gz",
+      "path_cum": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_cum_lead_16h.tif",
+      "cum_max_mm": 225.1604766845703,
+      "cum_mean_mm": 117.52404022216797
+    },
+    {
+      "lead_hours": 17,
+      "valid_time": "2021-09-02T05:00",
+      "path_1h": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_1h_lead_17h.tif",
+      "max_mm": 19.38312530517578,
+      "mean_mm": 4.5861005783081055,
+      "source_file": "MRMS_MultiSensor_QPE_01H_Pass1_00.00_20210902-050000.grib2.gz",
+      "path_cum": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_cum_lead_17h.tif",
+      "cum_max_mm": 228.3675994873047,
+      "cum_mean_mm": 122.11014556884766
+    },
+    {
+      "lead_hours": 18,
+      "valid_time": "2021-09-02T06:00",
+      "path_1h": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_1h_lead_18h.tif",
+      "max_mm": 7.894636631011963,
+      "mean_mm": 2.2843737602233887,
+      "source_file": "MRMS_MultiSensor_QPE_01H_Pass1_00.00_20210902-060000.grib2.gz",
+      "path_cum": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_cum_lead_18h.tif",
+      "cum_max_mm": 228.3676300048828,
+      "cum_mean_mm": 124.39452362060547
+    },
+    {
+      "lead_hours": 19,
+      "valid_time": "2021-09-02T07:00",
+      "path_1h": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_1h_lead_19h.tif",
+      "max_mm": 3.700000047683716,
+      "mean_mm": 0.21260832250118256,
+      "source_file": "MRMS_MultiSensor_QPE_01H_Pass1_00.00_20210902-070000.grib2.gz",
+      "path_cum": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_cum_lead_19h.tif",
+      "cum_max_mm": 228.3676300048828,
+      "cum_mean_mm": 124.60712432861328
+    },
+    {
+      "lead_hours": 20,
+      "valid_time": "2021-09-02T08:00",
+      "path_1h": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_1h_lead_20h.tif",
+      "max_mm": 0.0,
+      "mean_mm": 0.0,
+      "source_file": "MRMS_MultiSensor_QPE_01H_Pass1_00.00_20210902-080000.grib2.gz",
+      "path_cum": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_cum_lead_20h.tif",
+      "cum_max_mm": 228.3676300048828,
+      "cum_mean_mm": 124.60712432861328
+    },
+    {
+      "lead_hours": 21,
+      "valid_time": "2021-09-02T09:00",
+      "path_1h": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_1h_lead_21h.tif",
+      "max_mm": 0.0,
+      "mean_mm": 0.0,
+      "source_file": "MRMS_MultiSensor_QPE_01H_Pass1_00.00_20210902-090000.grib2.gz",
+      "path_cum": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_cum_lead_21h.tif",
+      "cum_max_mm": 228.3676300048828,
+      "cum_mean_mm": 124.60712432861328
+    },
+    {
+      "lead_hours": 22,
+      "valid_time": "2021-09-02T10:00",
+      "path_1h": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_1h_lead_22h.tif",
+      "max_mm": 0.0,
+      "mean_mm": 0.0,
+      "source_file": "MRMS_MultiSensor_QPE_01H_Pass1_00.00_20210902-100000.grib2.gz",
+      "path_cum": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_cum_lead_22h.tif",
+      "cum_max_mm": 228.3676300048828,
+      "cum_mean_mm": 124.60712432861328
+    },
+    {
+      "lead_hours": 23,
+      "valid_time": "2021-09-02T11:00",
+      "path_1h": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_1h_lead_23h.tif",
+      "max_mm": 0.0,
+      "mean_mm": 0.0,
+      "source_file": "MRMS_MultiSensor_QPE_01H_Pass1_00.00_20210902-110000.grib2.gz",
+      "path_cum": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_cum_lead_23h.tif",
+      "cum_max_mm": 228.3676300048828,
+      "cum_mean_mm": 124.60712432861328
+    },
+    {
+      "lead_hours": 24,
+      "valid_time": "2021-09-02T12:00",
+      "path_1h": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_1h_lead_24h.tif",
+      "max_mm": 0.0,
+      "mean_mm": 0.0,
+      "source_file": "MRMS_MultiSensor_QPE_01H_Pass1_00.00_20210902-120000.grib2.gz",
+      "path_cum": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_cum_lead_24h.tif",
+      "cum_max_mm": 228.3676300048828,
+      "cum_mean_mm": 124.60712432861328
+    },
+    {
+      "lead_hours": 25,
+      "valid_time": "2021-09-02T13:00",
+      "path_1h": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_1h_lead_25h.tif",
+      "max_mm": 0.0,
+      "mean_mm": 0.0,
+      "source_file": "MRMS_MultiSensor_QPE_01H_Pass1_00.00_20210902-130000.grib2.gz",
+      "path_cum": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_cum_lead_25h.tif",
+      "cum_max_mm": 228.3676300048828,
+      "cum_mean_mm": 124.60712432861328
+    },
+    {
+      "lead_hours": 26,
+      "valid_time": "2021-09-02T14:00",
+      "path_1h": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_1h_lead_26h.tif",
+      "max_mm": 0.0,
+      "mean_mm": 0.0,
+      "source_file": "MRMS_MultiSensor_QPE_01H_Pass1_00.00_20210902-140000.grib2.gz",
+      "path_cum": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_cum_lead_26h.tif",
+      "cum_max_mm": 228.3676300048828,
+      "cum_mean_mm": 124.60712432861328
+    },
+    {
+      "lead_hours": 27,
+      "valid_time": "2021-09-02T15:00",
+      "path_1h": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_1h_lead_27h.tif",
+      "max_mm": 0.0,
+      "mean_mm": 0.0,
+      "source_file": "MRMS_MultiSensor_QPE_01H_Pass1_00.00_20210902-150000.grib2.gz",
+      "path_cum": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_cum_lead_27h.tif",
+      "cum_max_mm": 228.3676300048828,
+      "cum_mean_mm": 124.60712432861328
+    },
+    {
+      "lead_hours": 28,
+      "valid_time": "2021-09-02T16:00",
+      "path_1h": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_1h_lead_28h.tif",
+      "max_mm": 0.0,
+      "mean_mm": 0.0,
+      "source_file": "MRMS_MultiSensor_QPE_01H_Pass1_00.00_20210902-160000.grib2.gz",
+      "path_cum": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_cum_lead_28h.tif",
+      "cum_max_mm": 228.3676300048828,
+      "cum_mean_mm": 124.60712432861328
+    },
+    {
+      "lead_hours": 29,
+      "valid_time": "2021-09-02T17:00",
+      "path_1h": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_1h_lead_29h.tif",
+      "max_mm": 0.0,
+      "mean_mm": 0.0,
+      "source_file": "MRMS_MultiSensor_QPE_01H_Pass1_00.00_20210902-170000.grib2.gz",
+      "path_cum": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_cum_lead_29h.tif",
+      "cum_max_mm": 228.3676300048828,
+      "cum_mean_mm": 124.60712432861328
+    },
+    {
+      "lead_hours": 30,
+      "valid_time": "2021-09-02T18:00",
+      "path_1h": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_1h_lead_30h.tif",
+      "max_mm": 0.0,
+      "mean_mm": 0.0,
+      "source_file": "MRMS_MultiSensor_QPE_01H_Pass1_00.00_20210902-180000.grib2.gz",
+      "path_cum": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_cum_lead_30h.tif",
+      "cum_max_mm": 228.3676300048828,
+      "cum_mean_mm": 124.60712432861328
+    },
+    {
+      "lead_hours": 31,
+      "valid_time": "2021-09-02T19:00",
+      "path_1h": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_1h_lead_31h.tif",
+      "max_mm": 0.0,
+      "mean_mm": 0.0,
+      "source_file": "MRMS_MultiSensor_QPE_01H_Pass1_00.00_20210902-190000.grib2.gz",
+      "path_cum": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_cum_lead_31h.tif",
+      "cum_max_mm": 228.3676300048828,
+      "cum_mean_mm": 124.60712432861328
+    },
+    {
+      "lead_hours": 32,
+      "valid_time": "2021-09-02T20:00",
+      "path_1h": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_1h_lead_32h.tif",
+      "max_mm": 0.0,
+      "mean_mm": 0.0,
+      "source_file": "MRMS_MultiSensor_QPE_01H_Pass1_00.00_20210902-200000.grib2.gz",
+      "path_cum": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_cum_lead_32h.tif",
+      "cum_max_mm": 228.3676300048828,
+      "cum_mean_mm": 124.60712432861328
+    },
+    {
+      "lead_hours": 33,
+      "valid_time": "2021-09-02T21:00",
+      "path_1h": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_1h_lead_33h.tif",
+      "max_mm": 0.0,
+      "mean_mm": 0.0,
+      "source_file": "MRMS_MultiSensor_QPE_01H_Pass1_00.00_20210902-210000.grib2.gz",
+      "path_cum": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_cum_lead_33h.tif",
+      "cum_max_mm": 228.3676300048828,
+      "cum_mean_mm": 124.60712432861328
+    },
+    {
+      "lead_hours": 34,
+      "valid_time": "2021-09-02T22:00",
+      "path_1h": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_1h_lead_34h.tif",
+      "max_mm": 0.0,
+      "mean_mm": 0.0,
+      "source_file": "MRMS_MultiSensor_QPE_01H_Pass1_00.00_20210902-220000.grib2.gz",
+      "path_cum": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_cum_lead_34h.tif",
+      "cum_max_mm": 228.3676300048828,
+      "cum_mean_mm": 124.60712432861328
+    },
+    {
+      "lead_hours": 35,
+      "valid_time": "2021-09-02T23:00",
+      "path_1h": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_1h_lead_35h.tif",
+      "max_mm": 0.0,
+      "mean_mm": 0.0,
+      "source_file": "MRMS_MultiSensor_QPE_01H_Pass1_00.00_20210902-230000.grib2.gz",
+      "path_cum": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_cum_lead_35h.tif",
+      "cum_max_mm": 228.3676300048828,
+      "cum_mean_mm": 124.60712432861328
+    },
+    {
+      "lead_hours": 36,
+      "valid_time": "2021-09-03T00:00",
+      "path_1h": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_1h_lead_36h.tif",
+      "max_mm": 0.0,
+      "mean_mm": 0.0,
+      "source_file": "MRMS_MultiSensor_QPE_01H_Pass1_00.00_20210903-000000.grib2.gz",
+      "path_cum": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_cum_lead_36h.tif",
+      "cum_max_mm": 228.3676300048828,
+      "cum_mean_mm": 124.60712432861328
+    }
+  ],
+  "legacy_interval_leads": [
+    6,
+    12,
+    18,
+    24
+  ],
+  "storm_total": {
+    "path": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_storm_total.tif",
+    "max_mm": 228.3676300048828,
+    "mean_mm": 124.60712432861328,
+    "lead_hours": 36
+  },
+  "legacy_intervals": {
+    "lead_06h": {
+      "path": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_lead_06h.tif",
+      "max_mm": 16.184904098510742,
+      "hours": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ]
+    },
+    "lead_12h": {
+      "path": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_lead_12h.tif",
+      "max_mm": 108.5726318359375,
+      "hours": [
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ]
+    },
+    "lead_18h": {
+      "path": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_lead_18h.tif",
+      "max_mm": 169.96148681640625,
+      "hours": [
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ]
+    },
+    "lead_24h": {
+      "path": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_lead_24h.tif",
+      "max_mm": 3.700000047683716,
+      "hours": [
+        19,
+        20,
+        21,
+        22,
+        23,
+        24
+      ]
+    }
+  }
+}
