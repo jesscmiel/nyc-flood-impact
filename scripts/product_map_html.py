@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Asset Decision Desk — Ida research replay map HTML.
 
-Susceptibility screening first, then ranked wet assets as the decision core.
+Demo-locked defaults: assets first, MRMS awareness locked, screening collapsed.
 Storm (MRMS) is background awareness. NOT NWS / NOT decision-grade.
 """
 
@@ -13,21 +13,26 @@ from pathlib import Path
 from nyc_flash_flood_case_study.config import FIGURES_DIR
 from nyc_flash_flood_case_study.extents import DEFAULT_MAP_EXTENT, EVENTS, EXTENTS
 
+# Curated ≥8 cm named click targets for the 60s demo (facility story is thin; tunnel substitutes).
+DEMO_SHORTLIST_IDS = (
+    "road:37394898",  # Myrtle Avenue · 10.7 cm
+    "stations:146:36th Street",  # 36th Street · 10.2 cm
+    "road:5681925",  # Brooklyn–Battery Tunnel · 9.8 cm
+)
+
 
 def write_product_html(manifest: dict, pluvial: dict, validation: dict) -> Path:
     precip = manifest.get("precip", {})
     frames = precip.get("frames", [])
     n = max(len(frames), 1)
-    formula = (manifest.get("susceptibility") or {}).get("formula") or (
-        "weather × landscape × infrastructure (research screening)"
-    )
+    demo_ids_json = json.dumps(list(DEMO_SHORTLIST_IDS))
     html = f"""<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Asset Decision Desk · Ida research replay</title>
-<meta name="description" content="Research Asset Decision Desk for Hurricane Ida case study. Susceptibility screening then ranked wet assets. NOT official NWS. NOT decision-grade.">
+<meta name="description" content="Research Asset Decision Desk for Hurricane Ida. Ranked wet assets from metro pysheds × MRMS. NOT official NWS. NOT decision-grade.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=IBM+Plex+Mono:wght@500&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -167,28 +172,22 @@ details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft);
   <div class="brand">
     <div class="brand-kicker">Flood risk · research prototype</div>
     <div class="brand-mark">Asset Decision Desk</div>
-    <div class="brand-tag">Susceptibility first, then which roads / stations / facilities get wet. Ida = case study only.</div>
+    <div class="brand-tag">Which roads / stations get wet under Ida — ranked assets first. Research case study only.</div>
   </div>
   <div class="disclaimer-bar">
     <b>NOT decision-grade. NOT an official NWS flood warning. NOT emergency guidance.</b>
-    Research screening with open-stack depth × exposure. Depth bands are research heuristics (3 / 8 / 15 cm) — not agency watch/warning criteria.
+    Research depths are cm-scale HAND heuristics — not Ida street depths; sewer = open capacity proxy, not DEP.
   </div>
   <div id="assetBanner" class="disclaimer-bar" style="display:none;background:#3b0d0d;border-color:#7f1d1d;color:#fecaca"></div>
 
-  <div class="panel">
-    <h2>1 · Flood susceptibility (screening)</h2>
-    <div class="honesty" style="margin-top:0">Multi-factor weather × landscape × infra heatmap — <b>uncalibrated research screening</b>, not flood probability, not NWS.</div>
-    <div class="metric"><span>Surface</span><b>Research screening</b></div>
-    <div class="metric"><span>Formula</span><b style="font-size:.65rem;max-width:58%">{formula[:72]}{"…" if len(formula)>72 else ""}</b></div>
-    <div class="opacity-row"><span>Susceptibility</span><input id="opSusc" type="range" min="10" max="90" value="55"><span id="opSuscVal">55%</span></div>
-    <div class="legend-swatch susc"></div>
-    <label class="layer-btn" style="margin-top:4px"><input id="lySusc" type="checkbox" checked>Show susceptibility screening</label>
-  </div>
-
   <div class="panel core">
-    <h2>2 · Affected assets (decision core)</h2>
-    <div class="honesty" style="margin-top:0">Ranked wet assets from <b>MRMS QPE → pysheds</b> citywide depth × exposure GPKG. Click a row to fly to it.</div>
+    <h2>Affected assets</h2>
+    <div class="honesty" style="margin-top:0">Ranked wet assets from <b>metro pysheds × spatial MRMS QPE</b>. Demo shortlist first — click a row to fly to it.</div>
     <div id="deskSummary" class="metric"><span>Loading…</span><b>—</b></div>
+    <div class="chip-row" id="listModeChips" role="group" aria-label="List mode" style="margin-bottom:2px">
+      <button type="button" class="chip active" data-mode="shortlist">Demo shortlist</button>
+      <button type="button" class="chip" data-mode="all">Show all</button>
+    </div>
     <div class="chip-row" id="typeChips" role="group" aria-label="Asset type">
       <button type="button" class="chip active" data-type="all">All</button>
       <button type="button" class="chip" data-type="road">Roads</button>
@@ -214,41 +213,42 @@ details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft);
   </div>
 
   <div class="panel">
-    <h2>Depth engine honesty</h2>
-    <div class="metric"><span>Primary (desk)</span><b style="font-size:.68rem">pysheds metro</b></div>
-    <div class="metric"><span>Forcing</span><b style="font-size:.68rem">spatial MRMS QPE</b></div>
-    <div class="metric"><span>SFINCS</span><b style="font-size:.68rem">alt hydro only</b></div>
-    <div class="honesty">
-      <b>Primary depth</b> = unified pysheds HAND/bathtub on metro DEM × spatial MRMS Ida after open drainage capacity proxy (NLCD + mm/hr sink; NOT DEP sewer).
-      <b>Queens SFINCS</b> = alternate hydro track (spatial precip, not domain-mean) — not peer-authoritative until comparable.
-      STRATA→SFINCS is methods-only, not Ida.
-    </div>
+    <h2>Storm + primary depth</h2>
+    <div class="honesty" style="margin-top:0">Primary: <b>pysheds metro</b> · Alt: SFINCS (Advanced). Storm path locked to <b>MRMS QPE Ida</b>.</div>
+    <div class="metric"><span>Storm path</span><b style="font-size:.68rem">MRMS QPE Ida (~1 km)</b></div>
     <label class="layer-btn"><input id="lyDepthTot" type="checkbox" checked>Primary research depth (pysheds metro)</label>
-    <label class="layer-btn"><input id="lySfincs" type="checkbox">Queens SFINCS (labeled alternate)</label>
+    <label class="layer-btn"><input id="lyE2" type="checkbox" checked>MRMS precip loop (awareness)</label>
+    <div class="opacity-row"><span>Precip</span><input id="opPrecip" type="range" min="10" max="85" value="28"><span id="opPrecipVal">28%</span></div>
     <div class="opacity-row"><span>Est. depth</span><input id="opDepth" type="range" min="15" max="90" value="62"><span id="opDepthVal">62%</span></div>
+    <div class="legend-swatch precip"></div>
     <div class="legend-swatch depth"></div>
+    <div class="honesty" id="pathHonesty" style="display:none">Primary Ida awareness: MRMS QPE (~1 km).</div>
   </div>
 
   <div class="panel">
-    <h2>Storm context (awareness)</h2>
-    <div class="honesty" style="margin-top:0">MRMS QPE (~1 km) loop — situational awareness only. Storm is context, not the product.</div>
-    <label class="caption" for="stormPathSelect">Storm path</label>
-    <select id="stormPathSelect" aria-label="Storm path"></select>
-    <div class="opacity-row" style="margin-top:8px"><span>Precip</span><input id="opPrecip" type="range" min="10" max="85" value="42"><span id="opPrecipVal">42%</span></div>
-    <div class="legend-swatch precip"></div>
-    <label class="layer-btn"><input id="lyE2" type="checkbox" checked>MRMS / path precip loop</label>
-    <div class="honesty" id="pathHonesty">Primary Ida viz: MRMS QPE. Earth2 paths are labeled coarse AI scenarios — not the hero.</div>
+    <details class="advanced" id="screeningDetails">
+      <summary>Screening (optional)</summary>
+      <div class="honesty" style="margin-top:0">Uncalibrated susceptibility heatmap — optional glance only, not flood probability.</div>
+      <div class="opacity-row"><span>Susceptibility</span><input id="opSusc" type="range" min="10" max="90" value="35"><span id="opSuscVal">35%</span></div>
+      <div class="legend-swatch susc"></div>
+      <label class="layer-btn" style="margin-top:4px"><input id="lySusc" type="checkbox">Show susceptibility screening</label>
+    </details>
   </div>
 
   <div class="panel">
     <details class="advanced">
       <summary>Advanced / context layers</summary>
-      <div class="honesty" style="margin-top:0;margin-bottom:8px">Demoted from default UX: GIS kitchen-sink toggles, demo drainage, Earth2-as-hero, mode clutter.</div>
+      <div class="honesty" style="margin-top:0;margin-bottom:8px">Research chrome only — Earth2 scenarios, SFINCS, FEMA/NWM/gauges, validation. Keep closed for demos.</div>
       <div class="filters" style="grid-template-columns:1fr 1fr">
         <div><label class="caption" for="extentSelect">Extent</label><select id="extentSelect"></select></div>
         <div><label class="caption" for="eventSelect">Event</label><select id="eventSelect"></select></div>
       </div>
+      <label class="caption" for="stormPathSelect" style="margin-top:8px">Scenario path (Advanced)</label>
+      <select id="stormPathSelect" aria-label="Scenario path"></select>
       <div class="layer-grid" style="margin-top:8px">
+        <div class="group-label">Alternate hydro / scenario</div>
+        <label class="layer-btn"><input id="lySfincs" type="checkbox">Queens SFINCS (labeled alternate)</label>
+        <label class="layer-btn"><input id="lyE2Tot" type="checkbox">Storm-total precip</label>
         <div class="group-label">Exposure / obs</div>
         <label class="layer-btn"><input id="lySta" type="checkbox">All stations</label>
         <label class="layer-btn"><input id="lyRoads" type="checkbox">All roads</label>
@@ -258,13 +258,9 @@ details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft);
         <label class="layer-btn"><input id="lyFema" type="checkbox">FEMA NFHL</label>
         <label class="layer-btn"><input id="lyNwm" type="checkbox">NWM reaches</label>
         <label class="layer-btn"><input id="lyGauges" type="checkbox">AHPS gauges</label>
-        <div class="group-label">Excluded from default</div>
-        <label class="layer-btn"><input id="lyDrainE" type="checkbox" disabled title="Demo only — not for decisions">Demo conduits</label>
-        <label class="layer-btn"><input id="lyDrainN" type="checkbox" disabled title="Demo only — not for decisions">Demo nodes</label>
         <label class="layer-btn"><input id="lyBuilt" type="checkbox">Built surface</label>
-        <label class="layer-btn"><input id="lyE2Tot" type="checkbox">Storm-total precip</label>
       </div>
-      <div id="validationPanel" class="honesty" style="margin-top:8px">Validation: exploratory only — not certified skill.</div>
+      <div id="validationPanel" class="honesty" style="margin-top:8px">Limitations-first: exploratory collocation only — not certified skill; do not lead with hit-rate.</div>
     </details>
   </div>
 
@@ -273,9 +269,9 @@ details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft);
       <summary>Science notes</summary>
       <p>
         <b>Product</b> = Asset Decision Desk for infrastructure/response <i>research</i> screening.<br>
-        <b>Primary depth</b> = unified pysheds HAND/bathtub on metro DEM × spatial MRMS QPE Ida after open drainage capacity proxy (NLCD + optional drain density + literature mm/hr sink with surcharge; soft land mask).<br>
-        <b>Map + data domain</b> = metro continuous; SFINCS Queens remains alternate hydro track.<br>
-        <b>Bands</b> = research ≥3 / ≥8 / ≥15 cm — renamed away from NWS watch/warning language.<br>
+        <b>Primary depth</b> = unified pysheds HAND/bathtub on metro DEM × spatial MRMS QPE Ida after open drainage capacity proxy (NLCD + optional drain density + literature mm/hr sink with surcharge; soft land mask). NOT DEP / SWMM.<br>
+        <b>Map + data domain</b> = metro continuous; SFINCS Queens remains alternate hydro track under Advanced.<br>
+        <b>Bands</b> = research ≥3 / ≥8 / ≥15 cm — not NWS watch/warning language.<br>
         <b>Cannot claim</b> = official NWS warning, calibrated DEP sewer / SWMM, decision-grade guidance, Enterprise/HENS.
       </p>
     </details>
@@ -289,7 +285,7 @@ details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft);
     <h3 id="selName">—</h3>
     <p id="selBody">—</p>
   </div>
-  <div class="footer-note">Research prototype — NOT NWS / NOT decision-grade. pysheds metro is primary depth; SFINCS Queens is alternate hydro.</div>
+  <div class="footer-note">Research prototype — NOT NWS / NOT decision-grade. Metro pysheds × MRMS primary; SFINCS only under Advanced.</div>
   <div class="radar-hud">
     <button type="button" class="play" id="hudPlay">▶</button>
     <div>
@@ -336,11 +332,13 @@ L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_M
   maxZoom: 19, attribution: "Tiles © Esri"
 }}).addTo(mapLeft);
 
+const DEMO_SHORTLIST = {demo_ids_json};
 const eventSel = document.getElementById("eventSelect");
 Object.values(EVENTS).forEach(ev => {{
+  if (!ev.available) return; // hide placeholder-future during demos
   const opt = document.createElement("option");
-  opt.value = ev.id; opt.textContent = ev.label + (ev.available ? "" : " (unavailable)");
-  opt.disabled = !ev.available; eventSel.appendChild(opt);
+  opt.value = ev.id; opt.textContent = ev.label;
+  eventSel.appendChild(opt);
 }});
 eventSel.value = "ida-2021";
 const extentSel = document.getElementById("extentSelect");
@@ -358,10 +356,11 @@ stormPaths.forEach(p => {{
   const opt = document.createElement("option");
   const isMrms = p.id === "mrms_qpe_ida" || p.ida_primary_viz;
   opt.value = p.id;
-  opt.textContent = p.label + (isMrms ? " · primary awareness" : " · AI scenario");
+  opt.textContent = p.label + (isMrms ? " · locked primary" : " · AI scenario");
   pathSel.appendChild(opt);
 }});
-pathSel.value = manifest.default_storm_path || "mrms_qpe_ida";
+// Demo-locked default: MRMS; Earth2 only via Advanced scenario path
+pathSel.value = "mrms_qpe_ida";
 
 function currentBounds() {{
   const b = (EXTENTS[extentSel.value] || EXTENTS.metro || EXTENTS.citywide).bounds;
@@ -389,6 +388,7 @@ let activeE2 = null, activeSusc = null, e2Total = null, depthTotal = null, sfinc
 let playing = false, playTimer = null;
 let desk = null, wetLayer = null, selectedLayer = null, selectedId = null;
 let typeFilter = "all";
+let listMode = "shortlist";
 
 function depthSetForPath(pathId) {{
   const inundation = manifest.inundation || null;
@@ -502,16 +502,22 @@ function filteredAssets() {{
   if (!desk || !desk.assets) return [];
   const q = (document.getElementById("assetSearch").value || "").trim().toLowerCase();
   const band = document.getElementById("bandFilter").value;
-  return desk.assets.filter(a => {{
+  let rows = desk.assets.filter(a => {{
     if (typeFilter !== "all" && a.asset_type !== typeFilter) return false;
     if (band !== "all" && a.band !== band) return false;
     if (q && !(String(a.name).toLowerCase().includes(q) || String(a.id).toLowerCase().includes(q))) return false;
     return true;
   }});
+  if (listMode === "shortlist" && !q) {{
+    const byId = Object.fromEntries(rows.map(a => [a.id, a]));
+    const curated = DEMO_SHORTLIST.map(id => byId[id] || (desk.assets || []).find(a => a.id === id)).filter(Boolean);
+    if (curated.length) return curated;
+  }}
+  return rows;
 }}
 function renderAssetList() {{
   const list = document.getElementById("assetList");
-  const rows = filteredAssets().slice(0, 120);
+  const rows = filteredAssets().slice(0, listMode === "shortlist" ? 12 : 120);
   if (!rows.length) {{
     list.innerHTML = '<div class="empty">No wet assets match these filters.</div>';
     return;
@@ -581,7 +587,7 @@ function loadDecisionDesk() {{
     desk = json;
     const c = json.counts || {{}};
     document.getElementById("deskSummary").innerHTML =
-      `<span>Wet assets</span><b>${{c.wet_total||0}} · R ${{c.roads||0}} / S ${{c.stations||0}} / F ${{c.facilities||0}}</b>`;
+      `<span>Wet assets (metro · MRMS)</span><b>${{c.wet_total||0}} · R ${{c.roads||0}} / S ${{c.stations||0}} / F ${{c.facilities||0}}</b>`;
     renderAssetList();
     if (geo && geo.features) {{
       wetLayer = L.geoJSON(geo, {{
@@ -665,10 +671,17 @@ function loadOptionalLayers() {{
     if (!el) return;
     const conf = scores && scores.confidence ? scores.confidence.level : "low";
     const note = (scores && scores.confidence && scores.confidence.note) || "Exploratory collocation only.";
-    el.innerHTML = `<b>Validation confidence: ${{conf}}</b> — ${{note}} Do not lead with 311 hit≈1.`;
+    el.innerHTML = `<b>Limitations-first</b> — exploratory collocation (${{conf}}); ${{note}} Never lead with 311 hit-rate.`;
   }}).catch(()=>{{}});
 }}
 
+document.getElementById("listModeChips").addEventListener("click", e => {{
+  const btn = e.target.closest(".chip");
+  if (!btn) return;
+  listMode = btn.dataset.mode || "shortlist";
+  document.querySelectorAll("#listModeChips .chip").forEach(c => c.classList.toggle("active", c === btn));
+  renderAssetList();
+}});
 document.getElementById("typeChips").addEventListener("click", e => {{
   const btn = e.target.closest(".chip");
   if (!btn) return;
@@ -677,7 +690,13 @@ document.getElementById("typeChips").addEventListener("click", e => {{
   renderAssetList();
 }});
 document.getElementById("bandFilter").onchange = renderAssetList;
-document.getElementById("assetSearch").oninput = renderAssetList;
+document.getElementById("assetSearch").oninput = () => {{
+  if ((document.getElementById("assetSearch").value || "").trim()) {{
+    listMode = "all";
+    document.querySelectorAll("#listModeChips .chip").forEach(c => c.classList.toggle("active", c.dataset.mode === "all"));
+  }}
+  renderAssetList();
+}};
 document.getElementById("hudPlay").onclick = () => setPlaying(!playing);
 document.getElementById("extentSelect").onchange = () => fitMapFrame();
 document.getElementById("eventSelect").onchange = () => {{ if (!EVENTS[eventSel.value].available) alert("Only Ida is loaded."); }};
