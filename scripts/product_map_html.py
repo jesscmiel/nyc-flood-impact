@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""Flood-risk research product map — case-study storm loop + exposure layers.
+"""Asset Decision Desk — Ida research replay map HTML.
 
-NYC / Hurricane Ida is a case study only. Not Earth2Studio Enterprise / HENS.
+Susceptibility screening first, then ranked wet assets as the decision core.
+Storm (MRMS) is background awareness. NOT NWS / NOT decision-grade.
 """
 
 from __future__ import annotations
@@ -17,29 +18,28 @@ def write_product_html(manifest: dict, pluvial: dict, validation: dict) -> Path:
     precip = manifest.get("precip", {})
     frames = precip.get("frames", [])
     n = max(len(frames), 1)
-    storm_paths = manifest.get("storm_paths") or []
-    formula = (manifest.get("susceptibility") or {}).get("formula") or ""
+    formula = (manifest.get("susceptibility") or {}).get("formula") or (
+        "weather × landscape × infrastructure (research screening)"
+    )
     html = f"""<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Flood Risk · research prototype (Ida case study)</title>
-<meta name="description" content="Research flood-risk prototype. NYC Hurricane Ida is a case study only. Not official NWS guidance. No Earth2Studio Enterprise / HENS.">
+<title>Asset Decision Desk · Ida research replay</title>
+<meta name="description" content="Research Asset Decision Desk for Hurricane Ida case study. Susceptibility screening then ranked wet assets. NOT official NWS. NOT decision-grade.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=IBM+Plex+Mono:wght@500&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
 <style>
 :root {{
   --ink:#071018; --ink-soft:#152433; --muted:#6a7f90; --paper:#f3f7f9;
-  --panel:rgba(255,255,255,.92); --line:#c5d3de; --line-soft:#dde6ed;
+  --panel:rgba(255,255,255,.94); --line:#c5d3de; --line-soft:#dde6ed;
   --accent:#0a8a96; --accent-deep:#056068; --accent-soft:#d4eef1;
   --sea:#083b48; --sea-2:#0c6170; --warn:#8d3d14; --warn-bg:#fff3e6; --warn-line:#efc49a;
-  --hud:#07141c; --chip:#e7eef3; --shadow:0 18px 50px rgba(7,16,24,.16);
-  --radius:14px;
+  --band-3:#a16207; --band-8:#c2410c; --band-15:#b91c1c;
+  --shadow:0 18px 50px rgba(7,16,24,.16); --radius:14px;
 }}
 * {{ box-sizing:border-box; }}
 html,body {{ margin:0; height:100%; font-family:"Source Sans 3",sans-serif; color:var(--ink);
@@ -47,17 +47,15 @@ html,body {{ margin:0; height:100%; font-family:"Source Sans 3",sans-serif; colo
     radial-gradient(900px 520px at 8% -10%, rgba(12,97,112,.18), transparent 55%),
     radial-gradient(800px 480px at 100% 0%, rgba(8,59,72,.10), transparent 45%),
     linear-gradient(165deg, #eef4f7 0%, #d9e5ec 100%); }}
-body {{ display:grid; grid-template-columns:minmax(320px,400px) 1fr; min-height:100%; }}
-@media (max-width:980px) {{ body {{ grid-template-columns:1fr; grid-template-rows:auto 1fr; }} aside {{ max-height:50vh; border-right:0; border-bottom:1px solid var(--line); }} }}
+body {{ display:grid; grid-template-columns:minmax(340px,420px) 1fr; min-height:100%; }}
+@media (max-width:980px) {{ body {{ grid-template-columns:1fr; grid-template-rows:auto 1fr; }} aside {{ max-height:55vh; border-right:0; border-bottom:1px solid var(--line); }} }}
 aside {{
-  position:relative; overflow:auto; padding:18px 16px 32px;
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.86), rgba(243,247,249,.94)),
-    repeating-linear-gradient(135deg, rgba(10,138,150,.04) 0 1px, transparent 1px 9px);
+  position:relative; overflow:auto; padding:16px 14px 28px;
+  background: linear-gradient(180deg, rgba(255,255,255,.86), rgba(243,247,249,.94));
   border-right:1px solid var(--line); backdrop-filter: blur(10px);
 }}
 .brand {{
-  position:relative; overflow:hidden; margin:0 0 14px; padding:18px 16px 16px; border-radius:18px;
+  position:relative; overflow:hidden; margin:0 0 12px; padding:16px 14px 14px; border-radius:18px;
   background: linear-gradient(145deg, var(--sea) 0%, var(--sea-2) 55%, #12818f 100%);
   color:#eef9fb; box-shadow:var(--shadow);
 }}
@@ -68,68 +66,62 @@ aside {{
 }}
 @keyframes drift {{ from {{ transform:translateX(0); }} to {{ transform:translateX(-18px); }} }}
 .brand-kicker {{ font:600 .68rem Sora,sans-serif; letter-spacing:.14em; text-transform:uppercase; opacity:.72; margin-bottom:6px; }}
-.brand-mark {{ font-family:Sora,sans-serif; font-weight:700; font-size:1.55rem; letter-spacing:-.04em; line-height:1.05; }}
-.brand-tag {{ margin-top:8px; font-size:.8rem; line-height:1.4; max-width:32ch; opacity:.9; }}
+.brand-mark {{ font-family:Sora,sans-serif; font-weight:700; font-size:1.4rem; letter-spacing:-.04em; line-height:1.05; }}
+.brand-tag {{ margin-top:8px; font-size:.78rem; line-height:1.4; max-width:34ch; opacity:.9; }}
 .disclaimer-bar {{
-  position:sticky; top:0; z-index:4; margin:0 0 14px; padding:11px 12px; border-radius:var(--radius);
-  background:var(--warn-bg); border:1px solid var(--warn-line); color:var(--warn); font-size:.76rem; line-height:1.4;
-  box-shadow:0 1px 0 rgba(255,255,255,.65) inset;
+  position:sticky; top:0; z-index:4; margin:0 0 12px; padding:10px 11px; border-radius:var(--radius);
+  background:var(--warn-bg); border:1px solid var(--warn-line); color:var(--warn); font-size:.74rem; line-height:1.4;
 }}
 .panel {{
-  background:var(--panel); border:1px solid var(--line-soft); border-radius:16px; padding:13px;
-  margin:0 0 12px; box-shadow:0 1px 0 rgba(255,255,255,.85) inset, 0 8px 24px rgba(7,16,24,.03);
+  background:var(--panel); border:1px solid var(--line-soft); border-radius:16px; padding:12px;
+  margin:0 0 10px; box-shadow:0 1px 0 rgba(255,255,255,.85) inset, 0 8px 24px rgba(7,16,24,.03);
 }}
 .panel h2 {{
-  font-family:Sora,sans-serif; font-size:.7rem; font-weight:600; margin:0 0 10px;
+  font-family:Sora,sans-serif; font-size:.68rem; font-weight:600; margin:0 0 8px;
   text-transform:uppercase; letter-spacing:.1em; color:var(--muted);
 }}
-.seg {{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:5px; padding:4px; border-radius:12px; background:var(--chip); border:1px solid var(--line-soft); }}
-.seg button {{ border:0; background:transparent; border-radius:9px; padding:10px 6px; font:600 .72rem Sora,sans-serif; color:var(--muted); cursor:pointer; transition:all .15s; }}
-.seg button.active {{ background:#fff; color:#045963; box-shadow:0 2px 8px rgba(7,16,24,.1); }}
-.chain {{ display:grid; grid-template-columns:1fr auto 1fr auto 1fr; gap:4px; align-items:center; margin-top:10px; font-size:.7rem; font-weight:700; color:#045963; }}
-.chain .step {{ text-align:center; padding:8px 4px; border-radius:10px; background:#d9eef1; border:1px solid #b6dde2; transition:opacity .2s; }}
-.chain .step.dim {{ opacity:.4; background:var(--chip); border-color:var(--line-soft); color:var(--muted); }}
-.mode-hint {{ font-size:.75rem; color:var(--muted); margin:8px 0 0; line-height:1.4; }}
-label.caption {{ display:block; font-size:.74rem; color:var(--muted); font-weight:600; margin-bottom:5px; }}
-select {{ width:100%; appearance:none; padding:10px 12px; border-radius:11px; border:1px solid var(--line); background:#fff; font:500 .9rem "Source Sans 3",sans-serif; color:var(--ink); }}
-.stack {{ display:grid; gap:9px; }}
-.transport {{ display:grid; grid-template-columns:auto 1fr auto; gap:8px; align-items:center; }}
-.btn-icon {{ width:44px; height:44px; border-radius:13px; border:1px solid var(--line); background:#fff; font:700 1rem Sora,sans-serif; cursor:pointer; color:#045963; transition:transform .12s, background .15s; }}
-.btn-icon:hover {{ transform:translateY(-1px); }}
-.btn-icon.playing {{ background:#d4eef1; border-color:var(--accent); }}
-input[type=range] {{ width:100%; accent-color:var(--accent); }}
-.tick-row {{ display:flex; justify-content:space-between; margin-top:4px; font:500 .62rem "IBM Plex Mono",monospace; color:var(--muted); }}
-.metrics {{ display:grid; gap:6px; margin-top:10px; }}
-.metric {{ display:flex; justify-content:space-between; gap:8px; font-size:.8rem; padding:8px 10px; border-radius:10px; background:linear-gradient(180deg,#f7fafc,#eef3f6); }}
-.readout {{ font:600 .82rem "IBM Plex Mono",monospace; color:#045963; }}
-.honesty {{ margin-top:10px; padding:9px 10px; border-radius:11px; font-size:.73rem; line-height:1.4; color:#3d5563; background:#f2f6f8; border:1px dashed #b7c7d2; }}
-.opacity-row {{ display:grid; grid-template-columns:88px 1fr 40px; gap:8px; align-items:center; font-size:.78rem; margin:7px 0; }}
-.legend-swatch {{ height:9px; border-radius:999px; margin:2px 0 8px; }}
+.panel.core {{ border-color:#9ec9d0; box-shadow:0 0 0 1px rgba(10,138,150,.12), 0 10px 28px rgba(7,16,24,.05); }}
+.honesty {{ margin-top:8px; padding:8px 9px; border-radius:11px; font-size:.72rem; line-height:1.4; color:#3d5563; background:#f2f6f8; border:1px dashed #b7c7d2; }}
+.metric {{ display:flex; justify-content:space-between; gap:8px; font-size:.78rem; padding:7px 9px; border-radius:10px; background:linear-gradient(180deg,#f7fafc,#eef3f6); margin-bottom:5px; }}
+.metric b, .readout {{ font:600 .8rem "IBM Plex Mono",monospace; color:#045963; }}
+label.caption {{ display:block; font-size:.72rem; color:var(--muted); font-weight:600; margin-bottom:4px; }}
+select, input[type=search] {{ width:100%; appearance:none; padding:9px 11px; border-radius:11px; border:1px solid var(--line); background:#fff; font:500 .88rem "Source Sans 3",sans-serif; color:var(--ink); }}
+.filters {{ display:grid; grid-template-columns:1fr 1fr; gap:6px; margin:8px 0; }}
+.chip-row {{ display:flex; flex-wrap:wrap; gap:5px; margin:6px 0 8px; }}
+.chip {{ border:1px solid var(--line); background:#fff; border-radius:999px; padding:5px 10px; font:600 .7rem Sora,sans-serif; color:var(--muted); cursor:pointer; }}
+.chip.active {{ background:#d4eef1; border-color:var(--accent); color:#045963; }}
+.asset-list {{ display:flex; flex-direction:column; gap:6px; max-height:min(52vh,520px); overflow:auto; padding-right:2px; }}
+.asset-row {{
+  text-align:left; width:100%; border:1px solid var(--line-soft); background:#fff; border-radius:12px;
+  padding:9px 10px; cursor:pointer; transition:border-color .12s, transform .12s, background .12s;
+}}
+.asset-row:hover {{ transform:translateY(-1px); border-color:#9db4c2; }}
+.asset-row.selected {{ border-color:var(--accent); background:linear-gradient(180deg,#f5fcfd,#d9eef1); }}
+.asset-row .top {{ display:flex; justify-content:space-between; gap:8px; align-items:baseline; }}
+.asset-row .name {{ font:600 .84rem Sora,sans-serif; letter-spacing:-.02em; }}
+.asset-row .depth {{ font:600 .78rem "IBM Plex Mono",monospace; color:#045963; white-space:nowrap; }}
+.asset-row .meta {{ margin-top:4px; display:flex; flex-wrap:wrap; gap:5px; font-size:.7rem; color:var(--muted); }}
+.band {{ display:inline-flex; align-items:center; padding:2px 7px; border-radius:999px; font:600 .66rem Sora,sans-serif; }}
+.band.ponding {{ background:#fef3c7; color:var(--band-3); }}
+.band.deep_ponding {{ background:#ffedd5; color:var(--band-8); }}
+.band.hazard {{ background:#fee2e2; color:var(--band-15); }}
+.type-pill {{ display:inline-flex; padding:2px 7px; border-radius:999px; background:#eef3f6; font-weight:600; }}
+.legend-swatch {{ height:8px; border-radius:999px; margin:4px 0 8px; }}
 .legend-swatch.precip {{ background:linear-gradient(90deg,#30123b,#4662d8,#1ae4b6,#a2fc3c,#f9ba38,#e8332b); }}
 .legend-swatch.susc {{ background:linear-gradient(90deg,#fff7bc,#fec44f,#d95f0e,#7f2704); }}
 .legend-swatch.depth {{ background:linear-gradient(90deg,#f7fbff,#c6dbef,#6baed6,#2171b5,#08306b); }}
-.layer-grid {{ display:grid; grid-template-columns:1fr 1fr; gap:7px; }}
-.group-label {{ grid-column:1 / -1; margin:6px 0 0; font-size:.68rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#7d91a1; }}
-.layer-btn {{ position:relative; display:flex; align-items:center; gap:8px; min-height:42px; padding:8px 10px 8px 34px; border-radius:12px; border:1px solid var(--line); background:#fff; cursor:pointer; font-size:.78rem; font-weight:600; transition:border-color .15s, background .15s, transform .12s; }}
-.layer-btn:hover {{ transform:translateY(-1px); border-color:#9db4c2; }}
-.layer-btn input {{ position:absolute; left:10px; top:50%; transform:translateY(-50%); width:14px; height:14px; margin:0; accent-color:var(--accent); cursor:pointer; }}
-.layer-btn .dot {{ width:9px; height:9px; border-radius:50%; flex:0 0 auto; box-shadow:0 0 0 2px #fff; }}
+.opacity-row {{ display:grid; grid-template-columns:92px 1fr 40px; gap:8px; align-items:center; font-size:.76rem; margin:6px 0; }}
+.layer-grid {{ display:grid; grid-template-columns:1fr 1fr; gap:6px; }}
+.group-label {{ grid-column:1 / -1; margin:4px 0 0; font-size:.66rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#7d91a1; }}
+.layer-btn {{ position:relative; display:flex; align-items:center; gap:7px; min-height:38px; padding:7px 9px 7px 30px; border-radius:11px; border:1px solid var(--line); background:#fff; cursor:pointer; font-size:.74rem; font-weight:600; }}
+.layer-btn input {{ position:absolute; left:9px; top:50%; transform:translateY(-50%); margin:0; accent-color:var(--accent); }}
 .layer-btn:has(input:checked) {{ background:linear-gradient(180deg,#f5fcfd,#d9eef1); border-color:var(--accent); color:#045963; }}
-.layer-btn:has(input:disabled) {{ opacity:.4; cursor:not-allowed; transform:none; }}
-.layer-btn .count {{ margin-left:auto; font:600 .68rem "IBM Plex Mono",monospace; color:#7d91a1; }}
-.layer-btn:has(input:checked) .count {{ color:#045963; }}
-.layer-status {{ margin-top:8px; padding:8px 10px; border-radius:10px; background:#07141c; color:#e8f4f6; font-size:.74rem; line-height:1.35; display:none; }}
-.layer-status.on {{ display:block; }}
-.risk-table {{ width:100%; border-collapse:collapse; font-size:.72rem; }}
-.risk-table th, .risk-table td {{ padding:6px 8px; border-bottom:1px solid var(--line-soft); text-align:right; }}
-.risk-table th:first-child, .risk-table td:first-child {{ text-align:left; }}
-.risk-table th {{ color:var(--muted); font-weight:600; letter-spacing:.04em; text-transform:uppercase; font-size:.65rem; }}
-.validation {{ display:grid; gap:6px; }}
-.validation b {{ font:600 .82rem "IBM Plex Mono",monospace; }}
-details.about {{ font-size:.76rem; color:var(--muted); line-height:1.45; }}
+details.advanced {{ font-size:.76rem; color:var(--muted); }}
+details.advanced > summary {{ cursor:pointer; font:700 .72rem Sora,sans-serif; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:8px; list-style:none; }}
+details.advanced > summary::-webkit-details-marker {{ display:none; }}
+details.about {{ font-size:.74rem; color:var(--muted); line-height:1.45; }}
 details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft); margin-bottom:6px; }}
 .map-stage {{ position:relative; min-height:0; height:100%; }}
-.map-pane {{ position:absolute; inset:0; }}
 .map-el {{ position:absolute; inset:0; }}
 .pane-label {{
   position:absolute; z-index:1000; top:14px; left:54px; padding:6px 12px; border-radius:999px;
@@ -139,7 +131,7 @@ details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft);
 .footer-note {{
   position:absolute; z-index:1000; left:14px; bottom:98px; max-width:min(420px,88%);
   background:rgba(255,255,255,.92); border:1px solid var(--line); padding:8px 10px;
-  font-size:.71rem; color:var(--muted); border-radius:11px;
+  font-size:.7rem; color:var(--muted); border-radius:11px;
 }}
 .radar-hud {{
   position:absolute; z-index:1100; left:50%; bottom:16px; transform:translateX(-50%);
@@ -153,244 +145,193 @@ details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft);
 .radar-hud .play {{
   width:48px; height:48px; border-radius:14px; border:0; cursor:pointer;
   background:linear-gradient(180deg,#1bc0cd,#0e8f9c); color:#042227; font:700 1rem Sora,sans-serif;
-  box-shadow:0 6px 16px rgba(14,143,156,.35);
 }}
 .radar-hud .clock {{ font:700 1rem Sora,sans-serif; letter-spacing:-.02em; }}
 .radar-hud .sub {{ font-size:.72rem; opacity:.78; margin-top:2px; }}
 .radar-hud .legend {{ display:flex; flex-direction:column; gap:5px; align-items:flex-end; font-size:.68rem; opacity:.92; }}
 .radar-hud .bar {{ width:128px; height:8px; border-radius:999px; background:linear-gradient(90deg,#30123b,#4662d8,#1ae4b6,#a2fc3c,#f9ba38,#e8332b); }}
 .radar-hud .bar.susc {{ background:linear-gradient(90deg,#fff7bc,#fec44f,#d95f0e,#7f2704); }}
-.radar-hud .bar.depth {{ background:linear-gradient(90deg,#f7fbff,#c6dbef,#6baed6,#2171b5,#08306b); }}
-.path-pill {{
-  display:inline-flex; align-items:center; gap:6px; margin-top:8px; padding:5px 10px; border-radius:999px;
-  background:#e7f5f7; color:#045963; font:600 .7rem Sora,sans-serif; border:1px solid #b7dde2;
+.selected-card {{
+  position:absolute; z-index:1050; top:56px; right:14px; width:min(320px,calc(100% - 28px));
+  background:rgba(255,255,255,.95); border:1px solid var(--line); border-radius:14px; padding:12px;
+  box-shadow:var(--shadow); display:none;
 }}
+.selected-card.on {{ display:block; }}
+.selected-card h3 {{ margin:0 0 6px; font:700 .95rem Sora,sans-serif; }}
+.selected-card p {{ margin:0; font-size:.78rem; color:var(--muted); line-height:1.4; }}
+.empty {{ padding:14px; text-align:center; color:var(--muted); font-size:.8rem; }}
 </style>
 </head>
 <body>
 <aside>
   <div class="brand">
     <div class="brand-kicker">Flood risk · research prototype</div>
-    <div class="brand-mark">Flood Risk</div>
-    <div class="brand-tag">Infrastructure / response–informing risk screening. NYC Hurricane Ida is a case study only — not the product scope.</div>
+    <div class="brand-mark">Asset Decision Desk</div>
+    <div class="brand-tag">Susceptibility first, then which roads / stations / facilities get wet. Ida = case study only.</div>
   </div>
   <div class="disclaimer-bar">
     <b>NOT decision-grade. NOT an official NWS flood warning. NOT emergency guidance.</b>
-    Open-stack research prototype (no Earth2Studio Enterprise / HENS). Case study forcing: MRMS QPE + open Earth2-class scenarios when available.
-    Depth/alerts are estimated (pysheds) — not agency-calibrated return-period risk.
+    Research screening with open-stack depth × exposure. Depth bands are research heuristics (3 / 8 / 15 cm) — not agency watch/warning criteria.
   </div>
   <div id="assetBanner" class="disclaimer-bar" style="display:none;background:#3b0d0d;border-color:#7f1d1d;color:#fecaca"></div>
 
   <div class="panel">
-    <h2>Product mode</h2>
-    <div class="seg" role="group" aria-label="Product mode" style="grid-template-columns:1fr 1fr 1fr 1fr">
-      <button type="button" class="active" id="productStorm" data-mode="storm">Storm</button>
-      <button type="button" id="productSusc" data-mode="susceptibility">Susceptibility</button>
-      <button type="button" id="productCoupled" data-mode="coupled">Coupled</button>
-      <button type="button" id="productDepth" data-mode="depth">Depth</button>
-    </div>
-    <div class="chain" aria-label="Product chain — always available; modes only change default overlays">
-      <span class="step" id="chainPrecip">Weather</span><span>→</span>
-      <span class="step" id="chainSusc">Landscape×Infra</span><span>→</span>
-      <span class="step" id="chainInfra">Exposure</span>
-    </div>
-    <p class="mode-hint" id="modeHint">Modes set default overlays only. Roads, 311, FEMA, and all other layer toggles stay available in every mode.</p>
-  </div>
-
-  <div class="panel">
-    <h2>Storm path</h2>
-    <label class="caption" for="stormPathSelect">Scenario track</label>
-    <select id="stormPathSelect" aria-label="Storm path"></select>
-    <div class="path-pill" id="pathPill">Earth2 (primary)</div>
-    <div class="honesty" id="pathHonesty">Primary Earth2 control path. Alternate members are IC-perturbation scenarios, not observations.</div>
-  </div>
-
-  <div class="panel">
-    <h2>Scene</h2>
-    <div class="stack">
-      <div><label class="caption" for="eventSelect">Event</label><select id="eventSelect"></select></div>
-      <div><label class="caption" for="extentSelect">Map extent</label><select id="extentSelect"></select></div>
-    </div>
-  </div>
-
-  <div class="panel">
-    <h2>Storm clock</h2>
-    <div class="transport">
-      <button type="button" class="btn-icon" id="playBtn" aria-label="Play">▶</button>
-      <div>
-        <input id="leadSlider" type="range" min="0" max="{n - 1}" value="0" step="1">
-        <div class="tick-row" id="tickRow"></div>
-      </div>
-      <select id="playSpeed" style="width:auto;min-width:72px;padding:8px" aria-label="Speed">
-        <option value="1200">Slow</option>
-        <option value="750" selected>Med</option>
-        <option value="450">Fast</option>
-      </select>
-    </div>
-    <div class="metrics">
-      <div class="metric"><span>Clock (UTC)</span><span class="readout" id="clockReadout">—</span></div>
-      <div class="metric"><span>Lead</span><span class="readout" id="leadReadout">—</span></div>
-      <div class="metric"><span>Earth2 max</span><span class="readout" id="e2Readout">—</span></div>
-      <div class="metric"><span>Frame</span><span class="readout" id="frameTypeReadout">—</span></div>
-    </div>
-    <div class="honesty">Native Earth2 leads are 6h. Loop densifies with 2h <b>temporal blends</b> (labeled) — not extra model output, not NEXRAD.</div>
-  </div>
-
-  <div class="panel">
-    <h2>Opacity & legend</h2>
-    <div class="opacity-row"><span>Precip</span><input id="opPrecip" type="range" min="15" max="95" value="78"><span id="opPrecipVal">78%</span></div>
-    <div class="legend-swatch precip"></div>
-    <div class="opacity-row"><span>Susceptibility</span><input id="opSusc" type="range" min="15" max="95" value="64"><span id="opSuscVal">64%</span></div>
+    <h2>1 · Flood susceptibility (screening)</h2>
+    <div class="honesty" style="margin-top:0">Multi-factor weather × landscape × infra heatmap — <b>uncalibrated research screening</b>, not flood probability, not NWS.</div>
+    <div class="metric"><span>Surface</span><b>Research screening</b></div>
+    <div class="metric"><span>Formula</span><b style="font-size:.65rem;max-width:58%">{formula[:72]}{"…" if len(formula)>72 else ""}</b></div>
+    <div class="opacity-row"><span>Susceptibility</span><input id="opSusc" type="range" min="10" max="90" value="55"><span id="opSuscVal">55%</span></div>
     <div class="legend-swatch susc"></div>
-    <div class="opacity-row"><span>Est. depth</span><input id="opDepth" type="range" min="15" max="95" value="78"><span id="opDepthVal">78%</span></div>
+    <label class="layer-btn" style="margin-top:4px"><input id="lySusc" type="checkbox" checked>Show susceptibility screening</label>
+  </div>
+
+  <div class="panel core">
+    <h2>2 · Affected assets (decision core)</h2>
+    <div class="honesty" style="margin-top:0">Ranked wet assets from <b>MRMS QPE → pysheds</b> citywide depth × exposure GPKG. Click a row to fly to it.</div>
+    <div id="deskSummary" class="metric"><span>Loading…</span><b>—</b></div>
+    <div class="chip-row" id="typeChips" role="group" aria-label="Asset type">
+      <button type="button" class="chip active" data-type="all">All</button>
+      <button type="button" class="chip" data-type="road">Roads</button>
+      <button type="button" class="chip" data-type="station">Stations</button>
+      <button type="button" class="chip" data-type="facility">Facilities</button>
+    </div>
+    <div class="filters">
+      <div>
+        <label class="caption" for="bandFilter">Research depth band</label>
+        <select id="bandFilter">
+          <option value="all">All wet (≥3 cm)</option>
+          <option value="ponding">≥3 cm ponding</option>
+          <option value="deep_ponding" selected>≥8 cm deep ponding</option>
+          <option value="hazard">≥15 cm hazard</option>
+        </select>
+      </div>
+      <div>
+        <label class="caption" for="assetSearch">Search</label>
+        <input id="assetSearch" type="search" placeholder="Name / id…" autocomplete="off">
+      </div>
+    </div>
+    <div class="asset-list" id="assetList" aria-label="Ranked wet assets"><div class="empty">Loading ranked assets…</div></div>
+  </div>
+
+  <div class="panel">
+    <h2>Depth engine honesty</h2>
+    <div class="metric"><span>Primary (desk)</span><b style="font-size:.68rem">pysheds citywide</b></div>
+    <div class="metric"><span>Forcing</span><b style="font-size:.68rem">MRMS QPE Ida</b></div>
+    <div class="metric"><span>Approx max</span><b>~0.15 m</b></div>
+    <div class="honesty">
+      <b>Queens SFINCS</b> (Docker) is a hydro upgrade track — different domain/forcing; max ~3.76 m under uniform precip.
+      It is <b>not</b> equally authoritative with pysheds citywide. STRATA→SFINCS is methods-only, not Ida.
+    </div>
+    <label class="layer-btn"><input id="lyDepthTot" type="checkbox" checked>Primary research depth (pysheds storm-total)</label>
+    <label class="layer-btn"><input id="lySfincs" type="checkbox">Queens SFINCS (labeled alternate)</label>
+    <div class="opacity-row"><span>Est. depth</span><input id="opDepth" type="range" min="15" max="90" value="62"><span id="opDepthVal">62%</span></div>
     <div class="legend-swatch depth"></div>
-    <div><label class="caption" for="resampleSelect">Precip display</label>
-      <select id="resampleSelect">
-        <option value="nearest" selected>Nearest (blocky / honest)</option>
-        <option value="bilinear">Bilinear (CSS only)</option>
-      </select>
-    </div>
   </div>
 
   <div class="panel">
-    <h2>Layers</h2>
-    <div class="honesty" style="margin-top:0;margin-bottom:8px">Full checklist usable in every mode. Enabling an infra/context layer dims precip so vectors stay visible at citywide zoom.</div>
-    <div class="layer-grid">
-      <div class="group-label">Storm</div>
-      <label class="layer-btn"><input id="lyE2" type="checkbox" checked><span class="dot" style="background:#4662d8"></span>Precip (active path)</label>
-      <label class="layer-btn"><input id="lyE2Tot" type="checkbox"><span class="dot" style="background:#30123b"></span>Storm total</label>
-
-      <div class="group-label">Depth (research · NOT flood warning)</div>
-      <label class="layer-btn"><input id="lyDepth" type="checkbox"><span class="dot" style="background:#2171b5"></span>Est. inundation depth</label>
-      <label class="layer-btn"><input id="lyDepthTot" type="checkbox"><span class="dot" style="background:#08306b"></span>Storm-total depth</label>
-      <div class="honesty" id="depthForceNote" style="grid-column:1/-1;margin-top:4px">Depth forcing follows selected storm path.</div>
-
-      <div class="group-label">Susceptibility</div>
-      <label class="layer-btn"><input id="lySusc" type="checkbox"><span class="dot" style="background:#d95f0e"></span>Multi-factor heatmap</label>
-      <label class="layer-btn"><input id="lyBuilt" type="checkbox"><span class="dot" style="background:#475569"></span>Built surface</label>
-
-      <div class="group-label">Infrastructure / obs</div>
-      <label class="layer-btn"><input id="lyInfra" type="checkbox"><span class="dot" style="background:#b91c1c"></span>Storm-synced roads</label>
-      <label class="layer-btn"><input id="lyHot" type="checkbox"><span class="dot" style="background:#ff2d55"></span>Hotspot roads<span class="count" id="cntHot">…</span></label>
-      <label class="layer-btn"><input id="ly311" type="checkbox"><span class="dot" style="background:#ff3b5c"></span>311 reports<span class="count" id="cnt311">…</span></label>
-      <label class="layer-btn"><input id="lySta" type="checkbox"><span class="dot" style="background:#00e5a8"></span>Stations<span class="count" id="cntSta">…</span></label>
-      <label class="layer-btn"><input id="lyRoads" type="checkbox"><span class="dot" style="background:#ff6b00"></span>Roads<span class="count" id="cntRoads">…</span></label>
-      <label class="layer-btn"><input id="lyFac" type="checkbox"><span class="dot" style="background:#a855f7"></span>Facilities<span class="count" id="cntFac">…</span></label>
-
-      <div class="group-label">Context</div>
-      <label class="layer-btn"><input id="lyFema" type="checkbox"><span class="dot" style="background:#4f7cff"></span>FEMA NFHL<span class="count" id="cntFema">…</span></label>
-      <label class="layer-btn"><input id="lyNwm" type="checkbox"><span class="dot" style="background:#00c2ff"></span>NWM reaches<span class="count" id="cntNwm">…</span></label>
-      <label class="layer-btn"><input id="lyGauges" type="checkbox"><span class="dot" style="background:#37d6ff"></span>AHPS gauges<span class="count" id="cntGauges">…</span></label>
-      <label class="layer-btn"><input id="lyDrainE" type="checkbox"><span class="dot" style="background:#ffb020"></span>Demo conduits<span class="count" id="cntDrainE">…</span></label>
-      <label class="layer-btn"><input id="lyDrainN" type="checkbox"><span class="dot" style="background:#ffd60a"></span>Demo nodes<span class="count" id="cntDrainN">…</span></label>
-    </div>
-    <div class="layer-status" id="layerStatus">No infra/context layer on.</div>
+    <h2>Storm context (awareness)</h2>
+    <div class="honesty" style="margin-top:0">MRMS QPE (~1 km) loop — situational awareness only. Storm is context, not the product.</div>
+    <label class="caption" for="stormPathSelect">Storm path</label>
+    <select id="stormPathSelect" aria-label="Storm path"></select>
+    <div class="opacity-row" style="margin-top:8px"><span>Precip</span><input id="opPrecip" type="range" min="10" max="85" value="42"><span id="opPrecipVal">42%</span></div>
+    <div class="legend-swatch precip"></div>
+    <label class="layer-btn"><input id="lyE2" type="checkbox" checked>MRMS / path precip loop</label>
+    <div class="honesty" id="pathHonesty">Primary Ida viz: MRMS QPE. Earth2 paths are labeled coarse AI scenarios — not the hero.</div>
   </div>
 
   <div class="panel">
-    <h2>Scenario risk card</h2>
-    <div class="honesty" style="margin-top:0">Citywide depth × asset counts — research only. <b>NOT decision-grade. NOT NWS.</b> No Enterprise/HENS.</div>
-    <label class="caption" for="riskScenarioSelect">Risk scenario extent</label>
-    <select id="riskScenarioSelect" aria-label="Risk scenario">
-      <option value="citywide" selected>NYC metro / citywide</option>
-      <option value="south_queens">South Queens (nested case study)</option>
-    </select>
-    <div class="validation" id="riskCard" style="margin-top:8px">Loading…</div>
-    <div id="riskTableWrap" style="margin-top:8px;overflow:auto"></div>
-    <div class="honesty" id="hazardCatalogNote" style="margin-top:8px">Hazard catalog: loading…</div>
+    <details class="advanced">
+      <summary>Advanced / context layers</summary>
+      <div class="honesty" style="margin-top:0;margin-bottom:8px">Demoted from default UX: GIS kitchen-sink toggles, demo drainage, Earth2-as-hero, mode clutter.</div>
+      <div class="filters" style="grid-template-columns:1fr 1fr">
+        <div><label class="caption" for="extentSelect">Extent</label><select id="extentSelect"></select></div>
+        <div><label class="caption" for="eventSelect">Event</label><select id="eventSelect"></select></div>
+      </div>
+      <div class="layer-grid" style="margin-top:8px">
+        <div class="group-label">Exposure / obs</div>
+        <label class="layer-btn"><input id="lySta" type="checkbox">All stations</label>
+        <label class="layer-btn"><input id="lyRoads" type="checkbox">All roads</label>
+        <label class="layer-btn"><input id="lyFac" type="checkbox">All facilities</label>
+        <label class="layer-btn"><input id="ly311" type="checkbox">311 reports</label>
+        <div class="group-label">Reference context</div>
+        <label class="layer-btn"><input id="lyFema" type="checkbox">FEMA NFHL</label>
+        <label class="layer-btn"><input id="lyNwm" type="checkbox">NWM reaches</label>
+        <label class="layer-btn"><input id="lyGauges" type="checkbox">AHPS gauges</label>
+        <div class="group-label">Excluded from default</div>
+        <label class="layer-btn"><input id="lyDrainE" type="checkbox" disabled title="Demo only — not for decisions">Demo conduits</label>
+        <label class="layer-btn"><input id="lyDrainN" type="checkbox" disabled title="Demo only — not for decisions">Demo nodes</label>
+        <label class="layer-btn"><input id="lyBuilt" type="checkbox">Built surface</label>
+        <label class="layer-btn"><input id="lyE2Tot" type="checkbox">Storm-total precip</label>
+      </div>
+      <div id="validationPanel" class="honesty" style="margin-top:8px">Validation: exploratory only — not certified skill.</div>
+    </details>
   </div>
 
   <div class="panel">
-    <h2>Research alerts (prototype)</h2>
-    <div class="honesty" style="margin-top:0">Threshold chips from estimated depth — <b>NOT official NWS watches/warnings</b>.</div>
-    <div class="validation" id="alertPanel" style="margin-top:8px">Loading…</div>
-  </div>
-
-  <div class="panel">
-    <h2>Validation dashboard</h2>
-    <div class="honesty" style="margin-top:0">311 / gauge collocation on research depth — <b>not certified skill</b>.</div>
-    <div class="validation" id="validationPanel" style="margin-top:8px">Loading…</div>
-    <div id="validationConfidence" class="honesty" style="margin-top:8px">Confidence: …</div>
-  </div>
-
-  <div class="panel">
-    <details class="about" open>
+    <details class="about">
       <summary>Science notes</summary>
       <p>
-        <b>Product</b> = flood <b>risk</b> research prototype. NYC/Ida is a case study fixture only.<br>
-        <b>Susceptibility</b> = weather × landscape × infrastructure screening:<br>
-        <code style="font-size:.68rem">{formula}</code><br><br>
-        <b>Inundation</b> = improved pysheds HAND/bathtub (SFINCS schema spike only — binary missing; LISFLOOD-FP not installable).<br>
-        <b>Risk card</b> = depth×asset band counts for roads/stations/facilities.<br>
-        <b>Cannot claim</b> = official NWS warning, calibrated DEP inundation, Enterprise/HENS, decision-grade guidance.
+        <b>Product</b> = Asset Decision Desk for infrastructure/response <i>research</i> screening.<br>
+        <b>Primary depth</b> = pysheds HAND/bathtub citywide forced by MRMS QPE Ida.<br>
+        <b>Bands</b> = research ≥3 / ≥8 / ≥15 cm — renamed away from NWS watch/warning language.<br>
+        <b>Cannot claim</b> = official NWS warning, calibrated DEP sewer, decision-grade guidance, Enterprise/HENS.
       </p>
     </details>
   </div>
 </aside>
 
 <div class="map-stage" id="mapStage">
-  <div class="map-pane"><div class="pane-label" id="leftLabel">Flood risk · case study</div><div id="mapLeft" class="map-el"></div></div>
-  <div class="footer-note">Flood-risk research prototype (open stack). NYC/Ida is a case study. Not decision-grade. No Enterprise/HENS.</div>
+  <div class="pane-label" id="leftLabel">Asset Decision Desk · Ida research</div>
+  <div id="mapLeft" class="map-el"></div>
+  <div class="selected-card" id="selectedCard">
+    <h3 id="selName">—</h3>
+    <p id="selBody">—</p>
+  </div>
+  <div class="footer-note">Research prototype — NOT NWS / NOT decision-grade. pysheds citywide is primary depth; SFINCS Queens is alternate.</div>
   <div class="radar-hud">
     <button type="button" class="play" id="hudPlay">▶</button>
     <div>
       <div class="clock" id="hudClock">—</div>
-      <div class="sub" id="hudSub">Earth2 frame · land-masked · ~0.25°</div>
+      <div class="sub" id="hudSub">MRMS awareness loop · not NEXRAD reflectivity</div>
     </div>
     <div class="legend">
-      <span id="hudLegendLabel">Earth2 precip (mm)</span>
+      <span id="hudLegendLabel">Precip (mm) · context</span>
       <div class="bar" id="hudLegendBar"></div>
     </div>
   </div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 <script>
 const EVENTS = {json.dumps(EVENTS)};
 const EXTENTS = {json.dumps(EXTENTS)};
 const manifest = {json.dumps(manifest)};
 const pluvial = {json.dumps(pluvial)};
 const validation = {json.dumps(validation)};
-// Resolve asset base relative to this HTML file (works under /figures, /docs, nested hosts).
-// file:// will fail fetch — banner instructs to use scripts/serve_product.py.
+
 function resolveAssetBase() {{
   const here = window.location.href;
   if (here.startsWith("file:")) {{
     const b = document.getElementById("assetBanner");
     if (b) {{
       b.style.display = "block";
-      b.innerHTML = "<b>Open via local HTTP server</b> — file:// cannot fetch GeoJSON. From repo root: <code>python scripts/serve_product.py</code> then open the printed URL.";
+      b.innerHTML = "<b>Open via local HTTP</b> — from repo: <code>python scripts/serve_product.py</code> then open the printed URL.";
     }}
   }}
   try {{ return new URL("product_assets/", here).href; }}
   catch (e) {{ return "product_assets/"; }}
 }}
 const assets = resolveAssetBase();
-window.__productAssetsBase = assets;
-const stormPaths = manifest.storm_paths || [{{
-  id: "earth2_control", label: "Earth2 open scenario", primary: false, scenario_kind: "earth2_open_scenario",
-  precip: manifest.precip, susceptibility: manifest.susceptibility, infra_highlights: manifest.infra_highlights
-}}];
 
 const mapLeft = L.map("mapLeft", {{ zoomControl: true }});
 window.mapLeft = mapLeft;
-mapLeft.createPane("rasterPane");
-mapLeft.getPane("rasterPane").style.zIndex = 350;
-mapLeft.createPane("depthPane");
-mapLeft.getPane("depthPane").style.zIndex = 400;
-mapLeft.createPane("vectorPane");
-mapLeft.getPane("vectorPane").style.zIndex = 650; // above markerPane (600)
-mapLeft.getPane("vectorPane").style.pointerEvents = "none";
-mapLeft.createPane("pointPane");
-mapLeft.getPane("pointPane").style.zIndex = 670;
-mapLeft.getPane("pointPane").style.pointerEvents = "auto";
-// Per-layer SVG renderers avoid Leaflet shared-renderer wipe bugs.
-function makeVectorRenderer() {{ return L.svg({{ pane: "vectorPane", padding: 0.5 }}); }}
-function makePointRenderer() {{ return L.svg({{ pane: "pointPane", padding: 0.5 }}); }}
+mapLeft.createPane("rasterPane"); mapLeft.getPane("rasterPane").style.zIndex = 350;
+mapLeft.createPane("depthPane"); mapLeft.getPane("depthPane").style.zIndex = 400;
+mapLeft.createPane("vectorPane"); mapLeft.getPane("vectorPane").style.zIndex = 650;
+mapLeft.createPane("pointPane"); mapLeft.getPane("pointPane").style.zIndex = 670;
+mapLeft.createPane("selectPane"); mapLeft.getPane("selectPane").style.zIndex = 700;
 L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{{z}}/{{y}}/{{x}}", {{
-  maxZoom: 19,
-  attribution: "Tiles &copy; Esri &mdash; Source: Esri, OpenStreetMap"
+  maxZoom: 19, attribution: "Tiles © Esri"
 }}).addTo(mapLeft);
 
 const eventSel = document.getElementById("eventSelect");
@@ -406,729 +347,380 @@ Object.values(EXTENTS).forEach(ex => {{
 }});
 extentSel.value = (manifest.layer_bounds && manifest.layer_bounds.map_extent_default) || "citywide";
 
+const stormPaths = manifest.storm_paths || [{{
+  id: "mrms_qpe_ida", label: "MRMS QPE Ida", primary: true,
+  precip: manifest.precip, susceptibility: manifest.susceptibility
+}}];
 const pathSel = document.getElementById("stormPathSelect");
 stormPaths.forEach(p => {{
   const opt = document.createElement("option");
+  const isMrms = p.id === "mrms_qpe_ida" || p.ida_primary_viz;
   opt.value = p.id;
-  opt.textContent = p.label + (p.primary ? "" : " · alternate scenario");
+  opt.textContent = p.label + (isMrms ? " · primary awareness" : " · AI scenario");
   pathSel.appendChild(opt);
 }});
-pathSel.value = manifest.default_storm_path || stormPaths[0].id;
+pathSel.value = manifest.default_storm_path || "mrms_qpe_ida";
 
 function currentBounds() {{
   const b = (EXTENTS[extentSel.value] || EXTENTS.citywide).bounds;
   return [[b.ymin, b.xmin],[b.ymax, b.xmax]];
 }}
-
-let activePath = stormPaths.find(p => p.id === pathSel.value) || stormPaths[0];
-let frames = activePath.precip?.frames || [];
-let suscFrames = activePath.susceptibility?.frames || [];
-let infraFrames = activePath.infra_highlights?.frames || [];
-let precipBounds = (activePath.precip && activePath.precip.bounds) || currentBounds();
-let suscBounds = (activePath.susceptibility && activePath.susceptibility.bounds) || precipBounds;
-const hotspotBounds = precipBounds;
-
-let e2Layers = [], suscLayers = [], depthLayers = [];
-let activeE2 = null, activeSusc = null, activeInfra = null, activeDepth = null;
-let e2Total = null, depthTotal = null;
-const inundation = manifest.inundation || null;
-const depthBounds = (inundation && inundation.bounds) || precipBounds;
-function depthSetForPath(pathId) {{
-  if (!inundation) return null;
-  const by = inundation.by_path || {{}};
-  if (pathId && by[pathId]) return by[pathId];
-  // Earth2 ensemble shares Earth2 depth forcing
-  if (pathId && String(pathId).startsWith("earth2") && by.earth2_control) return by.earth2_control;
-  if (by[inundation.default_depth_path]) return by[inundation.default_depth_path];
-  return inundation; // legacy flat shape
-}}
-let activeDepthSet = depthSetForPath(activePath && activePath.id);
-const builtLayer = pluvial?.built_surface_png ? L.imageOverlay(assets + pluvial.built_surface_png, suscBounds, {{ opacity: 0.5, pane:"rasterPane", interactive:false }}) : null;
-const hotspot = (manifest.disruption?.hotspot_png)
-  ? L.imageOverlay(assets + manifest.disruption.hotspot_png, hotspotBounds, {{ opacity: 0.55, pane:"rasterPane", interactive:false }})
-  : null;
-let roadsLayer=null, disruptLayer=null, stationsLayer=null, drainNodes=null, drainEdges=null, femaLayer=null, nwmLayer=null, gaugesLayer=null;
-// MarkerCluster uses default marker panes (not custom SVG panes) — more reliable visibility.
-const reports = L.markerClusterGroup({{
-  showCoverageOnHover: false,
-  maxClusterRadius: 50,
-  spiderfyOnMaxZoom: true,
-  disableClusteringAtZoom: 15
-}});
-let productMode = "storm", playing = false, playTimer = null;
-const vectorLayers = [];
-const layerRegistry = {{}}; // id -> {{ layer, n, label }}
-const pendingChecked = new Set();
-let savedPrecipOpacity = null;
-
 function precipOpacity() {{ return (+document.getElementById("opPrecip").value) / 100; }}
 function suscOpacity() {{ return (+document.getElementById("opSusc").value) / 100; }}
 function depthOpacity() {{ return (+document.getElementById("opDepth").value) / 100; }}
-function raiseVectors() {{
-  vectorLayers.forEach(l => {{ if (l && mapLeft.hasLayer(l) && l.bringToFront) l.bringToFront(); }});
-  if (activeInfra && mapLeft.hasLayer(activeInfra) && activeInfra.bringToFront) activeInfra.bringToFront();
-  if (reports && mapLeft.hasLayer(reports)) reports.bringToFront();
-}}
-function contextLayerOn() {{
-  return ["lyHot","ly311","lySta","lyRoads","lyFac","lyFema","lyNwm","lyGauges","lyDrainE","lyDrainN","lyInfra"]
-    .some(id => document.getElementById(id)?.checked);
-}}
-function updateLayerStatus() {{
-  const el = document.getElementById("layerStatus");
-  if (!el) return;
-  const on = Object.entries(layerRegistry)
-    .filter(([id]) => document.getElementById(id)?.checked)
-    .map(([id, meta]) => `${{meta.label}} (${{meta.n}})`);
-  if (!on.length) {{
-    el.classList.remove("on");
-    el.textContent = "No infra/context layer on.";
-    return;
-  }}
-  el.classList.add("on");
-  el.textContent = "On map: " + on.join(" · ") + " — precip auto-dimmed for visibility.";
-}}
-function ensureVectorsVisible() {{
-  const op = document.getElementById("opPrecip");
-  if (!op) return;
-  if (contextLayerOn()) {{
-    if (savedPrecipOpacity == null) savedPrecipOpacity = op.value;
-    if (+op.value > 35) {{
-      op.value = "32";
-      document.getElementById("opPrecipVal").textContent = "32%";
-      if (activeE2) activeE2.setOpacity(precipOpacity());
-      if (e2Total) e2Total.setOpacity(precipOpacity());
-    }}
-  }} else if (savedPrecipOpacity != null) {{
-    op.value = savedPrecipOpacity;
-    document.getElementById("opPrecipVal").textContent = savedPrecipOpacity + "%";
-    if (activeE2) activeE2.setOpacity(precipOpacity());
-    if (e2Total) e2Total.setOpacity(precipOpacity());
-    savedPrecipOpacity = null;
-  }}
-  updateLayerStatus();
+
+let activePath = stormPaths.find(p => p.id === pathSel.value) || stormPaths[0];
+let frames = [], suscFrames = [], e2Layers = [], suscLayers = [];
+let activeE2 = null, activeSusc = null, e2Total = null, depthTotal = null, sfincsLayer = null;
+let playing = false, playTimer = null;
+let desk = null, wetLayer = null, selectedLayer = null, selectedId = null;
+let typeFilter = "all";
+
+function depthSetForPath(pathId) {{
+  const inundation = manifest.inundation || null;
+  if (!inundation) return null;
+  const by = inundation.by_path || {{}};
+  if (pathId && by[pathId]) return by[pathId];
+  if (pathId && String(pathId).startsWith("earth2") && by.earth2_control) return by.earth2_control;
+  if (by[inundation.default_depth_path]) return by[inundation.default_depth_path];
+  return inundation;
 }}
 
 function rebuildPathLayers() {{
   e2Layers.forEach(l => mapLeft.removeLayer(l));
   suscLayers.forEach(l => mapLeft.removeLayer(l));
   if (e2Total) mapLeft.removeLayer(e2Total);
-  if (activeInfra) {{ mapLeft.removeLayer(activeInfra); activeInfra = null; }}
   frames = activePath.precip?.frames || [];
   suscFrames = activePath.susceptibility?.frames || [];
-  infraFrames = activePath.infra_highlights?.frames || [];
-  precipBounds = (activePath.precip && activePath.precip.bounds) || currentBounds();
-  suscBounds = (activePath.susceptibility && activePath.susceptibility.bounds) || precipBounds;
-  e2Layers = frames.map(f => L.imageOverlay(assets + f.png, precipBounds, {{ opacity: precipOpacity(), interactive:false, pane:"rasterPane", className:"precip-nearest" }}));
-  suscLayers = suscFrames.map(f => L.imageOverlay(assets + f.png, suscBounds, {{ opacity: suscOpacity(), interactive:false, pane:"rasterPane" }}));
-  e2Total = activePath.precip?.storm_total_png ? L.imageOverlay(assets + activePath.precip.storm_total_png, precipBounds, {{ opacity: precipOpacity(), pane:"rasterPane", interactive:false }}) : null;
-  // Depth set follows selected storm path forcing (Earth2 vs MRMS QPE Ida alt).
-  activeDepthSet = depthSetForPath(activePath.id);
-  const depthFrames = (activeDepthSet && activeDepthSet.cumulative_frames) || [];
-  depthLayers = depthFrames.map(f => L.imageOverlay(assets + f.png, (activeDepthSet.bounds || depthBounds), {{ opacity: depthOpacity(), interactive:false, pane:"depthPane" }}));
-  if (depthTotal && mapLeft.hasLayer(depthTotal)) mapLeft.removeLayer(depthTotal);
-  depthTotal = (activeDepthSet && activeDepthSet.storm_total && activeDepthSet.storm_total.png)
-    ? L.imageOverlay(assets + activeDepthSet.storm_total.png, (activeDepthSet.bounds || depthBounds), {{ opacity: depthOpacity(), interactive:false, pane:"depthPane" }})
+  const precipBounds = (activePath.precip && activePath.precip.bounds) || currentBounds();
+  const suscBounds = (activePath.susceptibility && activePath.susceptibility.bounds) || precipBounds;
+  e2Layers = frames.map(f => L.imageOverlay(assets + f.png, precipBounds, {{
+    opacity: precipOpacity(), interactive:false, pane:"rasterPane", className:"precip-radar"
+  }}));
+  suscLayers = suscFrames.map(f => L.imageOverlay(assets + f.png, suscBounds, {{
+    opacity: suscOpacity(), interactive:false, pane:"rasterPane"
+  }}));
+  e2Total = activePath.precip?.storm_total_png
+    ? L.imageOverlay(assets + activePath.precip.storm_total_png, precipBounds, {{ opacity: precipOpacity(), pane:"rasterPane", interactive:false }})
     : null;
-  document.getElementById("leadSlider").max = Math.max(frames.length - 1, 0);
-  document.getElementById("tickRow").innerHTML = frames.map(f => `<span>+${{Number(f.lead_hours)}}</span>`).join("");
-  document.getElementById("pathPill").textContent = activePath.label;
-  document.getElementById("pathHonesty").textContent = activePath.primary
-    ? "Primary Earth2 control path. Alternate tracks are labeled scenarios (ensemble / higher-res Ida), not a validation split-screen."
-    : (activePath.honesty || "Alternate storm scenario — clearly labeled; not a live competing weather product.");
-  const depthNote = document.getElementById("depthForceNote");
-  if (depthNote) {{
-    const ds = activeDepthSet;
-    depthNote.textContent = ds
-      ? (`Depth forcing: ${{ds.label || ds.id}} · max≈${{ds.storm_total?.max_m != null ? ds.storm_total.max_m.toFixed(2) : "—"}} m · NOT flood warning`)
-      : "Depth set unavailable for this path.";
+  const ds = depthSetForPath(activePath.id);
+  if (depthTotal && mapLeft.hasLayer(depthTotal)) mapLeft.removeLayer(depthTotal);
+  depthTotal = (ds && ds.storm_total && ds.storm_total.png)
+    ? L.imageOverlay(assets + ds.storm_total.png, (ds.bounds || precipBounds), {{ opacity: depthOpacity(), interactive:false, pane:"depthPane" }})
+    : (manifest.inundation_citywide && manifest.inundation_citywide.png)
+      ? L.imageOverlay(assets + manifest.inundation_citywide.png, currentBounds(), {{ opacity: depthOpacity(), interactive:false, pane:"depthPane" }})
+      : null;
+  if (manifest.inundation_sfincs && manifest.inundation_sfincs.png) {{
+    const b = EXTENTS.south_queens?.bounds || EXTENTS.citywide.bounds;
+    sfincsLayer = L.imageOverlay(assets + manifest.inundation_sfincs.png, [[b.ymin,b.xmin],[b.ymax,b.xmax]], {{
+      opacity: Math.min(depthOpacity(), 0.55), interactive:false, pane:"depthPane"
+    }});
   }}
+  document.getElementById("pathHonesty").textContent = activePath.primary || activePath.ida_primary_viz
+    ? "Primary Ida awareness: MRMS QPE (~1 km). Temporal blends densify the loop — not NEXRAD tiles."
+    : (activePath.honesty || "Labeled AI / alternate scenario — coarse cells; not the decision surface.");
+  // Prefer bilinear-ish for MRMS awareness; keep Earth2 pixelated if selected
+  const nearest = !(activePath.ida_primary_viz || activePath.id === "mrms_qpe_ida");
+  document.querySelectorAll(".leaflet-image-layer").forEach(el => {{
+    el.style.imageRendering = nearest ? "pixelated" : "auto";
+  }});
 }}
 
 function setLead(i) {{
   if (!frames.length) return;
   i = Math.max(0, Math.min(frames.length - 1, i));
-  document.getElementById("leadSlider").value = String(i);
   const f = frames[i];
   if (activeE2 && mapLeft.hasLayer(activeE2)) mapLeft.removeLayer(activeE2);
   activeE2 = e2Layers[i];
-  if (document.getElementById("lyE2").checked && activeE2) {{ activeE2.setOpacity(precipOpacity()); activeE2.addTo(mapLeft); }}
+  if (document.getElementById("lyE2").checked && activeE2) {{
+    activeE2.setOpacity(precipOpacity()); activeE2.addTo(mapLeft);
+  }}
   if (activeSusc && mapLeft.hasLayer(activeSusc)) mapLeft.removeLayer(activeSusc);
   if (suscLayers[i]) {{
     activeSusc = suscLayers[i];
-    if (document.getElementById("lySusc").checked) {{ activeSusc.setOpacity(suscOpacity()); activeSusc.addTo(mapLeft); }}
-  }}
-  if (activeInfra) {{ mapLeft.removeLayer(activeInfra); activeInfra = null; }}
-  const infraMeta = infraFrames[i];
-  if (infraMeta && infraMeta.geojson && document.getElementById("lyInfra").checked) {{
-    fetch(assets + infraMeta.geojson).then(r => r.ok ? r.json() : null).then(geo => {{
-      if (!geo || +document.getElementById("leadSlider").value !== i) return;
-      activeInfra = L.geoJSON(geo, {{
-        pane: "vectorPane", renderer: makeVectorRenderer(),
-        style: {{ color:"#ff1744", weight:5, opacity:1 }},
-        onEachFeature: (ft, layer) => layer.bindTooltip("Storm-synced · multi-factor susceptibility (demo)")
-      }}).addTo(mapLeft);
-      raiseVectors();
-    }}).catch(()=>{{}});
-  }}
-  if (activeDepth && mapLeft.hasLayer(activeDepth)) mapLeft.removeLayer(activeDepth);
-  activeDepth = null;
-  if (depthLayers.length) {{
-    const lead = Number(f.lead_hours);
-    const depthFrames = (activeDepthSet && activeDepthSet.cumulative_frames) || [];
-    let best = 0, bestAbs = Infinity;
-    depthFrames.forEach((df, di) => {{
-      const d = Math.abs(Number(df.lead_hours) - lead);
-      if (d < bestAbs) {{ bestAbs = d; best = di; }}
-    }});
-    activeDepth = depthLayers[best] || depthLayers[depthLayers.length - 1];
-    if (document.getElementById("lyDepth").checked && activeDepth) {{
-      activeDepth.setOpacity(depthOpacity()); activeDepth.addTo(mapLeft);
+    if (document.getElementById("lySusc").checked) {{
+      activeSusc.setOpacity(suscOpacity()); activeSusc.addTo(mapLeft);
     }}
   }}
   if (document.getElementById("lyDepthTot").checked && depthTotal) {{
     depthTotal.setOpacity(depthOpacity());
     if (!mapLeft.hasLayer(depthTotal)) depthTotal.addTo(mapLeft);
   }}
+  if (document.getElementById("lySfincs").checked && sfincsLayer) {{
+    if (!mapLeft.hasLayer(sfincsLayer)) sfincsLayer.addTo(mapLeft);
+  }}
+  if (document.getElementById("lyE2Tot").checked && e2Total) {{
+    e2Total.setOpacity(precipOpacity());
+    if (!mapLeft.hasLayer(e2Total)) e2Total.addTo(mapLeft);
+  }}
   const clock = (f.valid_time || "").replace("T", " ");
-  document.getElementById("clockReadout").textContent = clock;
-  document.getElementById("leadReadout").textContent = "+" + f.lead_hours + " h";
-  document.getElementById("e2Readout").textContent = (f.max_mm != null ? f.max_mm.toFixed(1) : "—") + " mm";
-  document.getElementById("frameTypeReadout").textContent = f.temporal_blend ? "temporal blend" : (f.resolution_note ? "hi-res alt" : "native");
   document.getElementById("hudClock").textContent = clock + " UTC";
-  const depthForce = activeDepthSet ? (activeDepthSet.id === "mrms_qpe_ida" ? "MRMS-forced" : "Earth2-forced") : "";
-  document.getElementById("hudSub").textContent = productMode === "susceptibility"
-    ? ("Multi-factor susceptibility · +" + f.lead_hours + "h · screening only")
-    : productMode === "depth"
-      ? ("Est. research inundation · " + depthForce + " · NOT flood warning · +" + f.lead_hours + "h")
-      : (activePath.label + " · +" + f.lead_hours + "h · " + (f.temporal_blend ? "blend" : "native") + " · not NEXRAD");
-  document.getElementById("leftLabel").textContent =
-    (productMode === "susceptibility" ? "Susceptibility" : productMode === "coupled" ? "Coupled" : productMode === "depth" ? ("Depth · " + depthForce) : "Flood risk")
-    + " · " + ((activePath && activePath.label) ? activePath.label : "case study");
-  raiseVectors();
-  writeUrl();
+  document.getElementById("hudSub").textContent =
+    activePath.label + " · +" + f.lead_hours + "h · " + (f.temporal_blend ? "blend" : "native") + " · awareness only";
+  document.getElementById("leftLabel").textContent = "Asset Decision Desk · " + (activePath.label || "Ida");
 }}
 
 function setPlaying(on) {{
   playing = on;
-  document.getElementById("playBtn").textContent = on ? "❚❚" : "▶";
   document.getElementById("hudPlay").textContent = on ? "❚❚" : "▶";
-  document.getElementById("playBtn").classList.toggle("playing", on);
   if (playTimer) {{ clearInterval(playTimer); playTimer = null; }}
-  if (!on) return;
-  const ms = +document.getElementById("playSpeed").value || 750;
-  playTimer = setInterval(() => setLead((+document.getElementById("leadSlider").value + 1) % frames.length), ms);
+  if (!on || !frames.length) return;
+  let i = 0;
+  playTimer = setInterval(() => {{
+    i = (i + 1) % frames.length;
+    setLead(i);
+  }}, 450);
 }}
 
-const PRODUCT_LAYER_IDS = ["lyE2","lyE2Tot","lyDepth","lyDepthTot","lySusc","lyBuilt","lyInfra"];
-const CONTEXT_LAYER_IDS = ["lyHot","ly311","lySta","lyRoads","lyFac","lyFema","lyNwm","lyGauges","lyDrainE","lyDrainN"];
-const LAYER_IDS = PRODUCT_LAYER_IDS.concat(CONTEXT_LAYER_IDS);
-function setLayerChecks(onIds, {{ onlyProduct=true }} = {{}}) {{
-  const ids = onlyProduct ? PRODUCT_LAYER_IDS : LAYER_IDS;
-  ids.forEach(id => {{
-    const el = document.getElementById(id);
-    if (!el || el.disabled) return;
-    const want = onIds.includes(id);
-    if (el.checked !== want) {{ el.checked = want; el.dispatchEvent(new Event("change")); }}
+function bandClass(band) {{ return band || "ponding"; }}
+function leadLabel(a) {{
+  if (a.first_exceedance_lead_h != null) return "band @ +" + a.first_exceedance_lead_h + "h";
+  if (a.first_exceedance_note) return "storm-total / late";
+  return "lead n/a";
+}}
+function typeLabel(t) {{
+  if (t === "road") return "Road";
+  if (t === "station") return "Station";
+  if (t === "facility") return "Facility";
+  return t;
+}}
+function filteredAssets() {{
+  if (!desk || !desk.assets) return [];
+  const q = (document.getElementById("assetSearch").value || "").trim().toLowerCase();
+  const band = document.getElementById("bandFilter").value;
+  return desk.assets.filter(a => {{
+    if (typeFilter !== "all" && a.asset_type !== typeFilter) return false;
+    if (band !== "all" && a.band !== band) return false;
+    if (q && !(String(a.name).toLowerCase().includes(q) || String(a.id).toLowerCase().includes(q))) return false;
+    return true;
   }});
 }}
-
-function applyProductMode(mode) {{
-  productMode = mode;
-  ["productStorm","productSusc","productCoupled","productDepth"].forEach(id => {{
-    const el = document.getElementById(id);
-    if (el) el.classList.toggle("active", el.dataset.mode === mode);
+function renderAssetList() {{
+  const list = document.getElementById("assetList");
+  const rows = filteredAssets().slice(0, 120);
+  if (!rows.length) {{
+    list.innerHTML = '<div class="empty">No wet assets match these filters.</div>';
+    return;
+  }}
+  list.innerHTML = rows.map(a => `
+    <button type="button" class="asset-row${{selectedId === a.id ? " selected" : ""}}" data-id="${{a.id}}">
+      <div class="top">
+        <span class="name">#${{a.rank}} · ${{a.name}}</span>
+        <span class="depth">${{a.max_depth_cm.toFixed(1)}} cm</span>
+      </div>
+      <div class="meta">
+        <span class="type-pill">${{typeLabel(a.asset_type)}}</span>
+        <span class="band ${{bandClass(a.band)}}">${{a.band_label}}</span>
+        <span>${{leadLabel(a)}}</span>
+      </div>
+    </button>`).join("");
+  list.querySelectorAll(".asset-row").forEach(btn => {{
+    btn.addEventListener("click", () => selectAsset(btn.dataset.id));
   }});
-  // Never dim Weather / Landscape×Infra / Exposure — those chips are not locks on the layer checklist.
-  ["chainPrecip","chainSusc","chainInfra"].forEach(id => {{
-    const el = document.getElementById(id);
-    if (el) el.classList.remove("dim");
-  }});
-  const bar = document.getElementById("hudLegendBar");
-  const legend = document.getElementById("hudLegendLabel");
-  bar.classList.remove("susc", "depth");
-  // Only toggle product rasters/infra-sync — never wipe Roads/311/FEMA/context checkboxes.
-  if (mode === "susceptibility") {{
-    bar.classList.add("susc"); legend.textContent = "Susceptibility (screening)";
-    document.getElementById("modeHint").textContent = "Susceptibility defaults on. Full layer checklist (roads/311/FEMA…) stays usable.";
-    setLayerChecks(["lySusc"]); setPlaying(false);
-  }} else if (mode === "coupled") {{
-    legend.textContent = "Precip (mm)";
-    document.getElementById("modeHint").textContent = "Coupled defaults: precip + susceptibility + storm-synced roads. All other layers stay independently toggleable.";
-    setLayerChecks(["lyE2","lySusc","lyInfra","lySta"]);
-  }} else if (mode === "depth") {{
-    bar.classList.add("depth"); legend.textContent = "Est. depth (m) — research prototype";
-    document.getElementById("modeHint").textContent = "Depth defaults on (research prototype, NOT NWS). Roads/311/FEMA and all layers stay usable.";
-    setLayerChecks(["lyDepth","lyDepthTot"]); setPlaying(false);
+}}
+function selectAsset(id) {{
+  selectedId = id;
+  const a = (desk.assets || []).find(x => x.id === id);
+  if (!a) return;
+  renderAssetList();
+  if (selectedLayer) {{ mapLeft.removeLayer(selectedLayer); selectedLayer = null; }}
+  const ll = [a.lat, a.lon];
+  mapLeft.flyTo(ll, Math.max(mapLeft.getZoom(), 14), {{ duration: 0.7 }});
+  // Prefer geometry from wet layer if present
+  let geomLayer = null;
+  if (wetLayer) {{
+    wetLayer.eachLayer(l => {{
+      if (l.feature && l.feature.properties && l.feature.properties.id === id) geomLayer = l;
+    }});
+  }}
+  if (geomLayer && geomLayer.feature && geomLayer.feature.geometry && geomLayer.feature.geometry.type !== "Point") {{
+    selectedLayer = L.geoJSON(geomLayer.feature, {{
+      pane: "selectPane",
+      style: {{ color:"#045963", weight:7, opacity:1 }}
+    }}).addTo(mapLeft);
   }} else {{
-    legend.textContent = (activePath && activePath.precip && activePath.precip.colorbar && activePath.precip.colorbar.label) || "Precip (mm)";
-    document.getElementById("modeHint").textContent = "Storm defaults to precip only. Landscape×Infra/Exposure chips stay lit — use the Layers checklist any time.";
-    setLayerChecks(["lyE2"]);
+    selectedLayer = L.circleMarker(ll, {{
+      pane: "selectPane", radius: 11, color:"#042227", weight:3,
+      fillColor:"#1bc0cd", fillOpacity:0.95
+    }}).addTo(mapLeft);
   }}
-  updateAlerts();
-  setLead(+document.getElementById("leadSlider").value);
+  const card = document.getElementById("selectedCard");
+  document.getElementById("selName").textContent = a.name;
+  document.getElementById("selBody").innerHTML =
+    typeLabel(a.asset_type) + " · max <b>" + a.max_depth_cm.toFixed(1) + " cm</b> · research band <b>" + a.band_label + "</b><br>" +
+    leadLabel(a) + (a.first_exceedance_note ? " — " + a.first_exceedance_note : "") + "<br>" +
+    "<span style='color:#8d3d14'>" + (a.action_hint || "Research only — not an SOP trigger.") + "</span>";
+  card.classList.add("on");
 }}
 
-function fitExtent() {{ mapLeft.fitBounds(currentBounds()); writeUrl(); }}
-function writeUrl() {{
-  const params = new URLSearchParams({{
-    event: eventSel.value, extent: extentSel.value, lead: document.getElementById("leadSlider").value,
-    path: activePath.id, product: productMode, playing: playing ? "1" : "0",
-    opP: document.getElementById("opPrecip").value, opS: document.getElementById("opSusc").value,
-    resample: document.getElementById("resampleSelect").value,
-    layers: LAYER_IDS.filter(id => document.getElementById(id).checked).join(",")
+function loadDecisionDesk() {{
+  const name = (manifest.asset_decision_desk && manifest.asset_decision_desk.assets_json) || "decision_desk_assets.json";
+  const geoName = (manifest.asset_decision_desk && manifest.asset_decision_desk.assets_geojson) || "decision_desk_assets.geojson";
+  Promise.all([
+    fetch(assets + name, {{ cache:"no-cache" }}).then(r => r.ok ? r.json() : null),
+    fetch(assets + geoName, {{ cache:"no-cache" }}).then(r => r.ok ? r.json() : null),
+  ]).then(([json, geo]) => {{
+    if (!json) {{
+      document.getElementById("assetList").innerHTML = '<div class="empty">decision_desk_assets.json missing — run scripts/build_decision_desk_assets.py</div>';
+      return;
+    }}
+    desk = json;
+    const c = json.counts || {{}};
+    document.getElementById("deskSummary").innerHTML =
+      `<span>Wet assets</span><b>${{c.wet_total||0}} · R ${{c.roads||0}} / S ${{c.stations||0}} / F ${{c.facilities||0}}</b>`;
+    renderAssetList();
+    if (geo && geo.features) {{
+      wetLayer = L.geoJSON(geo, {{
+        pane: "vectorPane",
+        style: f => {{
+          const band = f.properties && f.properties.band;
+          const color = band === "hazard" ? "#b91c1c" : band === "deep_ponding" ? "#c2410c" : "#a16207";
+          return {{ color, weight: 3.5, opacity: 0.85 }};
+        }},
+        pointToLayer: (f, ll) => {{
+          const band = f.properties && f.properties.band;
+          const color = band === "hazard" ? "#b91c1c" : band === "deep_ponding" ? "#c2410c" : "#a16207";
+          return L.circleMarker(ll, {{ radius:5, color:"#fff", weight:1, fillColor:color, fillOpacity:0.9, pane:"pointPane" }});
+        }},
+        onEachFeature: (f, layer) => {{
+          layer.on("click", () => selectAsset(f.properties.id));
+          layer.bindTooltip((f.properties.name || "") + " · " + (f.properties.band_label || ""));
+        }}
+      }}).addTo(mapLeft);
+    }}
+  }}).catch(err => {{
+    document.getElementById("assetList").innerHTML = '<div class="empty">Failed to load desk assets.</div>';
+    const b = document.getElementById("assetBanner");
+    if (b) {{ b.style.display="block"; b.textContent = String(err); }}
   }});
-  history.replaceState(null, "", "#" + params.toString());
-}}
-function readUrl() {{
-  const raw = location.hash.replace(/^#/, "");
-  if (!raw) return {{}};
-  const p = new URLSearchParams(raw);
-  if (p.get("event")) eventSel.value = p.get("event");
-  if (p.get("extent")) extentSel.value = p.get("extent");
-  if (p.get("path") && stormPaths.some(sp => sp.id === p.get("path"))) pathSel.value = p.get("path");
-  if (p.get("lead") != null) document.getElementById("leadSlider").value = p.get("lead");
-  if (p.get("opP")) document.getElementById("opPrecip").value = p.get("opP");
-  if (p.get("opS")) document.getElementById("opSusc").value = p.get("opS");
-  if (p.get("resample")) document.getElementById("resampleSelect").value = p.get("resample");
-  const layers = (p.get("layers") || "").split(",");
-  if (layers[0]) LAYER_IDS.forEach(id => {{ const el = document.getElementById(id); if (el) el.checked = layers.includes(id); }});
-  return {{ product: p.get("product"), playing: p.get("playing") === "1", hasLayers: Boolean(layers[0]) }};
 }}
 
-function renderValidationDashboard(scores, legacy) {{
-  const panel = document.getElementById("validationPanel");
-  const confEl = document.getElementById("validationConfidence");
-  if (!panel) return;
-  const s = scores && scores.summary ? scores.summary : null;
-  const conf = scores && scores.confidence ? scores.confidence : null;
-  const e2 = (legacy && legacy.earth2_storm_total) || {{}};
-  const pct = (x) => x == null ? "n/a" : (100 * x).toFixed(1) + "%";
-  panel.innerHTML = `
-    <div class="metric"><span>311 hit rate @ ≥3 cm</span><b>${{s ? pct(s.hit_rate_311) : "n/a"}}</b></div>
-    <div class="metric"><span>311 samples</span><b>${{s && s.n_311 != null ? s.n_311 : "n/a"}}</b></div>
-    <div class="metric"><span>Gauge hit rate @ ≥3 cm</span><b>${{s ? pct(s.hit_rate_gauges) : "n/a"}}</b></div>
-    <div class="metric"><span>Gauge samples</span><b>${{s && s.n_gauges != null ? s.n_gauges : "n/a"}}</b></div>
-    <div class="metric"><span>Legacy E2 storm max</span><b>${{e2.max_mm != null ? e2.max_mm.toFixed(1)+" mm" : "n/a"}}</b></div>
-    <div style="margin-top:6px;color:var(--muted);font-size:.72rem;line-height:1.35">${{(scores && scores.honesty) || "Exploratory validation — not certified skill."}}</div>`;
-  if (confEl) {{
-    const level = conf ? conf.level : "unknown";
-    const note = conf ? conf.note : "";
-    confEl.innerHTML = `<b>Confidence: ${{level}}</b> — ${{note}}`;
-  }}
+async function fetchGeoJSON(path) {{
+  const r = await fetch(assets + path, {{ cache:"no-cache" }});
+  if (!r.ok) throw new Error(path + " HTTP " + r.status);
+  return r.json();
 }}
-(function() {{
-  const legacy = validation || {{}};
-  const name = (manifest.validation_dashboard && manifest.validation_dashboard.scores) || "validation_scores.json";
-  fetch(assets + name, {{ cache: "no-cache" }})
-    .then(r => r.ok ? r.json() : null)
-    .then(scores => renderValidationDashboard(scores, legacy))
-    .catch(() => renderValidationDashboard(null, legacy));
-}})();
+function bindToggle(id, layer) {{
+  const el = document.getElementById(id);
+  if (!el || !layer) return;
+  const sync = () => {{
+    if (el.checked) layer.addTo(mapLeft); else if (mapLeft.hasLayer(layer)) mapLeft.removeLayer(layer);
+  }};
+  el.addEventListener("change", sync);
+  if (el.checked) sync();
+}}
+function loadOptionalLayers() {{
+  const built = pluvial?.built_surface_png
+    ? L.imageOverlay(assets + pluvial.built_surface_png, currentBounds(), {{ opacity:0.45, pane:"rasterPane", interactive:false }})
+    : null;
+  bindToggle("lyBuilt", built);
 
-document.getElementById("leadSlider").addEventListener("input", e => {{ setPlaying(false); setLead(+e.target.value); }});
-document.getElementById("playBtn").onclick = () => setPlaying(!playing);
+  fetchGeoJSON(manifest.infra?.roads_geojson || "roads.geojson").then(geo => {{
+    bindToggle("lyRoads", L.geoJSON(geo, {{ pane:"vectorPane", style: {{ color:"#ff6b00", weight:2.5, opacity:0.7 }} }}));
+  }}).catch(()=>{{}});
+  fetchGeoJSON(manifest.infra?.stations_geojson || "subway_stations.geojson").then(geo => {{
+    bindToggle("lySta", L.geoJSON(geo, {{
+      pointToLayer: (f,ll) => L.circleMarker(ll, {{ radius:5, fillColor:"#00e5a8", color:"#004d40", weight:1, fillOpacity:0.9, pane:"pointPane" }})
+    }}));
+  }}).catch(()=>{{}});
+  fetchGeoJSON("critical_facilities.geojson").then(geo => {{
+    bindToggle("lyFac", L.geoJSON(geo, {{
+      pointToLayer: (f,ll) => L.circleMarker(ll, {{ radius:6, fillColor:"#a855f7", color:"#5b21b6", weight:1, fillOpacity:0.95, pane:"pointPane" }})
+    }}));
+  }}).catch(()=>{{}});
+  fetchGeoJSON(manifest.reports?.geojson || "observed_311.geojson").then(geo => {{
+    bindToggle("ly311", L.geoJSON(geo, {{
+      pointToLayer: (f,ll) => L.circleMarker(ll, {{ radius:4, fillColor:"#ff3b5c", color:"#7f0020", weight:1, fillOpacity:0.85, pane:"pointPane" }})
+    }}));
+  }}).catch(()=>{{}});
+  fetchGeoJSON("fema_nfhl.geojson").then(geo => {{
+    bindToggle("lyFema", L.geoJSON(geo, {{ style: {{ color:"#1d4ed8", weight:1, fillOpacity:0.15 }} }}));
+  }}).catch(()=>{{}});
+  fetchGeoJSON("nwm_high_flow.geojson").then(geo => {{
+    bindToggle("lyNwm", L.geoJSON(geo, {{ style: {{ color:"#00c2ff", weight:3, opacity:0.8 }} }}));
+  }}).catch(()=>{{}});
+  fetchGeoJSON("nwm_ahps_gauges.geojson").then(geo => {{
+    bindToggle("lyGauges", L.geoJSON(geo, {{
+      pointToLayer: (f,ll) => L.circleMarker(ll, {{ radius:6, fillColor:"#37d6ff", color:"#003d5c", weight:2, fillOpacity:1, pane:"pointPane" }})
+    }}));
+  }}).catch(()=>{{}});
+
+  const scoresName = (manifest.validation_dashboard && manifest.validation_dashboard.scores) || "validation_scores.json";
+  fetch(assets + scoresName, {{ cache:"no-cache" }}).then(r => r.ok ? r.json() : null).then(scores => {{
+    const el = document.getElementById("validationPanel");
+    if (!el) return;
+    const conf = scores && scores.confidence ? scores.confidence.level : "low";
+    const note = (scores && scores.confidence && scores.confidence.note) || "Exploratory collocation only.";
+    el.innerHTML = `<b>Validation confidence: ${{conf}}</b> — ${{note}} Do not lead with 311 hit≈1.`;
+  }}).catch(()=>{{}});
+}}
+
+document.getElementById("typeChips").addEventListener("click", e => {{
+  const btn = e.target.closest(".chip");
+  if (!btn) return;
+  typeFilter = btn.dataset.type;
+  document.querySelectorAll("#typeChips .chip").forEach(c => c.classList.toggle("active", c === btn));
+  renderAssetList();
+}});
+document.getElementById("bandFilter").onchange = renderAssetList;
+document.getElementById("assetSearch").oninput = renderAssetList;
 document.getElementById("hudPlay").onclick = () => setPlaying(!playing);
-document.getElementById("playSpeed").onchange = () => {{ if (playing) setPlaying(true); }};
-document.getElementById("productStorm").onclick = () => applyProductMode("storm");
-document.getElementById("productSusc").onclick = () => applyProductMode("susceptibility");
-document.getElementById("productCoupled").onclick = () => applyProductMode("coupled");
-document.getElementById("productDepth").onclick = () => applyProductMode("depth");
-document.getElementById("extentSelect").onchange = fitExtent;
-document.getElementById("eventSelect").onchange = () => {{ if (!EVENTS[eventSel.value].available) alert("Only Ida is loaded."); writeUrl(); }};
+document.getElementById("extentSelect").onchange = () => mapLeft.fitBounds(currentBounds());
+document.getElementById("eventSelect").onchange = () => {{ if (!EVENTS[eventSel.value].available) alert("Only Ida is loaded."); }};
 document.getElementById("stormPathSelect").onchange = () => {{
   activePath = stormPaths.find(p => p.id === pathSel.value) || stormPaths[0];
   rebuildPathLayers();
-  // Keep current product mode + context toggles; only refresh frames/depth set.
-  setLead(+document.getElementById("leadSlider").value);
-  updateAlerts();
-  writeUrl();
+  setLead(0);
 }};
 document.getElementById("opPrecip").oninput = () => {{
   document.getElementById("opPrecipVal").textContent = document.getElementById("opPrecip").value + "%";
   if (activeE2) activeE2.setOpacity(precipOpacity());
   if (e2Total) e2Total.setOpacity(precipOpacity());
-  writeUrl();
 }};
 document.getElementById("opSusc").oninput = () => {{
   document.getElementById("opSuscVal").textContent = document.getElementById("opSusc").value + "%";
   if (activeSusc) activeSusc.setOpacity(suscOpacity());
-  writeUrl();
 }};
-document.getElementById("resampleSelect").onchange = () => {{
-  const nearest = document.getElementById("resampleSelect").value === "nearest";
-  document.querySelectorAll(".leaflet-image-layer").forEach(el => {{ el.style.imageRendering = nearest ? "pixelated" : "auto"; }});
-  writeUrl();
+document.getElementById("opDepth").oninput = () => {{
+  document.getElementById("opDepthVal").textContent = document.getElementById("opDepth").value + "%";
+  if (depthTotal) depthTotal.setOpacity(depthOpacity());
 }};
-
-function registerVector(layer) {{
-  if (layer && !vectorLayers.includes(layer)) vectorLayers.push(layer);
-  return layer;
-}}
-function setCount(id, n, title) {{
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.textContent = n != null ? String(n) : "!";
-  if (title) el.title = title;
-}}
-function bindLayer(id, layer, {{ label, n, countId }} = {{}}) {{
-  const el = document.getElementById(id);
-  if (!el || !layer) return;
-  layerRegistry[id] = {{ layer, n: n ?? 0, label: label || id }};
-  if (countId) setCount(countId, n, label + " loaded");
-  const sync = () => {{
-    if (el.checked) {{
-      pendingChecked.delete(id);
-      layer.addTo(mapLeft);
-      if (layer.bringToFront) layer.bringToFront();
-    }} else if (mapLeft.hasLayer(layer)) {{
-      mapLeft.removeLayer(layer);
-    }}
-    raiseVectors();
-    ensureVectorsVisible();
-    writeUrl();
-  }};
-  if (!el.dataset.bound) {{
-    el.dataset.bound = "1";
-    el.addEventListener("change", () => {{
-      if (el.checked && !layerRegistry[id]) pendingChecked.add(id);
-      const meta = layerRegistry[id];
-      if (!meta) {{ ensureVectorsVisible(); writeUrl(); return; }}
-      sync();
-    }});
-  }}
-  if (el.checked || pendingChecked.has(id)) {{
-    el.checked = true;
-    sync();
-  }}
-}}
-async function fetchGeoJSON(path) {{
-  const bases = [
-    assets,
-    (() => {{ try {{ return new URL("product_assets/", window.location.href).href; }} catch(e) {{ return null; }} }})(),
-    "product_assets/",
-    "./product_assets/",
-    "../product_assets/",
-    "/product_assets/",
-  ].filter(Boolean);
-  const tried = [];
-  let lastErr = null;
-  for (const base of bases) {{
-    const url = base.endsWith("/") ? base + path : base + "/" + path;
-    if (tried.includes(url)) continue;
-    tried.push(url);
-    try {{
-      const r = await fetch(url, {{ cache: "no-cache" }});
-      if (!r.ok) {{ lastErr = new Error(url + " → HTTP " + r.status); continue; }}
-      const geo = await r.json();
-      if (!geo || !Array.isArray(geo.features)) {{ lastErr = new Error(url + " → not a FeatureCollection"); continue; }}
-      return {{ geo, url }};
-    }} catch (e) {{
-      lastErr = e;
-    }}
-  }}
-  throw lastErr || new Error("failed to load " + path + " from " + tried.join(", "));
-}}
-function loadGeo(path, onOk, countId) {{
-  fetchGeoJSON(path).then(({{ geo, url }}) => {{
-    try {{
-      onOk(geo, url);
-    }} catch (e) {{
-      console.error("layer build failed", path, e);
-      if (countId) setCount(countId, "!", String(e));
-      const b = document.getElementById("assetBanner");
-      if (b) {{ b.style.display = "block"; b.textContent = "Layer build failed for " + path + ": " + e; }}
-    }}
-  }}).catch(err => {{
-    console.error("layer load failed", path, err);
-    if (countId) setCount(countId, "!", String(err));
-    const b = document.getElementById("assetBanner");
-    if (b) {{
-      b.style.display = "block";
-      b.innerHTML = "<b>GeoJSON load failed:</b> " + path + " — " + String(err) +
-        "<br>Serve <code>figures/</code> over HTTP (repo: <code>python scripts/serve_product.py</code>). Asset base: " + assets;
-    }}
-  }});
-}}
-
-document.getElementById("lyE2").onchange = () => {{
-  if (!activeE2) return;
-  if (document.getElementById("lyE2").checked) {{ activeE2.setOpacity(precipOpacity()); activeE2.addTo(mapLeft); }}
-  else mapLeft.removeLayer(activeE2);
-  writeUrl();
-}};
-document.getElementById("lySusc").onchange = () => {{
-  if (!activeSusc) return;
-  if (document.getElementById("lySusc").checked) {{ activeSusc.setOpacity(suscOpacity()); activeSusc.addTo(mapLeft); }}
-  else mapLeft.removeLayer(activeSusc);
-  writeUrl();
-}};
-document.getElementById("lyInfra").onchange = () => {{ setLead(+document.getElementById("leadSlider").value); ensureVectorsVisible(); }};
-document.getElementById("lyE2Tot").onchange = () => {{
-  if (!e2Total) return;
-  if (document.getElementById("lyE2Tot").checked) {{ e2Total.setOpacity(precipOpacity()); e2Total.addTo(mapLeft); }}
-  else mapLeft.removeLayer(e2Total);
-  writeUrl();
-}};
-document.getElementById("lyDepth").onchange = () => {{
-  if (!activeDepth) {{ setLead(+document.getElementById("leadSlider").value); return; }}
-  if (document.getElementById("lyDepth").checked) {{ activeDepth.setOpacity(depthOpacity()); activeDepth.addTo(mapLeft); }}
-  else mapLeft.removeLayer(activeDepth);
-  writeUrl();
-}};
+document.getElementById("lyE2").onchange = () => setLead(0);
+document.getElementById("lySusc").onchange = () => setLead(0);
 document.getElementById("lyDepthTot").onchange = () => {{
   if (!depthTotal) return;
   if (document.getElementById("lyDepthTot").checked) {{ depthTotal.setOpacity(depthOpacity()); depthTotal.addTo(mapLeft); }}
   else mapLeft.removeLayer(depthTotal);
-  writeUrl();
 }};
-document.getElementById("opDepth").oninput = () => {{
-  document.getElementById("opDepthVal").textContent = document.getElementById("opDepth").value + "%";
-  if (activeDepth) activeDepth.setOpacity(depthOpacity());
-  if (depthTotal) depthTotal.setOpacity(depthOpacity());
-  writeUrl();
-}};
-bindLayer("lyBuilt", builtLayer, {{ label: "Built", n: builtLayer ? 1 : 0 }});
-
-// High-contrast citywide-visible styles. Canvas for dense roads (SVG can fail/OOM → "err").
-loadGeo("fema_nfhl.geojson", geo => {{
-  femaLayer = registerVector(L.geoJSON(geo, {{
-    pane:"vectorPane", renderer: makeVectorRenderer(),
-    style: f => {{
-      const sfha=(f.properties&&f.properties.SFHA_TF)==="T";
-      return {{ color: sfha?"#1d4ed8":"#93c5fd", weight: sfha?3:2, fillColor: sfha?"#3b82f6":"#bfdbfe", fillOpacity: sfha?0.45:0.2, opacity:1 }};
+document.getElementById("lySfincs").onchange = () => {{
+  if (!sfincsLayer) return;
+  if (document.getElementById("lySfincs").checked) {{
+    sfincsLayer.addTo(mapLeft);
+    const b = document.getElementById("assetBanner");
+    if (b) {{
+      b.style.display = "block";
+      b.innerHTML = "<b>SFINCS Queens is an alternate hydro track</b> — not peer-authoritative with pysheds citywide ranking. Magnitudes are not comparable.";
     }}
-  }}));
-  bindLayer("lyFema", femaLayer, {{ label:"FEMA", n: geo.features.length, countId:"cntFema" }});
-}}, "cntFema");
-
-loadGeo("nwm_high_flow.geojson", geo => {{
-  nwmLayer = registerVector(L.geoJSON(geo, {{
-    pane:"vectorPane", renderer: makeVectorRenderer(),
-    style: {{ color:"#00c2ff", weight:7, opacity:1 }}
-  }}));
-  bindLayer("lyNwm", nwmLayer, {{ label:"NWM", n: geo.features.length, countId:"cntNwm" }});
-}}, "cntNwm");
-
-loadGeo("nwm_ahps_gauges.geojson", geo => {{
-  const pr = makePointRenderer();
-  gaugesLayer = registerVector(L.geoJSON(geo, {{
-    pane:"pointPane", renderer: pr,
-    pointToLayer: (f,ll) => L.circleMarker(ll, {{ radius:9, color:"#003d5c", fillColor:"#37d6ff", fillOpacity:1, weight:3, pane:"pointPane", renderer: pr }})
-  }}));
-  bindLayer("lyGauges", gaugesLayer, {{ label:"Gauges", n: geo.features.length, countId:"cntGauges" }});
-}}, "cntGauges");
-
-loadGeo("drainage_conduits.geojson", geo => {{
-  drainEdges = registerVector(L.geoJSON(geo, {{
-    pane:"vectorPane", renderer: L.canvas({{ pane: "vectorPane", padding: 0.5 }}),
-    style: {{ color:"#ffb020", weight:3.5, opacity:1 }}
-  }}));
-  bindLayer("lyDrainE", drainEdges, {{ label:"Conduits", n: geo.features.length, countId:"cntDrainE" }});
-}}, "cntDrainE");
-
-loadGeo("drainage_nodes.geojson", geo => {{
-  const pr = makePointRenderer();
-  drainNodes = registerVector(L.geoJSON(geo, {{
-    pane:"pointPane", renderer: pr,
-    pointToLayer: (f,ll) => L.circleMarker(ll, {{ radius:5, color:"#7a4e00", fillColor:"#ffd60a", fillOpacity:1, weight:2, pane:"pointPane", renderer: pr }})
-  }}));
-  bindLayer("lyDrainN", drainNodes, {{ label:"Nodes", n: geo.features.length, countId:"cntDrainN" }});
-}}, "cntDrainN");
-
-loadGeo((manifest.infra?.roads_geojson || "roads.geojson"), geo => {{
-  const roadCanvas = L.canvas({{ pane: "vectorPane", padding: 0.5 }});
-  roadsLayer = registerVector(L.geoJSON(geo, {{
-    pane:"vectorPane", renderer: roadCanvas,
-    style: {{ color:"#ff6b00", weight:4, opacity:1, lineCap:"round", lineJoin:"round" }}
-  }}));
-  bindLayer("lyRoads", roadsLayer, {{ label:"Roads", n: geo.features.length, countId:"cntRoads" }});
-}}, "cntRoads");
-
-loadGeo((manifest.disruption?.disrupted_geojson || "roads_potential_disruption.geojson"), geo => {{
-  disruptLayer = registerVector(L.geoJSON(geo, {{
-    pane:"vectorPane", renderer: makeVectorRenderer(),
-    style: {{ color:"#ff2d55", weight:6, opacity:1 }}
-  }}));
-  bindLayer("lyHot", disruptLayer, {{ label:"Hotspot", n: geo.features.length, countId:"cntHot" }});
-}}, "cntHot");
-
-loadGeo((manifest.infra?.stations_geojson || "subway_stations.geojson"), geo => {{
-  const pr = makePointRenderer();
-  stationsLayer = registerVector(L.geoJSON(geo, {{
-    pane:"pointPane", renderer: pr,
-    pointToLayer: (f,ll) => L.circleMarker(ll, {{ radius:7, color:"#004d40", fillColor:"#00e5a8", fillOpacity:1, weight:2, pane:"pointPane", renderer: pr }})
-  }}));
-  bindLayer("lySta", stationsLayer, {{ label:"Stations", n: geo.features.length, countId:"cntSta" }});
-}}, "cntSta");
-
-loadGeo((manifest.reports?.geojson || "observed_311.geojson"), geo => {{
-  L.geoJSON(geo, {{
-    pointToLayer: (f,ll) => L.circleMarker(ll, {{ radius:7, color:"#7f0020", fillColor:"#ff3b5c", fillOpacity:1, weight:2 }}),
-    onEachFeature: (f,l) => l.bindTooltip((f.properties.descriptor||"311") + " · " + (f.properties.created_date||""))
-  }}).eachLayer(l => reports.addLayer(l));
-  registerVector(reports);
-  bindLayer("ly311", reports, {{ label:"311", n: geo.features.length, countId:"cnt311" }});
-}}, "cnt311");
-
-loadGeo("critical_facilities.geojson", geo => {{
-  const pr = makePointRenderer();
-  const facLayer = registerVector(L.geoJSON(geo, {{
-    pane:"pointPane", renderer: pr,
-    pointToLayer: (f,ll) => L.circleMarker(ll, {{ radius:8, color:"#5b21b6", fillColor:"#a855f7", fillOpacity:1, weight:2, pane:"pointPane", renderer: pr }}),
-    onEachFeature: (f,l) => l.bindTooltip((f.properties.name||"facility") + " · " + (f.properties.facility_type||""))
-  }}));
-  bindLayer("lyFac", facLayer, {{ label:"Facilities", n: geo.features.length, countId:"cntFac" }});
-}}, "cntFac");
-
-function renderRiskCard(risk) {{
-  const card = document.getElementById("riskCard");
-  const wrap = document.getElementById("riskTableWrap");
-  if (!card || !wrap) return;
-  if (!risk) {{
-    card.textContent = "Risk table unavailable.";
-    return;
+  }} else {{
+    mapLeft.removeLayer(sfincsLayer);
   }}
-  const sc = risk.scenario || {{}};
-  const wet = risk.wet_assets || {{}};
-  const tot = risk.totals || {{}};
-  const dscore = risk.disruption_score || {{}};
-  const rp = (risk.return_period && risk.return_period.event_placeholder) || null;
-  const conf = (risk.scenario_card && risk.scenario_card.confidence) || "low — research prototype";
-  const pct = (num, den) => (den ? ((100 * num) / den).toFixed(1) + "%" : "n/a");
-  card.innerHTML = `
-    <div class="metric"><span>Scenario</span><b style="font-size:.72rem">${{sc.label || sc.id || "n/a"}}</b></div>
-    <div class="metric"><span>Extent</span><b style="font-size:.72rem">${{sc.extent_id || risk.extent_id || "citywide"}}</b></div>
-    <div class="metric"><span>Engine</span><b style="font-size:.72rem">${{sc.inundation_engine || "pysheds"}}</b></div>
-    <div class="metric"><span>Max depth</span><b>${{sc.max_depth_m != null ? Number(sc.max_depth_m).toFixed(3) + " m" : "n/a"}}</b></div>
-    <div class="metric"><span>Wet roads / sta / fac</span><b>${{wet.roads||0}} / ${{wet.stations||0}} / ${{wet.facilities||0}}</b></div>
-    <div class="metric"><span>Disruption (wet %)</span><b style="font-size:.72rem">${{pct(wet.roads||0, tot.roads||0)}} / ${{pct(wet.stations||0, tot.stations||0)}} / ${{pct(wet.facilities||0, tot.facilities||0)}}</b></div>
-    <div class="metric"><span>RP placeholder</span><b style="font-size:.72rem">${{rp ? (rp.label || ("~" + rp.rp_years + "-yr")) : "n/a (ERA5 hook)"}}</b></div>
-    <div class="metric"><span>Confidence</span><b style="font-size:.68rem;color:#a16207">${{conf}}</b></div>
-    <div style="margin-top:6px;color:var(--muted);font-size:.72rem;line-height:1.35">${{risk.honesty || ""}} ${{(risk.return_period && risk.return_period.honesty) || ""}}</div>`;
-  const rows = (risk.table || []).map(r => `
-    <tr>
-      <td>${{r.label}}</td>
-      <td>${{r.roads}}</td>
-      <td>${{r.stations}}</td>
-      <td>${{r.facilities}}</td>
-    </tr>`).join("");
-  wrap.innerHTML = `
-    <table class="risk-table" aria-label="Depth band asset counts">
-      <thead><tr><th>Depth band</th><th>Roads</th><th>Stations</th><th>Facilities</th></tr></thead>
-      <tbody>${{rows}}</tbody>
-    </table>`;
-}}
-function riskAssetName(extent) {{
-  if (extent === "south_queens") {{
-    return (manifest.risk && manifest.risk.depth_assets_south_queens) || "risk_depth_assets_south_queens.json";
-  }}
-  return (manifest.risk && manifest.risk.depth_assets) || "risk_depth_assets.json";
-}}
-function loadRiskCard(extent) {{
-  const ext = extent || document.getElementById("riskScenarioSelect")?.value || "citywide";
-  fetch(assets + riskAssetName(ext), {{ cache: "no-cache" }})
-    .then(r => r.ok ? r.json() : null)
-    .then(renderRiskCard)
-    .catch(() => renderRiskCard(null));
-}}
-function loadHazardCatalog() {{
-  const note = document.getElementById("hazardCatalogNote");
-  if (!note) return;
-  const name = manifest.hazard_catalog || "hazard_catalog.json";
-  fetch(assets + name, {{ cache: "no-cache" }}).then(r => r.ok ? r.json() : null).then(cat => {{
-    if (!cat) {{ note.textContent = "Hazard catalog unavailable."; return; }}
-    const bits = (cat.sources || []).map(s => `${{s.kind}}:${{s.status}}`);
-    note.innerHTML = `<b>Hazard catalog</b> (open stack): ${{bits.join(" · ")}}. ERA5/GFS are hooks until fetched. No Enterprise/HENS.`;
-  }}).catch(() => {{ note.textContent = "Hazard catalog unavailable."; }});
-}}
+}};
+document.getElementById("lyE2Tot").onchange = () => {{
+  if (!e2Total) return;
+  if (document.getElementById("lyE2Tot").checked) {{ e2Total.setOpacity(precipOpacity()); e2Total.addTo(mapLeft); }}
+  else mapLeft.removeLayer(e2Total);
+}};
 
-function updateAlerts() {{
-  const panel = document.getElementById("alertPanel");
-  if (!panel) return;
-  const ds = activeDepthSet || depthSetForPath(activePath && activePath.id);
-  const st = ds && ds.storm_total;
-  const maxM = st && st.max_m != null ? Number(st.max_m) : null;
-  const wet = st && st.wet_fraction != null ? Number(st.wet_fraction) : null;
-  const thr = (manifest.flood_warning_prototype && manifest.flood_warning_prototype.thresholds_m) || {{ advisory: 0.03, watch: 0.08, warning: 0.15 }};
-  let level = "none", color = "#64748b", label = "No research alert";
-  if (maxM != null) {{
-    if (maxM >= thr.warning) {{ level = "warning"; color = "#b91c1c"; label = "Research WARNING"; }}
-    else if (maxM >= thr.watch) {{ level = "watch"; color = "#c2410c"; label = "Research WATCH"; }}
-    else if (maxM >= thr.advisory) {{ level = "advisory"; color = "#a16207"; label = "Research ADVISORY"; }}
-  }}
-  const force = ds ? (ds.label || ds.id) : "n/a";
-  panel.innerHTML = `
-    <div class="metric"><span>Prototype level</span><b style="color:${{color}}">${{label}}</b></div>
-    <div class="metric"><span>Est. max depth</span><b>${{maxM != null ? maxM.toFixed(3) + " m" : "n/a"}}</b></div>
-    <div class="metric"><span>Wet fraction</span><b>${{wet != null ? (100*wet).toFixed(1) + "%" : "n/a"}}</b></div>
-    <div class="metric"><span>Depth forcing</span><b style="font-size:.72rem">${{force}}</b></div>
-    <div style="margin-top:6px;color:var(--muted);font-size:.72rem;line-height:1.35">
-      Thresholds (research): advisory ≥ ${{thr.advisory}} m, watch ≥ ${{thr.watch}} m, warning ≥ ${{thr.warning}} m.
-      Derived from bathtub/HAND depth — <b>not NWS criteria</b>, not PySWMM/DEP calibrated sewer response.
-    </div>`;
-}}
-
-const urlState = readUrl() || {{}};
-activePath = stormPaths.find(p => p.id === pathSel.value) || stormPaths[0];
 rebuildPathLayers();
-document.getElementById("opPrecipVal").textContent = document.getElementById("opPrecip").value + "%";
-document.getElementById("opSuscVal").textContent = document.getElementById("opSusc").value + "%";
-fitExtent();
-if (urlState.product && ["storm","susceptibility","coupled","depth"].includes(urlState.product) && urlState.hasLayers) {{
-  productMode = urlState.product;
-  ["productStorm","productSusc","productCoupled","productDepth"].forEach(id => {{
-    const el = document.getElementById(id); if (el) el.classList.toggle("active", el.dataset.mode === productMode);
-  }});
-  setLead(+document.getElementById("leadSlider").value);
-}} else applyProductMode(urlState.product || "storm");
-if (!inundation) {{
-  ["lyDepth","lyDepthTot","productDepth"].forEach(id => {{ const el = document.getElementById(id); if (el) el.disabled = true; }});
-}}
-updateAlerts();
-loadRiskCard("citywide");
-loadHazardCatalog();
-const riskSel = document.getElementById("riskScenarioSelect");
-if (riskSel) riskSel.onchange = () => loadRiskCard(riskSel.value);
-
-function addDepthOverlayToggle(id, label, png, boundsObj) {{
-  if (!png || !boundsObj || document.getElementById(id)) return;
-  const bBounds = [[boundsObj.ymin, boundsObj.xmin],[boundsObj.ymax, boundsObj.xmax]];
-  const layer = L.imageOverlay(assets + png, bBounds, {{ opacity: 0.75, pane:"depthPane", interactive:false }});
-  const grid = document.querySelector(".layer-grid");
-  if (!grid) return;
-  const lab = document.createElement("label");
-  lab.className = "layer-btn";
-  lab.innerHTML = `<input id="${{id}}" type="checkbox"><span class="dot" style="background:#2171b5"></span>${{label}}`;
-  const depthLbl = [...grid.querySelectorAll(".group-label")].find(el => /Depth/i.test(el.textContent));
-  if (depthLbl && depthLbl.nextSibling) grid.insertBefore(lab, depthLbl.nextSibling.nextSibling);
-  else grid.appendChild(lab);
-  document.getElementById(id).addEventListener("change", (e) => {{
-    if (e.target.checked) layer.addTo(mapLeft); else mapLeft.removeLayer(layer);
-    ensureVectorsVisible();
-  }});
-}}
-if (manifest.inundation_citywide && manifest.inundation_citywide.png) {{
-  addDepthOverlayToggle("lyCityDepth", "Citywide depth (MRMS/pysheds)", manifest.inundation_citywide.png, EXTENTS.citywide?.bounds);
-}}
-if (manifest.inundation_borough_spike && manifest.inundation_borough_spike.png) {{
-  addDepthOverlayToggle("lyBoroughDepth", "Queens pysheds depth", manifest.inundation_borough_spike.png, EXTENTS.south_queens?.bounds);
-}}
-if (manifest.inundation_sfincs && manifest.inundation_sfincs.png) {{
-  addDepthOverlayToggle("lySfincsDepth", "SFINCS Queens (Docker)", manifest.inundation_sfincs.png, EXTENTS.south_queens?.bounds);
-}}
-// Default play speed slightly faster for denser loops
-const playSpeedEl = document.getElementById("playSpeed");
-if (playSpeedEl && (frames.length || 0) >= 12) playSpeedEl.value = "450";
-if (urlState.playing) setPlaying(true);
-document.querySelectorAll(".leaflet-image-layer").forEach(el => {{
-  el.style.imageRendering = (document.getElementById("resampleSelect").value === "nearest") ? "pixelated" : "auto";
-}});
+mapLeft.fitBounds(currentBounds());
+setLead(0);
+loadDecisionDesk();
+loadOptionalLayers();
+setPlaying(true);
 </script>
 </body>
 </html>
 """
-    # Fix accidental CSS typo if any
-    html = html.replace("--accent-deep:#056 dig 068;", "--accent-deep:#056068;")
     out = FIGURES_DIR / "product_map.html"
     out.write_text(html)
     return out

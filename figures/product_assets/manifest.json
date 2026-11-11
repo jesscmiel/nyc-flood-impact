@@ -2556,5 +2556,35 @@
     "compare_with": "inundation_borough_spike",
     "max_m": 3.757063865661621,
     "docker_image": "deltares/sfincs-cpu:sfincs-v2.1.1-Dollerup-Release"
+  },
+  "asset_decision_desk": {
+    "assets_json": "decision_desk_assets.json",
+    "assets_geojson": "decision_desk_assets.geojson",
+    "primary_depth_engine": "pysheds_hand_bathtub_v2",
+    "primary_forcing": "mrms_qpe_ida",
+    "default_ux": "susceptibility_then_affected_assets",
+    "official_nws": false,
+    "decision_grade": false
+  },
+  "depth_engines": {
+    "primary": {
+      "id": "pysheds_hand_bathtub_v2",
+      "extent": "citywide",
+      "forcing": "mrms_qpe_ida",
+      "approx_max_m": 0.15,
+      "use_for": "Default Asset Decision Desk ranking"
+    },
+    "alternate": {
+      "id": "sfincs_docker_queens",
+      "extent": "Queens spike domain",
+      "forcing": "uniform MRMS-derived rate (not spatial field)",
+      "approx_max_m": 3.76,
+      "use_for": "Hydro upgrade track only \u2014 magnitudes not comparable to pysheds citywide",
+      "honesty": "SFINCS Queens and pysheds citywide are NOT equally authoritative. Different domain, forcing, and physics \u2014 do not treat as peer depth products."
+    },
+    "strata_spike": {
+      "id": "strata_sfincs_spike",
+      "use_for": "Methods coupling demo only \u2014 NOT Ida decision narrative"
+    }
   }
 }
