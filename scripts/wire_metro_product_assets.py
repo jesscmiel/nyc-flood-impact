@@ -86,9 +86,25 @@ def main() -> dict:
                 "data_domain": PRIMARY_DATA_EXTENT,
                 "data_domain_bounds": leaflet,
                 "inundation": leaflet,
+                "precip": leaflet,
+                "susceptibility": leaflet,
+                "note": "metro = continuous soft-edge overlays for precip/susc/depth",
             }
         )
         m["layer_bounds"] = lb
+        # Keep storm-path overlay bounds aligned with metro depth (no citywide inset box)
+        for p in m.get("storm_paths") or []:
+            if p.get("id") == "mrms_qpe_ida" or p.get("ida_primary_viz"):
+                if isinstance(p.get("precip"), dict):
+                    p["precip"]["bounds"] = leaflet
+                    p["precip"]["extent"] = PRIMARY_DATA_EXTENT
+                if isinstance(p.get("susceptibility"), dict):
+                    p["susceptibility"]["bounds"] = leaflet
+                    p["susceptibility"]["extent"] = PRIMARY_DATA_EXTENT
+        if isinstance(m.get("precip"), dict):
+            m["precip"]["bounds"] = leaflet
+        if isinstance(m.get("susceptibility"), dict):
+            m["susceptibility"]["bounds"] = leaflet
         m["depth_engines"] = {
             "primary": m["primary_depth"],
             "alternate": m.get("inundation_sfincs"),

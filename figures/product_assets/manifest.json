@@ -13,7 +13,7 @@
       "ida_primary_viz": true,
       "source": "NOAA MRMS Multi-Sensor QPE (radar-derived + gauge) \u2014 Hurricane Ida remnants 2021-09-01",
       "source_file": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe",
-      "honesty": "PRIMARY Ida storm visualization (~1 km MRMS QPE). Temporal 1h blends densify the loop. Earth2 remains available as a labeled AI scenario track. NOT NEXRAD reflectivity tiles; NOT an official NWS flood warning product. StormCast/CorrDiff blocked without natten.",
+      "honesty": "PRIMARY Ida storm visualization (~1 km MRMS QPE) on continuous metro domain with soft land+edge alpha (no hard citywide crop). Temporal 1h blends densify the loop. NOT NEXRAD reflectivity tiles; NOT an official NWS flood warning.",
       "precip": {
         "frames": [
           {
@@ -22,12 +22,12 @@
             "valid_time": "2021-09-01T18:00",
             "png": "mrms_qpe_ida_precip_lead_06h.png",
             "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_lead_06h.tif",
-            "mean_mm": 1.9962639808654785,
-            "max_mm": 4.921154022216797,
+            "mean_mm": 1.99214506149292,
+            "max_mm": 4.904596328735352,
             "native": true,
             "temporal_blend": false,
             "blend_of": null,
-            "resolution_note": "~1 km MRMS Multi-Sensor QPE (radar+gauge) \u2014 Ida primary viz"
+            "resolution_note": "~1 km MRMS Multi-Sensor QPE on metro DEM grid \u2014 soft land+edge alpha"
           },
           {
             "index": 1,
@@ -35,15 +35,15 @@
             "valid_time": "2021-09-01T19:00",
             "png": "mrms_qpe_ida_precip_lead_07h_blend.png",
             "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_lead_07h_blend.tif",
-            "mean_mm": 5.693037986755371,
-            "max_mm": 11.563307762145996,
+            "mean_mm": 5.7031965255737305,
+            "max_mm": 11.544896125793457,
             "native": false,
             "temporal_blend": true,
             "blend_of": [
               6.0,
               12.0
             ],
-            "resolution_note": "~1 km MRMS Multi-Sensor QPE (radar+gauge) \u2014 Ida primary viz"
+            "resolution_note": "~1 km MRMS Multi-Sensor QPE on metro DEM grid \u2014 soft land+edge alpha"
           },
           {
             "index": 2,
@@ -51,15 +51,15 @@
             "valid_time": "2021-09-01T20:00",
             "png": "mrms_qpe_ida_precip_lead_08h_blend.png",
             "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_lead_08h_blend.tif",
-            "mean_mm": 9.389811515808105,
-            "max_mm": 21.14737892150879,
+            "mean_mm": 9.414249420166016,
+            "max_mm": 21.098936080932617,
             "native": false,
             "temporal_blend": true,
             "blend_of": [
               6.0,
               12.0
             ],
-            "resolution_note": "~1 km MRMS Multi-Sensor QPE (radar+gauge) \u2014 Ida primary viz"
+            "resolution_note": "~1 km MRMS Multi-Sensor QPE on metro DEM grid \u2014 soft land+edge alpha"
           },
           {
             "index": 3,
@@ -67,15 +67,15 @@
             "valid_time": "2021-09-01T21:00",
             "png": "mrms_qpe_ida_precip_lead_09h_blend.png",
             "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_lead_09h_blend.tif",
-            "mean_mm": 13.08658504486084,
-            "max_mm": 31.103254318237305,
+            "mean_mm": 13.125299453735352,
+            "max_mm": 31.07445526123047,
             "native": false,
             "temporal_blend": true,
             "blend_of": [
               6.0,
               12.0
             ],
-            "resolution_note": "~1 km MRMS Multi-Sensor QPE (radar+gauge) \u2014 Ida primary viz"
+            "resolution_note": "~1 km MRMS Multi-Sensor QPE on metro DEM grid \u2014 soft land+edge alpha"
           },
           {
             "index": 4,
@@ -83,15 +83,15 @@
             "valid_time": "2021-09-01T22:00",
             "png": "mrms_qpe_ida_precip_lead_10h_blend.png",
             "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_lead_10h_blend.tif",
-            "mean_mm": 16.78335952758789,
-            "max_mm": 41.14693832397461,
+            "mean_mm": 16.836353302001953,
+            "max_mm": 41.103416442871094,
             "native": false,
             "temporal_blend": true,
             "blend_of": [
               6.0,
               12.0
             ],
-            "resolution_note": "~1 km MRMS Multi-Sensor QPE (radar+gauge) \u2014 Ida primary viz"
+            "resolution_note": "~1 km MRMS Multi-Sensor QPE on metro DEM grid \u2014 soft land+edge alpha"
           },
           {
             "index": 5,
@@ -99,15 +99,15 @@
             "valid_time": "2021-09-01T23:00",
             "png": "mrms_qpe_ida_precip_lead_11h_blend.png",
             "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_lead_11h_blend.tif",
-            "mean_mm": 20.480133056640625,
-            "max_mm": 51.19061279296875,
+            "mean_mm": 20.54740333557129,
+            "max_mm": 51.13237380981445,
             "native": false,
             "temporal_blend": true,
             "blend_of": [
               6.0,
               12.0
             ],
-            "resolution_note": "~1 km MRMS Multi-Sensor QPE (radar+gauge) \u2014 Ida primary viz"
+            "resolution_note": "~1 km MRMS Multi-Sensor QPE on metro DEM grid \u2014 soft land+edge alpha"
           },
           {
             "index": 6,
@@ -115,12 +115,12 @@
             "valid_time": "2021-09-02T00:00",
             "png": "mrms_qpe_ida_precip_lead_12h.png",
             "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_lead_12h.tif",
-            "mean_mm": 24.17690658569336,
-            "max_mm": 61.23429870605469,
+            "mean_mm": 24.258455276489258,
+            "max_mm": 61.16133499145508,
             "native": true,
             "temporal_blend": false,
             "blend_of": null,
-            "resolution_note": "~1 km MRMS Multi-Sensor QPE (radar+gauge) \u2014 Ida primary viz"
+            "resolution_note": "~1 km MRMS Multi-Sensor QPE on metro DEM grid \u2014 soft land+edge alpha"
           },
           {
             "index": 7,
@@ -128,15 +128,15 @@
             "valid_time": "2021-09-02T01:00",
             "png": "mrms_qpe_ida_precip_lead_13h_blend.png",
             "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_lead_13h_blend.tif",
-            "mean_mm": 36.4124755859375,
-            "max_mm": 73.47701263427734,
+            "mean_mm": 36.56085205078125,
+            "max_mm": 73.37680053710938,
             "native": false,
             "temporal_blend": true,
             "blend_of": [
               12.0,
               18.0
             ],
-            "resolution_note": "~1 km MRMS Multi-Sensor QPE (radar+gauge) \u2014 Ida primary viz"
+            "resolution_note": "~1 km MRMS Multi-Sensor QPE on metro DEM grid \u2014 soft land+edge alpha"
           },
           {
             "index": 8,
@@ -144,15 +144,15 @@
             "valid_time": "2021-09-02T02:00",
             "png": "mrms_qpe_ida_precip_lead_14h_blend.png",
             "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_lead_14h_blend.tif",
-            "mean_mm": 48.64804458618164,
-            "max_mm": 87.18122863769531,
+            "mean_mm": 48.863243103027344,
+            "max_mm": 87.05266571044922,
             "native": false,
             "temporal_blend": true,
             "blend_of": [
               12.0,
               18.0
             ],
-            "resolution_note": "~1 km MRMS Multi-Sensor QPE (radar+gauge) \u2014 Ida primary viz"
+            "resolution_note": "~1 km MRMS Multi-Sensor QPE on metro DEM grid \u2014 soft land+edge alpha"
           },
           {
             "index": 9,
@@ -160,15 +160,15 @@
             "valid_time": "2021-09-02T03:00",
             "png": "mrms_qpe_ida_precip_lead_15h_blend.png",
             "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_lead_15h_blend.tif",
-            "mean_mm": 60.88361740112305,
-            "max_mm": 100.88545227050781,
+            "mean_mm": 61.165626525878906,
+            "max_mm": 100.72853088378906,
             "native": false,
             "temporal_blend": true,
             "blend_of": [
               12.0,
               18.0
             ],
-            "resolution_note": "~1 km MRMS Multi-Sensor QPE (radar+gauge) \u2014 Ida primary viz"
+            "resolution_note": "~1 km MRMS Multi-Sensor QPE on metro DEM grid \u2014 soft land+edge alpha"
           },
           {
             "index": 10,
@@ -176,15 +176,15 @@
             "valid_time": "2021-09-02T04:00",
             "png": "mrms_qpe_ida_precip_lead_16h_blend.png",
             "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_lead_16h_blend.tif",
-            "mean_mm": 73.11918640136719,
-            "max_mm": 114.58966827392578,
+            "mean_mm": 73.46803283691406,
+            "max_mm": 114.40440368652344,
             "native": false,
             "temporal_blend": true,
             "blend_of": [
               12.0,
               18.0
             ],
-            "resolution_note": "~1 km MRMS Multi-Sensor QPE (radar+gauge) \u2014 Ida primary viz"
+            "resolution_note": "~1 km MRMS Multi-Sensor QPE on metro DEM grid \u2014 soft land+edge alpha"
           },
           {
             "index": 11,
@@ -192,15 +192,15 @@
             "valid_time": "2021-09-02T05:00",
             "png": "mrms_qpe_ida_precip_lead_17h_blend.png",
             "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_lead_17h_blend.tif",
-            "mean_mm": 85.35475158691406,
-            "max_mm": 128.29388427734375,
+            "mean_mm": 85.7704086303711,
+            "max_mm": 128.08026123046875,
             "native": false,
             "temporal_blend": true,
             "blend_of": [
               12.0,
               18.0
             ],
-            "resolution_note": "~1 km MRMS Multi-Sensor QPE (radar+gauge) \u2014 Ida primary viz"
+            "resolution_note": "~1 km MRMS Multi-Sensor QPE on metro DEM grid \u2014 soft land+edge alpha"
           },
           {
             "index": 12,
@@ -208,12 +208,12 @@
             "valid_time": "2021-09-02T06:00",
             "png": "mrms_qpe_ida_precip_lead_18h.png",
             "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_lead_18h.tif",
-            "mean_mm": 97.59032440185547,
-            "max_mm": 141.99810791015625,
+            "mean_mm": 98.07280731201172,
+            "max_mm": 141.75613403320312,
             "native": true,
             "temporal_blend": false,
             "blend_of": null,
-            "resolution_note": "~1 km MRMS Multi-Sensor QPE (radar+gauge) \u2014 Ida primary viz"
+            "resolution_note": "~1 km MRMS Multi-Sensor QPE on metro DEM grid \u2014 soft land+edge alpha"
           },
           {
             "index": 13,
@@ -221,15 +221,15 @@
             "valid_time": "2021-09-02T07:00",
             "png": "mrms_qpe_ida_precip_lead_19h_blend.png",
             "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_lead_19h_blend.tif",
-            "mean_mm": 81.3475341796875,
-            "max_mm": 118.33175659179688,
+            "mean_mm": 81.74925994873047,
+            "max_mm": 118.13011169433594,
             "native": false,
             "temporal_blend": true,
             "blend_of": [
               18.0,
               24.0
             ],
-            "resolution_note": "~1 km MRMS Multi-Sensor QPE (radar+gauge) \u2014 Ida primary viz"
+            "resolution_note": "~1 km MRMS Multi-Sensor QPE on metro DEM grid \u2014 soft land+edge alpha"
           },
           {
             "index": 14,
@@ -237,15 +237,15 @@
             "valid_time": "2021-09-02T08:00",
             "png": "mrms_qpe_ida_precip_lead_20h_blend.png",
             "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_lead_20h_blend.tif",
-            "mean_mm": 65.1047592163086,
-            "max_mm": 94.6654052734375,
+            "mean_mm": 65.42571258544922,
+            "max_mm": 94.50408935546875,
             "native": false,
             "temporal_blend": true,
             "blend_of": [
               18.0,
               24.0
             ],
-            "resolution_note": "~1 km MRMS Multi-Sensor QPE (radar+gauge) \u2014 Ida primary viz"
+            "resolution_note": "~1 km MRMS Multi-Sensor QPE on metro DEM grid \u2014 soft land+edge alpha"
           },
           {
             "index": 15,
@@ -253,15 +253,15 @@
             "valid_time": "2021-09-02T09:00",
             "png": "mrms_qpe_ida_precip_lead_21h_blend.png",
             "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_lead_21h_blend.tif",
-            "mean_mm": 48.861976623535156,
-            "max_mm": 70.99905395507812,
+            "mean_mm": 49.1021728515625,
+            "max_mm": 70.87806701660156,
             "native": false,
             "temporal_blend": true,
             "blend_of": [
               18.0,
               24.0
             ],
-            "resolution_note": "~1 km MRMS Multi-Sensor QPE (radar+gauge) \u2014 Ida primary viz"
+            "resolution_note": "~1 km MRMS Multi-Sensor QPE on metro DEM grid \u2014 soft land+edge alpha"
           },
           {
             "index": 16,
@@ -269,15 +269,15 @@
             "valid_time": "2021-09-02T10:00",
             "png": "mrms_qpe_ida_precip_lead_22h_blend.png",
             "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_lead_22h_blend.tif",
-            "mean_mm": 32.61919403076172,
-            "max_mm": 47.33270263671875,
+            "mean_mm": 32.778621673583984,
+            "max_mm": 47.252044677734375,
             "native": false,
             "temporal_blend": true,
             "blend_of": [
               18.0,
               24.0
             ],
-            "resolution_note": "~1 km MRMS Multi-Sensor QPE (radar+gauge) \u2014 Ida primary viz"
+            "resolution_note": "~1 km MRMS Multi-Sensor QPE on metro DEM grid \u2014 soft land+edge alpha"
           },
           {
             "index": 17,
@@ -285,15 +285,15 @@
             "valid_time": "2021-09-02T11:00",
             "png": "mrms_qpe_ida_precip_lead_23h_blend.png",
             "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_lead_23h_blend.tif",
-            "mean_mm": 16.37641143798828,
-            "max_mm": 23.666351318359375,
+            "mean_mm": 16.455074310302734,
+            "max_mm": 23.626022338867188,
             "native": false,
             "temporal_blend": true,
             "blend_of": [
               18.0,
               24.0
             ],
-            "resolution_note": "~1 km MRMS Multi-Sensor QPE (radar+gauge) \u2014 Ida primary viz"
+            "resolution_note": "~1 km MRMS Multi-Sensor QPE on metro DEM grid \u2014 soft land+edge alpha"
           },
           {
             "index": 18,
@@ -301,34 +301,54 @@
             "valid_time": "2021-09-02T12:00",
             "png": "mrms_qpe_ida_precip_lead_24h.png",
             "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_lead_24h.tif",
-            "mean_mm": 0.13362693786621094,
-            "max_mm": 1.9517256021499634,
+            "mean_mm": 0.13152918219566345,
+            "max_mm": 1.9486764669418335,
             "native": true,
             "temporal_blend": false,
             "blend_of": null,
-            "resolution_note": "~1 km MRMS Multi-Sensor QPE (radar+gauge) \u2014 Ida primary viz"
+            "resolution_note": "~1 km MRMS Multi-Sensor QPE on metro DEM grid \u2014 soft land+edge alpha"
           }
         ],
         "storm_total_png": "mrms_qpe_ida_precip_storm_total.png",
-        "storm_total_max_mm": 203.38075256347656,
+        "storm_total_max_mm": 202.28134155273438,
         "bounds": [
           [
-            40.48,
-            -74.28
+            40.4,
+            -74.45
           ],
           [
-            40.93,
-            -73.68
+            41.05,
+            -73.5
           ]
         ],
+        "extent": "metro",
+        "soft_edge": true,
+        "land_mask": true,
         "colorbar": {
           "cmap": "turbo",
           "units": "mm",
           "label": "MRMS QPE (mm)"
         },
-        "opacity_default": 0.78,
+        "opacity_default": 0.72,
         "approx_resolution_km": 1.0,
-        "loop_note": "Native 6h MRMS leads densified with 1h temporal blends"
+        "loop_note": "Metro soft-edge MRMS: native 6h densified with 1h temporal blends",
+        "time_window": {
+          "init_time_utc": "2021-09-01T12:00",
+          "first_valid_time_utc": "2021-09-01T18:00",
+          "last_valid_time_utc": "2021-09-02T12:00",
+          "lead_hours_min": 6.0,
+          "lead_hours_max": 24.0,
+          "native_leads_h": [
+            6,
+            12,
+            18,
+            24
+          ],
+          "loop_step_h": 1.0,
+          "n_frames": 19,
+          "note": "Ida MRMS awareness loop covers +6h\u2026+24h from 2021-09-01T12:00 UTC (valid 2021-09-01T18:00 \u2192 2021-09-02T12:00). Depth cum frames exist at 6/12/18/24h only.",
+          "longer_modeling_recommendation": "Extend earlier (0\u20136h buildup) and later (24\u201336h drainage/recession) so pooling can grow and recede; native 1h MRMS (or 15-min) forcing would reduce blend-only motion."
+        }
       },
       "susceptibility": {
         "frames": [
@@ -338,7 +358,7 @@
             "valid_time": "2021-09-01T18:00",
             "png": "mrms_qpe_ida_susc_lead_06h.png",
             "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility/mrms_qpe_ida_susc_lead_06h.tif",
-            "mean": 0.2873647212982178,
+            "mean": 0.26387399435043335,
             "formula": "S = clip(0.35*weather + 0.40*landscape + 0.15*infra + 0.10*weather*landscape, 0, 1); landscape = 0.55*terrain_lowflat + 0.45*impervious; infra = 0.70*built_road_proxy + 0.30*(1 - drain_density_norm)"
           },
           {
@@ -347,7 +367,7 @@
             "valid_time": "2021-09-01T19:00",
             "png": "mrms_qpe_ida_susc_lead_07h_blend.png",
             "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility/mrms_qpe_ida_susc_lead_07h_blend.tif",
-            "mean": 0.2891855537891388,
+            "mean": 0.26659315824508667,
             "formula": "S = clip(0.35*weather + 0.40*landscape + 0.15*infra + 0.10*weather*landscape, 0, 1); landscape = 0.55*terrain_lowflat + 0.45*impervious; infra = 0.70*built_road_proxy + 0.30*(1 - drain_density_norm)"
           },
           {
@@ -356,7 +376,7 @@
             "valid_time": "2021-09-01T20:00",
             "png": "mrms_qpe_ida_susc_lead_08h_blend.png",
             "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility/mrms_qpe_ida_susc_lead_08h_blend.tif",
-            "mean": 0.2910063564777374,
+            "mean": 0.26931238174438477,
             "formula": "S = clip(0.35*weather + 0.40*landscape + 0.15*infra + 0.10*weather*landscape, 0, 1); landscape = 0.55*terrain_lowflat + 0.45*impervious; infra = 0.70*built_road_proxy + 0.30*(1 - drain_density_norm)"
           },
           {
@@ -365,7 +385,7 @@
             "valid_time": "2021-09-01T21:00",
             "png": "mrms_qpe_ida_susc_lead_09h_blend.png",
             "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility/mrms_qpe_ida_susc_lead_09h_blend.tif",
-            "mean": 0.29282718896865845,
+            "mean": 0.27203160524368286,
             "formula": "S = clip(0.35*weather + 0.40*landscape + 0.15*infra + 0.10*weather*landscape, 0, 1); landscape = 0.55*terrain_lowflat + 0.45*impervious; infra = 0.70*built_road_proxy + 0.30*(1 - drain_density_norm)"
           },
           {
@@ -374,7 +394,7 @@
             "valid_time": "2021-09-01T22:00",
             "png": "mrms_qpe_ida_susc_lead_10h_blend.png",
             "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility/mrms_qpe_ida_susc_lead_10h_blend.tif",
-            "mean": 0.29464802145957947,
+            "mean": 0.27475079894065857,
             "formula": "S = clip(0.35*weather + 0.40*landscape + 0.15*infra + 0.10*weather*landscape, 0, 1); landscape = 0.55*terrain_lowflat + 0.45*impervious; infra = 0.70*built_road_proxy + 0.30*(1 - drain_density_norm)"
           },
           {
@@ -383,7 +403,7 @@
             "valid_time": "2021-09-01T23:00",
             "png": "mrms_qpe_ida_susc_lead_11h_blend.png",
             "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility/mrms_qpe_ida_susc_lead_11h_blend.tif",
-            "mean": 0.2964688241481781,
+            "mean": 0.27747002243995667,
             "formula": "S = clip(0.35*weather + 0.40*landscape + 0.15*infra + 0.10*weather*landscape, 0, 1); landscape = 0.55*terrain_lowflat + 0.45*impervious; infra = 0.70*built_road_proxy + 0.30*(1 - drain_density_norm)"
           },
           {
@@ -392,7 +412,7 @@
             "valid_time": "2021-09-02T00:00",
             "png": "mrms_qpe_ida_susc_lead_12h.png",
             "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility/mrms_qpe_ida_susc_lead_12h.tif",
-            "mean": 0.2982896566390991,
+            "mean": 0.28018918633461,
             "formula": "S = clip(0.35*weather + 0.40*landscape + 0.15*infra + 0.10*weather*landscape, 0, 1); landscape = 0.55*terrain_lowflat + 0.45*impervious; infra = 0.70*built_road_proxy + 0.30*(1 - drain_density_norm)"
           },
           {
@@ -401,7 +421,7 @@
             "valid_time": "2021-09-02T01:00",
             "png": "mrms_qpe_ida_susc_lead_13h_blend.png",
             "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility/mrms_qpe_ida_susc_lead_13h_blend.tif",
-            "mean": 0.3043532967567444,
+            "mean": 0.2892668545246124,
             "formula": "S = clip(0.35*weather + 0.40*landscape + 0.15*infra + 0.10*weather*landscape, 0, 1); landscape = 0.55*terrain_lowflat + 0.45*impervious; infra = 0.70*built_road_proxy + 0.30*(1 - drain_density_norm)"
           },
           {
@@ -410,7 +430,7 @@
             "valid_time": "2021-09-02T02:00",
             "png": "mrms_qpe_ida_susc_lead_14h_blend.png",
             "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility/mrms_qpe_ida_susc_lead_14h_blend.tif",
-            "mean": 0.31041696667671204,
+            "mean": 0.29834458231925964,
             "formula": "S = clip(0.35*weather + 0.40*landscape + 0.15*infra + 0.10*weather*landscape, 0, 1); landscape = 0.55*terrain_lowflat + 0.45*impervious; infra = 0.70*built_road_proxy + 0.30*(1 - drain_density_norm)"
           },
           {
@@ -419,7 +439,7 @@
             "valid_time": "2021-09-02T03:00",
             "png": "mrms_qpe_ida_susc_lead_15h_blend.png",
             "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility/mrms_qpe_ida_susc_lead_15h_blend.tif",
-            "mean": 0.3164806365966797,
+            "mean": 0.3074222505092621,
             "formula": "S = clip(0.35*weather + 0.40*landscape + 0.15*infra + 0.10*weather*landscape, 0, 1); landscape = 0.55*terrain_lowflat + 0.45*impervious; infra = 0.70*built_road_proxy + 0.30*(1 - drain_density_norm)"
           },
           {
@@ -428,7 +448,7 @@
             "valid_time": "2021-09-02T04:00",
             "png": "mrms_qpe_ida_susc_lead_16h_blend.png",
             "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility/mrms_qpe_ida_susc_lead_16h_blend.tif",
-            "mean": 0.32254430651664734,
+            "mean": 0.3164999783039093,
             "formula": "S = clip(0.35*weather + 0.40*landscape + 0.15*infra + 0.10*weather*landscape, 0, 1); landscape = 0.55*terrain_lowflat + 0.45*impervious; infra = 0.70*built_road_proxy + 0.30*(1 - drain_density_norm)"
           },
           {
@@ -437,7 +457,7 @@
             "valid_time": "2021-09-02T05:00",
             "png": "mrms_qpe_ida_susc_lead_17h_blend.png",
             "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility/mrms_qpe_ida_susc_lead_17h_blend.tif",
-            "mean": 0.328607976436615,
+            "mean": 0.32557764649391174,
             "formula": "S = clip(0.35*weather + 0.40*landscape + 0.15*infra + 0.10*weather*landscape, 0, 1); landscape = 0.55*terrain_lowflat + 0.45*impervious; infra = 0.70*built_road_proxy + 0.30*(1 - drain_density_norm)"
           },
           {
@@ -446,7 +466,7 @@
             "valid_time": "2021-09-02T06:00",
             "png": "mrms_qpe_ida_susc_lead_18h.png",
             "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility/mrms_qpe_ida_susc_lead_18h.tif",
-            "mean": 0.33467161655426025,
+            "mean": 0.3346553444862366,
             "formula": "S = clip(0.35*weather + 0.40*landscape + 0.15*infra + 0.10*weather*landscape, 0, 1); landscape = 0.55*terrain_lowflat + 0.45*impervious; infra = 0.70*built_road_proxy + 0.30*(1 - drain_density_norm)"
           },
           {
@@ -455,7 +475,7 @@
             "valid_time": "2021-09-02T07:00",
             "png": "mrms_qpe_ida_susc_lead_19h_blend.png",
             "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility/mrms_qpe_ida_susc_lead_19h_blend.tif",
-            "mean": 0.3266335129737854,
+            "mean": 0.32263094186782837,
             "formula": "S = clip(0.35*weather + 0.40*landscape + 0.15*infra + 0.10*weather*landscape, 0, 1); landscape = 0.55*terrain_lowflat + 0.45*impervious; infra = 0.70*built_road_proxy + 0.30*(1 - drain_density_norm)"
           },
           {
@@ -464,7 +484,7 @@
             "valid_time": "2021-09-02T08:00",
             "png": "mrms_qpe_ida_susc_lead_20h_blend.png",
             "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility/mrms_qpe_ida_susc_lead_20h_blend.tif",
-            "mean": 0.31859540939331055,
+            "mean": 0.31060662865638733,
             "formula": "S = clip(0.35*weather + 0.40*landscape + 0.15*infra + 0.10*weather*landscape, 0, 1); landscape = 0.55*terrain_lowflat + 0.45*impervious; infra = 0.70*built_road_proxy + 0.30*(1 - drain_density_norm)"
           },
           {
@@ -473,7 +493,7 @@
             "valid_time": "2021-09-02T09:00",
             "png": "mrms_qpe_ida_susc_lead_21h_blend.png",
             "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility/mrms_qpe_ida_susc_lead_21h_blend.tif",
-            "mean": 0.3105573058128357,
+            "mean": 0.2985822260379791,
             "formula": "S = clip(0.35*weather + 0.40*landscape + 0.15*infra + 0.10*weather*landscape, 0, 1); landscape = 0.55*terrain_lowflat + 0.45*impervious; infra = 0.70*built_road_proxy + 0.30*(1 - drain_density_norm)"
           },
           {
@@ -482,7 +502,7 @@
             "valid_time": "2021-09-02T10:00",
             "png": "mrms_qpe_ida_susc_lead_22h_blend.png",
             "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility/mrms_qpe_ida_susc_lead_22h_blend.tif",
-            "mean": 0.30251920223236084,
+            "mean": 0.2865578830242157,
             "formula": "S = clip(0.35*weather + 0.40*landscape + 0.15*infra + 0.10*weather*landscape, 0, 1); landscape = 0.55*terrain_lowflat + 0.45*impervious; infra = 0.70*built_road_proxy + 0.30*(1 - drain_density_norm)"
           },
           {
@@ -491,7 +511,7 @@
             "valid_time": "2021-09-02T11:00",
             "png": "mrms_qpe_ida_susc_lead_23h_blend.png",
             "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility/mrms_qpe_ida_susc_lead_23h_blend.tif",
-            "mean": 0.2944811284542084,
+            "mean": 0.2745335102081299,
             "formula": "S = clip(0.35*weather + 0.40*landscape + 0.15*infra + 0.10*weather*landscape, 0, 1); landscape = 0.55*terrain_lowflat + 0.45*impervious; infra = 0.70*built_road_proxy + 0.30*(1 - drain_density_norm)"
           },
           {
@@ -500,28 +520,47 @@
             "valid_time": "2021-09-02T12:00",
             "png": "mrms_qpe_ida_susc_lead_24h.png",
             "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility/mrms_qpe_ida_susc_lead_24h.tif",
-            "mean": 0.2864430546760559,
+            "mean": 0.2625091075897217,
             "formula": "S = clip(0.35*weather + 0.40*landscape + 0.15*infra + 0.10*weather*landscape, 0, 1); landscape = 0.55*terrain_lowflat + 0.45*impervious; infra = 0.70*built_road_proxy + 0.30*(1 - drain_density_norm)"
           }
         ],
         "bounds": [
           [
-            40.48,
-            -74.28
+            40.4,
+            -74.45
           ],
           [
-            40.93,
-            -73.68
+            41.05,
+            -73.5
           ]
         ],
+        "extent": "metro",
+        "soft_edge": true,
         "formula": "S = clip(0.35*weather + 0.40*landscape + 0.15*infra + 0.10*weather*landscape, 0, 1); landscape = 0.55*terrain_lowflat + 0.45*impervious; infra = 0.70*built_road_proxy + 0.30*(1 - drain_density_norm)",
-        "disclaimer": "Screening with MRMS-forced weather factor \u2014 not depth.",
+        "disclaimer": "Screening index (weather evolves; landscape/infra mostly static). Not flood probability / not depth. Soft metro land+edge mask.",
         "colorbar": {
           "cmap": "YlOrRd",
           "units": "index 0\u20131",
           "label": "Susceptibility (screening)"
         },
-        "opacity_default": 0.65
+        "opacity_default": 0.55,
+        "time_window": {
+          "init_time_utc": "2021-09-01T12:00",
+          "first_valid_time_utc": "2021-09-01T18:00",
+          "last_valid_time_utc": "2021-09-02T12:00",
+          "lead_hours_min": 6.0,
+          "lead_hours_max": 24.0,
+          "native_leads_h": [
+            6,
+            12,
+            18,
+            24
+          ],
+          "loop_step_h": 1.0,
+          "n_frames": 19,
+          "note": "Ida MRMS awareness loop covers +6h\u2026+24h from 2021-09-01T12:00 UTC (valid 2021-09-01T18:00 \u2192 2021-09-02T12:00). Depth cum frames exist at 6/12/18/24h only.",
+          "longer_modeling_recommendation": "Extend earlier (0\u20136h buildup) and later (24\u201336h drainage/recession) so pooling can grow and recede; native 1h MRMS (or 15-min) forcing would reduce blend-only motion."
+        }
       },
       "infra_highlights": {
         "frames": [
@@ -640,7 +679,8 @@
             "n_features": 75
           }
         ]
-      }
+      },
+      "extent": "metro"
     },
     {
       "id": "earth2_control",
@@ -1470,12 +1510,12 @@
         "valid_time": "2021-09-01T18:00",
         "png": "mrms_qpe_ida_precip_lead_06h.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_lead_06h.tif",
-        "mean_mm": 1.9962639808654785,
-        "max_mm": 4.921154022216797,
+        "mean_mm": 1.99214506149292,
+        "max_mm": 4.904596328735352,
         "native": true,
         "temporal_blend": false,
         "blend_of": null,
-        "resolution_note": "~1 km MRMS Multi-Sensor QPE (radar+gauge) \u2014 Ida primary viz"
+        "resolution_note": "~1 km MRMS Multi-Sensor QPE on metro DEM grid \u2014 soft land+edge alpha"
       },
       {
         "index": 1,
@@ -1483,15 +1523,15 @@
         "valid_time": "2021-09-01T19:00",
         "png": "mrms_qpe_ida_precip_lead_07h_blend.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_lead_07h_blend.tif",
-        "mean_mm": 5.693037986755371,
-        "max_mm": 11.563307762145996,
+        "mean_mm": 5.7031965255737305,
+        "max_mm": 11.544896125793457,
         "native": false,
         "temporal_blend": true,
         "blend_of": [
           6.0,
           12.0
         ],
-        "resolution_note": "~1 km MRMS Multi-Sensor QPE (radar+gauge) \u2014 Ida primary viz"
+        "resolution_note": "~1 km MRMS Multi-Sensor QPE on metro DEM grid \u2014 soft land+edge alpha"
       },
       {
         "index": 2,
@@ -1499,15 +1539,15 @@
         "valid_time": "2021-09-01T20:00",
         "png": "mrms_qpe_ida_precip_lead_08h_blend.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_lead_08h_blend.tif",
-        "mean_mm": 9.389811515808105,
-        "max_mm": 21.14737892150879,
+        "mean_mm": 9.414249420166016,
+        "max_mm": 21.098936080932617,
         "native": false,
         "temporal_blend": true,
         "blend_of": [
           6.0,
           12.0
         ],
-        "resolution_note": "~1 km MRMS Multi-Sensor QPE (radar+gauge) \u2014 Ida primary viz"
+        "resolution_note": "~1 km MRMS Multi-Sensor QPE on metro DEM grid \u2014 soft land+edge alpha"
       },
       {
         "index": 3,
@@ -1515,15 +1555,15 @@
         "valid_time": "2021-09-01T21:00",
         "png": "mrms_qpe_ida_precip_lead_09h_blend.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_lead_09h_blend.tif",
-        "mean_mm": 13.08658504486084,
-        "max_mm": 31.103254318237305,
+        "mean_mm": 13.125299453735352,
+        "max_mm": 31.07445526123047,
         "native": false,
         "temporal_blend": true,
         "blend_of": [
           6.0,
           12.0
         ],
-        "resolution_note": "~1 km MRMS Multi-Sensor QPE (radar+gauge) \u2014 Ida primary viz"
+        "resolution_note": "~1 km MRMS Multi-Sensor QPE on metro DEM grid \u2014 soft land+edge alpha"
       },
       {
         "index": 4,
@@ -1531,15 +1571,15 @@
         "valid_time": "2021-09-01T22:00",
         "png": "mrms_qpe_ida_precip_lead_10h_blend.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_lead_10h_blend.tif",
-        "mean_mm": 16.78335952758789,
-        "max_mm": 41.14693832397461,
+        "mean_mm": 16.836353302001953,
+        "max_mm": 41.103416442871094,
         "native": false,
         "temporal_blend": true,
         "blend_of": [
           6.0,
           12.0
         ],
-        "resolution_note": "~1 km MRMS Multi-Sensor QPE (radar+gauge) \u2014 Ida primary viz"
+        "resolution_note": "~1 km MRMS Multi-Sensor QPE on metro DEM grid \u2014 soft land+edge alpha"
       },
       {
         "index": 5,
@@ -1547,15 +1587,15 @@
         "valid_time": "2021-09-01T23:00",
         "png": "mrms_qpe_ida_precip_lead_11h_blend.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_lead_11h_blend.tif",
-        "mean_mm": 20.480133056640625,
-        "max_mm": 51.19061279296875,
+        "mean_mm": 20.54740333557129,
+        "max_mm": 51.13237380981445,
         "native": false,
         "temporal_blend": true,
         "blend_of": [
           6.0,
           12.0
         ],
-        "resolution_note": "~1 km MRMS Multi-Sensor QPE (radar+gauge) \u2014 Ida primary viz"
+        "resolution_note": "~1 km MRMS Multi-Sensor QPE on metro DEM grid \u2014 soft land+edge alpha"
       },
       {
         "index": 6,
@@ -1563,12 +1603,12 @@
         "valid_time": "2021-09-02T00:00",
         "png": "mrms_qpe_ida_precip_lead_12h.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_lead_12h.tif",
-        "mean_mm": 24.17690658569336,
-        "max_mm": 61.23429870605469,
+        "mean_mm": 24.258455276489258,
+        "max_mm": 61.16133499145508,
         "native": true,
         "temporal_blend": false,
         "blend_of": null,
-        "resolution_note": "~1 km MRMS Multi-Sensor QPE (radar+gauge) \u2014 Ida primary viz"
+        "resolution_note": "~1 km MRMS Multi-Sensor QPE on metro DEM grid \u2014 soft land+edge alpha"
       },
       {
         "index": 7,
@@ -1576,15 +1616,15 @@
         "valid_time": "2021-09-02T01:00",
         "png": "mrms_qpe_ida_precip_lead_13h_blend.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_lead_13h_blend.tif",
-        "mean_mm": 36.4124755859375,
-        "max_mm": 73.47701263427734,
+        "mean_mm": 36.56085205078125,
+        "max_mm": 73.37680053710938,
         "native": false,
         "temporal_blend": true,
         "blend_of": [
           12.0,
           18.0
         ],
-        "resolution_note": "~1 km MRMS Multi-Sensor QPE (radar+gauge) \u2014 Ida primary viz"
+        "resolution_note": "~1 km MRMS Multi-Sensor QPE on metro DEM grid \u2014 soft land+edge alpha"
       },
       {
         "index": 8,
@@ -1592,15 +1632,15 @@
         "valid_time": "2021-09-02T02:00",
         "png": "mrms_qpe_ida_precip_lead_14h_blend.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_lead_14h_blend.tif",
-        "mean_mm": 48.64804458618164,
-        "max_mm": 87.18122863769531,
+        "mean_mm": 48.863243103027344,
+        "max_mm": 87.05266571044922,
         "native": false,
         "temporal_blend": true,
         "blend_of": [
           12.0,
           18.0
         ],
-        "resolution_note": "~1 km MRMS Multi-Sensor QPE (radar+gauge) \u2014 Ida primary viz"
+        "resolution_note": "~1 km MRMS Multi-Sensor QPE on metro DEM grid \u2014 soft land+edge alpha"
       },
       {
         "index": 9,
@@ -1608,15 +1648,15 @@
         "valid_time": "2021-09-02T03:00",
         "png": "mrms_qpe_ida_precip_lead_15h_blend.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_lead_15h_blend.tif",
-        "mean_mm": 60.88361740112305,
-        "max_mm": 100.88545227050781,
+        "mean_mm": 61.165626525878906,
+        "max_mm": 100.72853088378906,
         "native": false,
         "temporal_blend": true,
         "blend_of": [
           12.0,
           18.0
         ],
-        "resolution_note": "~1 km MRMS Multi-Sensor QPE (radar+gauge) \u2014 Ida primary viz"
+        "resolution_note": "~1 km MRMS Multi-Sensor QPE on metro DEM grid \u2014 soft land+edge alpha"
       },
       {
         "index": 10,
@@ -1624,15 +1664,15 @@
         "valid_time": "2021-09-02T04:00",
         "png": "mrms_qpe_ida_precip_lead_16h_blend.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_lead_16h_blend.tif",
-        "mean_mm": 73.11918640136719,
-        "max_mm": 114.58966827392578,
+        "mean_mm": 73.46803283691406,
+        "max_mm": 114.40440368652344,
         "native": false,
         "temporal_blend": true,
         "blend_of": [
           12.0,
           18.0
         ],
-        "resolution_note": "~1 km MRMS Multi-Sensor QPE (radar+gauge) \u2014 Ida primary viz"
+        "resolution_note": "~1 km MRMS Multi-Sensor QPE on metro DEM grid \u2014 soft land+edge alpha"
       },
       {
         "index": 11,
@@ -1640,15 +1680,15 @@
         "valid_time": "2021-09-02T05:00",
         "png": "mrms_qpe_ida_precip_lead_17h_blend.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_lead_17h_blend.tif",
-        "mean_mm": 85.35475158691406,
-        "max_mm": 128.29388427734375,
+        "mean_mm": 85.7704086303711,
+        "max_mm": 128.08026123046875,
         "native": false,
         "temporal_blend": true,
         "blend_of": [
           12.0,
           18.0
         ],
-        "resolution_note": "~1 km MRMS Multi-Sensor QPE (radar+gauge) \u2014 Ida primary viz"
+        "resolution_note": "~1 km MRMS Multi-Sensor QPE on metro DEM grid \u2014 soft land+edge alpha"
       },
       {
         "index": 12,
@@ -1656,12 +1696,12 @@
         "valid_time": "2021-09-02T06:00",
         "png": "mrms_qpe_ida_precip_lead_18h.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_lead_18h.tif",
-        "mean_mm": 97.59032440185547,
-        "max_mm": 141.99810791015625,
+        "mean_mm": 98.07280731201172,
+        "max_mm": 141.75613403320312,
         "native": true,
         "temporal_blend": false,
         "blend_of": null,
-        "resolution_note": "~1 km MRMS Multi-Sensor QPE (radar+gauge) \u2014 Ida primary viz"
+        "resolution_note": "~1 km MRMS Multi-Sensor QPE on metro DEM grid \u2014 soft land+edge alpha"
       },
       {
         "index": 13,
@@ -1669,15 +1709,15 @@
         "valid_time": "2021-09-02T07:00",
         "png": "mrms_qpe_ida_precip_lead_19h_blend.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_lead_19h_blend.tif",
-        "mean_mm": 81.3475341796875,
-        "max_mm": 118.33175659179688,
+        "mean_mm": 81.74925994873047,
+        "max_mm": 118.13011169433594,
         "native": false,
         "temporal_blend": true,
         "blend_of": [
           18.0,
           24.0
         ],
-        "resolution_note": "~1 km MRMS Multi-Sensor QPE (radar+gauge) \u2014 Ida primary viz"
+        "resolution_note": "~1 km MRMS Multi-Sensor QPE on metro DEM grid \u2014 soft land+edge alpha"
       },
       {
         "index": 14,
@@ -1685,15 +1725,15 @@
         "valid_time": "2021-09-02T08:00",
         "png": "mrms_qpe_ida_precip_lead_20h_blend.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_lead_20h_blend.tif",
-        "mean_mm": 65.1047592163086,
-        "max_mm": 94.6654052734375,
+        "mean_mm": 65.42571258544922,
+        "max_mm": 94.50408935546875,
         "native": false,
         "temporal_blend": true,
         "blend_of": [
           18.0,
           24.0
         ],
-        "resolution_note": "~1 km MRMS Multi-Sensor QPE (radar+gauge) \u2014 Ida primary viz"
+        "resolution_note": "~1 km MRMS Multi-Sensor QPE on metro DEM grid \u2014 soft land+edge alpha"
       },
       {
         "index": 15,
@@ -1701,15 +1741,15 @@
         "valid_time": "2021-09-02T09:00",
         "png": "mrms_qpe_ida_precip_lead_21h_blend.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_lead_21h_blend.tif",
-        "mean_mm": 48.861976623535156,
-        "max_mm": 70.99905395507812,
+        "mean_mm": 49.1021728515625,
+        "max_mm": 70.87806701660156,
         "native": false,
         "temporal_blend": true,
         "blend_of": [
           18.0,
           24.0
         ],
-        "resolution_note": "~1 km MRMS Multi-Sensor QPE (radar+gauge) \u2014 Ida primary viz"
+        "resolution_note": "~1 km MRMS Multi-Sensor QPE on metro DEM grid \u2014 soft land+edge alpha"
       },
       {
         "index": 16,
@@ -1717,15 +1757,15 @@
         "valid_time": "2021-09-02T10:00",
         "png": "mrms_qpe_ida_precip_lead_22h_blend.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_lead_22h_blend.tif",
-        "mean_mm": 32.61919403076172,
-        "max_mm": 47.33270263671875,
+        "mean_mm": 32.778621673583984,
+        "max_mm": 47.252044677734375,
         "native": false,
         "temporal_blend": true,
         "blend_of": [
           18.0,
           24.0
         ],
-        "resolution_note": "~1 km MRMS Multi-Sensor QPE (radar+gauge) \u2014 Ida primary viz"
+        "resolution_note": "~1 km MRMS Multi-Sensor QPE on metro DEM grid \u2014 soft land+edge alpha"
       },
       {
         "index": 17,
@@ -1733,15 +1773,15 @@
         "valid_time": "2021-09-02T11:00",
         "png": "mrms_qpe_ida_precip_lead_23h_blend.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_lead_23h_blend.tif",
-        "mean_mm": 16.37641143798828,
-        "max_mm": 23.666351318359375,
+        "mean_mm": 16.455074310302734,
+        "max_mm": 23.626022338867188,
         "native": false,
         "temporal_blend": true,
         "blend_of": [
           18.0,
           24.0
         ],
-        "resolution_note": "~1 km MRMS Multi-Sensor QPE (radar+gauge) \u2014 Ida primary viz"
+        "resolution_note": "~1 km MRMS Multi-Sensor QPE on metro DEM grid \u2014 soft land+edge alpha"
       },
       {
         "index": 18,
@@ -1749,34 +1789,54 @@
         "valid_time": "2021-09-02T12:00",
         "png": "mrms_qpe_ida_precip_lead_24h.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_lead_24h.tif",
-        "mean_mm": 0.13362693786621094,
-        "max_mm": 1.9517256021499634,
+        "mean_mm": 0.13152918219566345,
+        "max_mm": 1.9486764669418335,
         "native": true,
         "temporal_blend": false,
         "blend_of": null,
-        "resolution_note": "~1 km MRMS Multi-Sensor QPE (radar+gauge) \u2014 Ida primary viz"
+        "resolution_note": "~1 km MRMS Multi-Sensor QPE on metro DEM grid \u2014 soft land+edge alpha"
       }
     ],
     "storm_total_png": "mrms_qpe_ida_precip_storm_total.png",
-    "storm_total_max_mm": 203.38075256347656,
+    "storm_total_max_mm": 202.28134155273438,
     "bounds": [
       [
-        40.48,
-        -74.28
+        40.4,
+        -74.45
       ],
       [
-        40.93,
-        -73.68
+        41.05,
+        -73.5
       ]
     ],
+    "extent": "metro",
+    "soft_edge": true,
+    "land_mask": true,
     "colorbar": {
       "cmap": "turbo",
       "units": "mm",
       "label": "MRMS QPE (mm)"
     },
-    "opacity_default": 0.78,
+    "opacity_default": 0.72,
     "approx_resolution_km": 1.0,
-    "loop_note": "Native 6h MRMS leads densified with 1h temporal blends"
+    "loop_note": "Metro soft-edge MRMS: native 6h densified with 1h temporal blends",
+    "time_window": {
+      "init_time_utc": "2021-09-01T12:00",
+      "first_valid_time_utc": "2021-09-01T18:00",
+      "last_valid_time_utc": "2021-09-02T12:00",
+      "lead_hours_min": 6.0,
+      "lead_hours_max": 24.0,
+      "native_leads_h": [
+        6,
+        12,
+        18,
+        24
+      ],
+      "loop_step_h": 1.0,
+      "n_frames": 19,
+      "note": "Ida MRMS awareness loop covers +6h\u2026+24h from 2021-09-01T12:00 UTC (valid 2021-09-01T18:00 \u2192 2021-09-02T12:00). Depth cum frames exist at 6/12/18/24h only.",
+      "longer_modeling_recommendation": "Extend earlier (0\u20136h buildup) and later (24\u201336h drainage/recession) so pooling can grow and recede; native 1h MRMS (or 15-min) forcing would reduce blend-only motion."
+    }
   },
   "susceptibility": {
     "frames": [
@@ -1786,7 +1846,7 @@
         "valid_time": "2021-09-01T18:00",
         "png": "mrms_qpe_ida_susc_lead_06h.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility/mrms_qpe_ida_susc_lead_06h.tif",
-        "mean": 0.2873647212982178,
+        "mean": 0.26387399435043335,
         "formula": "S = clip(0.35*weather + 0.40*landscape + 0.15*infra + 0.10*weather*landscape, 0, 1); landscape = 0.55*terrain_lowflat + 0.45*impervious; infra = 0.70*built_road_proxy + 0.30*(1 - drain_density_norm)"
       },
       {
@@ -1795,7 +1855,7 @@
         "valid_time": "2021-09-01T19:00",
         "png": "mrms_qpe_ida_susc_lead_07h_blend.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility/mrms_qpe_ida_susc_lead_07h_blend.tif",
-        "mean": 0.2891855537891388,
+        "mean": 0.26659315824508667,
         "formula": "S = clip(0.35*weather + 0.40*landscape + 0.15*infra + 0.10*weather*landscape, 0, 1); landscape = 0.55*terrain_lowflat + 0.45*impervious; infra = 0.70*built_road_proxy + 0.30*(1 - drain_density_norm)"
       },
       {
@@ -1804,7 +1864,7 @@
         "valid_time": "2021-09-01T20:00",
         "png": "mrms_qpe_ida_susc_lead_08h_blend.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility/mrms_qpe_ida_susc_lead_08h_blend.tif",
-        "mean": 0.2910063564777374,
+        "mean": 0.26931238174438477,
         "formula": "S = clip(0.35*weather + 0.40*landscape + 0.15*infra + 0.10*weather*landscape, 0, 1); landscape = 0.55*terrain_lowflat + 0.45*impervious; infra = 0.70*built_road_proxy + 0.30*(1 - drain_density_norm)"
       },
       {
@@ -1813,7 +1873,7 @@
         "valid_time": "2021-09-01T21:00",
         "png": "mrms_qpe_ida_susc_lead_09h_blend.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility/mrms_qpe_ida_susc_lead_09h_blend.tif",
-        "mean": 0.29282718896865845,
+        "mean": 0.27203160524368286,
         "formula": "S = clip(0.35*weather + 0.40*landscape + 0.15*infra + 0.10*weather*landscape, 0, 1); landscape = 0.55*terrain_lowflat + 0.45*impervious; infra = 0.70*built_road_proxy + 0.30*(1 - drain_density_norm)"
       },
       {
@@ -1822,7 +1882,7 @@
         "valid_time": "2021-09-01T22:00",
         "png": "mrms_qpe_ida_susc_lead_10h_blend.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility/mrms_qpe_ida_susc_lead_10h_blend.tif",
-        "mean": 0.29464802145957947,
+        "mean": 0.27475079894065857,
         "formula": "S = clip(0.35*weather + 0.40*landscape + 0.15*infra + 0.10*weather*landscape, 0, 1); landscape = 0.55*terrain_lowflat + 0.45*impervious; infra = 0.70*built_road_proxy + 0.30*(1 - drain_density_norm)"
       },
       {
@@ -1831,7 +1891,7 @@
         "valid_time": "2021-09-01T23:00",
         "png": "mrms_qpe_ida_susc_lead_11h_blend.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility/mrms_qpe_ida_susc_lead_11h_blend.tif",
-        "mean": 0.2964688241481781,
+        "mean": 0.27747002243995667,
         "formula": "S = clip(0.35*weather + 0.40*landscape + 0.15*infra + 0.10*weather*landscape, 0, 1); landscape = 0.55*terrain_lowflat + 0.45*impervious; infra = 0.70*built_road_proxy + 0.30*(1 - drain_density_norm)"
       },
       {
@@ -1840,7 +1900,7 @@
         "valid_time": "2021-09-02T00:00",
         "png": "mrms_qpe_ida_susc_lead_12h.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility/mrms_qpe_ida_susc_lead_12h.tif",
-        "mean": 0.2982896566390991,
+        "mean": 0.28018918633461,
         "formula": "S = clip(0.35*weather + 0.40*landscape + 0.15*infra + 0.10*weather*landscape, 0, 1); landscape = 0.55*terrain_lowflat + 0.45*impervious; infra = 0.70*built_road_proxy + 0.30*(1 - drain_density_norm)"
       },
       {
@@ -1849,7 +1909,7 @@
         "valid_time": "2021-09-02T01:00",
         "png": "mrms_qpe_ida_susc_lead_13h_blend.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility/mrms_qpe_ida_susc_lead_13h_blend.tif",
-        "mean": 0.3043532967567444,
+        "mean": 0.2892668545246124,
         "formula": "S = clip(0.35*weather + 0.40*landscape + 0.15*infra + 0.10*weather*landscape, 0, 1); landscape = 0.55*terrain_lowflat + 0.45*impervious; infra = 0.70*built_road_proxy + 0.30*(1 - drain_density_norm)"
       },
       {
@@ -1858,7 +1918,7 @@
         "valid_time": "2021-09-02T02:00",
         "png": "mrms_qpe_ida_susc_lead_14h_blend.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility/mrms_qpe_ida_susc_lead_14h_blend.tif",
-        "mean": 0.31041696667671204,
+        "mean": 0.29834458231925964,
         "formula": "S = clip(0.35*weather + 0.40*landscape + 0.15*infra + 0.10*weather*landscape, 0, 1); landscape = 0.55*terrain_lowflat + 0.45*impervious; infra = 0.70*built_road_proxy + 0.30*(1 - drain_density_norm)"
       },
       {
@@ -1867,7 +1927,7 @@
         "valid_time": "2021-09-02T03:00",
         "png": "mrms_qpe_ida_susc_lead_15h_blend.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility/mrms_qpe_ida_susc_lead_15h_blend.tif",
-        "mean": 0.3164806365966797,
+        "mean": 0.3074222505092621,
         "formula": "S = clip(0.35*weather + 0.40*landscape + 0.15*infra + 0.10*weather*landscape, 0, 1); landscape = 0.55*terrain_lowflat + 0.45*impervious; infra = 0.70*built_road_proxy + 0.30*(1 - drain_density_norm)"
       },
       {
@@ -1876,7 +1936,7 @@
         "valid_time": "2021-09-02T04:00",
         "png": "mrms_qpe_ida_susc_lead_16h_blend.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility/mrms_qpe_ida_susc_lead_16h_blend.tif",
-        "mean": 0.32254430651664734,
+        "mean": 0.3164999783039093,
         "formula": "S = clip(0.35*weather + 0.40*landscape + 0.15*infra + 0.10*weather*landscape, 0, 1); landscape = 0.55*terrain_lowflat + 0.45*impervious; infra = 0.70*built_road_proxy + 0.30*(1 - drain_density_norm)"
       },
       {
@@ -1885,7 +1945,7 @@
         "valid_time": "2021-09-02T05:00",
         "png": "mrms_qpe_ida_susc_lead_17h_blend.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility/mrms_qpe_ida_susc_lead_17h_blend.tif",
-        "mean": 0.328607976436615,
+        "mean": 0.32557764649391174,
         "formula": "S = clip(0.35*weather + 0.40*landscape + 0.15*infra + 0.10*weather*landscape, 0, 1); landscape = 0.55*terrain_lowflat + 0.45*impervious; infra = 0.70*built_road_proxy + 0.30*(1 - drain_density_norm)"
       },
       {
@@ -1894,7 +1954,7 @@
         "valid_time": "2021-09-02T06:00",
         "png": "mrms_qpe_ida_susc_lead_18h.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility/mrms_qpe_ida_susc_lead_18h.tif",
-        "mean": 0.33467161655426025,
+        "mean": 0.3346553444862366,
         "formula": "S = clip(0.35*weather + 0.40*landscape + 0.15*infra + 0.10*weather*landscape, 0, 1); landscape = 0.55*terrain_lowflat + 0.45*impervious; infra = 0.70*built_road_proxy + 0.30*(1 - drain_density_norm)"
       },
       {
@@ -1903,7 +1963,7 @@
         "valid_time": "2021-09-02T07:00",
         "png": "mrms_qpe_ida_susc_lead_19h_blend.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility/mrms_qpe_ida_susc_lead_19h_blend.tif",
-        "mean": 0.3266335129737854,
+        "mean": 0.32263094186782837,
         "formula": "S = clip(0.35*weather + 0.40*landscape + 0.15*infra + 0.10*weather*landscape, 0, 1); landscape = 0.55*terrain_lowflat + 0.45*impervious; infra = 0.70*built_road_proxy + 0.30*(1 - drain_density_norm)"
       },
       {
@@ -1912,7 +1972,7 @@
         "valid_time": "2021-09-02T08:00",
         "png": "mrms_qpe_ida_susc_lead_20h_blend.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility/mrms_qpe_ida_susc_lead_20h_blend.tif",
-        "mean": 0.31859540939331055,
+        "mean": 0.31060662865638733,
         "formula": "S = clip(0.35*weather + 0.40*landscape + 0.15*infra + 0.10*weather*landscape, 0, 1); landscape = 0.55*terrain_lowflat + 0.45*impervious; infra = 0.70*built_road_proxy + 0.30*(1 - drain_density_norm)"
       },
       {
@@ -1921,7 +1981,7 @@
         "valid_time": "2021-09-02T09:00",
         "png": "mrms_qpe_ida_susc_lead_21h_blend.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility/mrms_qpe_ida_susc_lead_21h_blend.tif",
-        "mean": 0.3105573058128357,
+        "mean": 0.2985822260379791,
         "formula": "S = clip(0.35*weather + 0.40*landscape + 0.15*infra + 0.10*weather*landscape, 0, 1); landscape = 0.55*terrain_lowflat + 0.45*impervious; infra = 0.70*built_road_proxy + 0.30*(1 - drain_density_norm)"
       },
       {
@@ -1930,7 +1990,7 @@
         "valid_time": "2021-09-02T10:00",
         "png": "mrms_qpe_ida_susc_lead_22h_blend.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility/mrms_qpe_ida_susc_lead_22h_blend.tif",
-        "mean": 0.30251920223236084,
+        "mean": 0.2865578830242157,
         "formula": "S = clip(0.35*weather + 0.40*landscape + 0.15*infra + 0.10*weather*landscape, 0, 1); landscape = 0.55*terrain_lowflat + 0.45*impervious; infra = 0.70*built_road_proxy + 0.30*(1 - drain_density_norm)"
       },
       {
@@ -1939,7 +1999,7 @@
         "valid_time": "2021-09-02T11:00",
         "png": "mrms_qpe_ida_susc_lead_23h_blend.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility/mrms_qpe_ida_susc_lead_23h_blend.tif",
-        "mean": 0.2944811284542084,
+        "mean": 0.2745335102081299,
         "formula": "S = clip(0.35*weather + 0.40*landscape + 0.15*infra + 0.10*weather*landscape, 0, 1); landscape = 0.55*terrain_lowflat + 0.45*impervious; infra = 0.70*built_road_proxy + 0.30*(1 - drain_density_norm)"
       },
       {
@@ -1948,79 +2008,46 @@
         "valid_time": "2021-09-02T12:00",
         "png": "mrms_qpe_ida_susc_lead_24h.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility/mrms_qpe_ida_susc_lead_24h.tif",
-        "mean": 0.2864430546760559,
+        "mean": 0.2625091075897217,
         "formula": "S = clip(0.35*weather + 0.40*landscape + 0.15*infra + 0.10*weather*landscape, 0, 1); landscape = 0.55*terrain_lowflat + 0.45*impervious; infra = 0.70*built_road_proxy + 0.30*(1 - drain_density_norm)"
       }
     ],
     "bounds": [
       [
-        40.48,
-        -74.28
+        40.4,
+        -74.45
       ],
       [
-        40.93,
-        -73.68
+        41.05,
+        -73.5
       ]
     ],
+    "extent": "metro",
+    "soft_edge": true,
     "formula": "S = clip(0.35*weather + 0.40*landscape + 0.15*infra + 0.10*weather*landscape, 0, 1); landscape = 0.55*terrain_lowflat + 0.45*impervious; infra = 0.70*built_road_proxy + 0.30*(1 - drain_density_norm)",
-    "disclaimer": "Screening with MRMS-forced weather factor \u2014 not depth.",
+    "disclaimer": "Screening index (weather evolves; landscape/infra mostly static). Not flood probability / not depth. Soft metro land+edge mask.",
     "colorbar": {
       "cmap": "YlOrRd",
       "units": "index 0\u20131",
       "label": "Susceptibility (screening)"
     },
-    "opacity_default": 0.65,
-    "static_factors": {
-      "label": "Multi-factor susceptibility factors",
-      "disclaimer": "Relative screening from weather \u00d7 landscape \u00d7 infrastructure. Not inundation depth, not flood probability, not a calibrated hydrology model.",
-      "formula": "S = clip(0.35*weather + 0.40*landscape + 0.15*infra + 0.10*weather*landscape, 0, 1); landscape = 0.55*terrain_lowflat + 0.45*impervious; infra = 0.70*built_road_proxy + 0.30*(1 - drain_density_norm)",
-      "weights": {
-        "weather": 0.35,
-        "landscape": 0.4,
-        "infra": 0.15,
-        "interaction_weather_landscape": 0.1,
-        "landscape_terrain": 0.55,
-        "landscape_impervious": 0.45,
-        "infra_built": 0.7,
-        "infra_drain_deficit": 0.3
-      },
-      "extent_id": "citywide",
-      "shape": [
-        360,
-        480
+    "opacity_default": 0.55,
+    "time_window": {
+      "init_time_utc": "2021-09-01T12:00",
+      "first_valid_time_utc": "2021-09-01T18:00",
+      "last_valid_time_utc": "2021-09-02T12:00",
+      "lead_hours_min": 6.0,
+      "lead_hours_max": 24.0,
+      "native_leads_h": [
+        6,
+        12,
+        18,
+        24
       ],
-      "bounds": [
-        [
-          40.48,
-          -74.28
-        ],
-        [
-          40.93,
-          -73.68
-        ]
-      ],
-      "transform": [
-        0.001249999999999988,
-        0.0,
-        -74.28,
-        0.0,
-        -0.0012500000000000078,
-        40.93
-      ],
-      "paths": {
-        "terrain": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility_factors/factor_terrain.tif",
-        "impervious": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility_factors/factor_impervious.tif",
-        "landscape": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility_factors/factor_landscape.tif",
-        "built": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility_factors/factor_built.tif",
-        "drain_density": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility_factors/factor_drain_density.tif",
-        "infra": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/susceptibility_factors/factor_infra.tif"
-      },
-      "sources": [
-        "/home/jesscmiel/projects/nyc-flood-impact/data/processed/terrain_screening_citywide.tif",
-        "/home/jesscmiel/projects/nyc-flood-impact/data/raw/landcover/nlcd_2021_impervious_citywide.tif",
-        "/home/jesscmiel/projects/nyc-flood-impact/data/raw/infrastructure/osm_highways_south_queens.json"
-      ],
-      "citations_note": "Compound flood-susceptibility indices commonly combine hazard intensity, land-surface predisposition (topography, imperviousness), and exposure/drainage; weights here are transparent screening defaults, not NYC-calibrated parameters."
+      "loop_step_h": 1.0,
+      "n_frames": 19,
+      "note": "Ida MRMS awareness loop covers +6h\u2026+24h from 2021-09-01T12:00 UTC (valid 2021-09-01T18:00 \u2192 2021-09-02T12:00). Depth cum frames exist at 6/12/18/24h only.",
+      "longer_modeling_recommendation": "Extend earlier (0\u20136h buildup) and later (24\u201336h drainage/recession) so pooling can grow and recede; native 1h MRMS (or 15-min) forcing would reduce blend-only motion."
     }
   },
   "infra_highlights": {
@@ -2192,7 +2219,7 @@
       "citations_note": "Order-of-magnitude urban drainage design / pluvial screening sink rates (~5\u201325 mm/hr sustained; short-duration design often higher). Effective drainage hours \u226a full event length so storm-total screening does not over-credit conveyance. Not a calibrated NYC DEP network."
     },
     "storm_total": {
-      "png": "depth_citywide_mrms_qpe_ida_storm_total_m.png",
+      "png": "depth_metro_mrms_qpe_ida_storm_total_m.png",
       "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_citywide_mrms_qpe_ida_storm_total_m.tif",
       "metro_png": "depth_metro_mrms_qpe_ida_storm_total_m.png",
       "metro_tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_metro_mrms_qpe_ida_storm_total_m.tif",
@@ -2209,35 +2236,39 @@
     "cumulative_frames": [
       {
         "lead_hours": 6,
-        "png": "depth_mrms_cum_lead_06h_m.png",
+        "png": "depth_metro_mrms_cum_lead_06h_m.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_mrms_cum_lead_06h_m.tif",
         "max_m": null,
         "wet_fraction": 0.0,
-        "drainage_proxy": "drainage_capacity_proxy_v1"
+        "drainage_proxy": "drainage_capacity_proxy_v1",
+        "evolves_with_timeline": true
       },
       {
         "lead_hours": 12,
-        "png": "depth_mrms_cum_lead_12h_m.png",
+        "png": "depth_metro_mrms_cum_lead_12h_m.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_mrms_cum_lead_12h_m.tif",
         "max_m": 0.029798408970236778,
         "wet_fraction": 0.0023436425687247634,
-        "drainage_proxy": "drainage_capacity_proxy_v1"
+        "drainage_proxy": "drainage_capacity_proxy_v1",
+        "evolves_with_timeline": true
       },
       {
         "lead_hours": 18,
-        "png": "depth_mrms_cum_lead_18h_m.png",
+        "png": "depth_metro_mrms_cum_lead_18h_m.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_mrms_cum_lead_18h_m.tif",
         "max_m": 0.13148796558380127,
         "wet_fraction": 0.009667252134561774,
-        "drainage_proxy": "drainage_capacity_proxy_v1"
+        "drainage_proxy": "drainage_capacity_proxy_v1",
+        "evolves_with_timeline": true
       },
       {
         "lead_hours": 24,
-        "png": "depth_mrms_cum_lead_24h_m.png",
+        "png": "depth_metro_mrms_cum_lead_24h_m.png",
         "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_mrms_cum_lead_24h_m.tif",
         "max_m": 0.13148796558380127,
         "wet_fraction": 0.009668502243946345,
-        "drainage_proxy": "drainage_capacity_proxy_v1"
+        "drainage_proxy": "drainage_capacity_proxy_v1",
+        "evolves_with_timeline": true
       }
     ],
     "colorbar": {
@@ -2260,7 +2291,25 @@
     "drainage_proxy": "drainage_capacity_proxy_v1",
     "official_nws": false,
     "decision_grade": false,
-    "stream_acc_threshold": 693.0
+    "stream_acc_threshold": 693.0,
+    "time_window": {
+      "init_time_utc": "2021-09-01T12:00",
+      "first_valid_time_utc": "2021-09-01T18:00",
+      "last_valid_time_utc": "2021-09-02T12:00",
+      "lead_hours_min": 6.0,
+      "lead_hours_max": 24.0,
+      "native_leads_h": [
+        6,
+        12,
+        18,
+        24
+      ],
+      "loop_step_h": 1.0,
+      "n_frames": 19,
+      "note": "Ida MRMS awareness loop covers +6h\u2026+24h from 2021-09-01T12:00 UTC (valid 2021-09-01T18:00 \u2192 2021-09-02T12:00). Depth cum frames exist at 6/12/18/24h only.",
+      "longer_modeling_recommendation": "Extend earlier (0\u20136h buildup) and later (24\u201336h drainage/recession) so pooling can grow and recede; native 1h MRMS (or 15-min) forcing would reduce blend-only motion."
+    },
+    "depth_timeline_note": "Cumulative depth frames at +6/+12/+18/+24h (HAND after drainage proxy). Product map swaps nearest cum frame with precip lead; early leads are dry/near-dry."
   },
   "flood_warning_prototype": {
     "label": "Research flood-warning prototype",
@@ -2278,22 +2327,22 @@
     "map_extent_default": "metro",
     "precip": [
       [
-        40.48,
-        -74.28
+        40.4,
+        -74.45
       ],
       [
-        40.93,
-        -73.68
+        41.05,
+        -73.5
       ]
     ],
     "susceptibility": [
       [
-        40.48,
-        -74.28
+        40.4,
+        -74.45
       ],
       [
-        40.93,
-        -73.68
+        41.05,
+        -73.5
       ]
     ],
     "inundation": [
@@ -2316,7 +2365,8 @@
         41.05,
         -73.5
       ]
-    ]
+    ],
+    "note": "metro = continuous soft-edge overlays for precip/susc/depth"
   },
   "mrms_qpe": null,
   "compare_mode": false,
@@ -2467,5 +2517,22 @@
     "meta": "depth_metro_mrms_qpe_ida_meta.json",
     "role": "primary",
     "honesty": "Primary research depth = unified pysheds HAND/bathtub on metro DEM forced by spatially varying MRMS QPE Ida after an open drainage capacity proxy (NLCD impervious + optional drain density + literature mm/hr sink with surcharge). NOT a DEP sewer model. Soft land mask (alpha/nodata outside land). NOT official NWS. NOT decision-grade. SFINCS is an alternate hydro track only."
+  },
+  "time_window": {
+    "init_time_utc": "2021-09-01T12:00",
+    "first_valid_time_utc": "2021-09-01T18:00",
+    "last_valid_time_utc": "2021-09-02T12:00",
+    "lead_hours_min": 6.0,
+    "lead_hours_max": 24.0,
+    "native_leads_h": [
+      6,
+      12,
+      18,
+      24
+    ],
+    "loop_step_h": 1.0,
+    "n_frames": 19,
+    "note": "Ida MRMS awareness loop covers +6h\u2026+24h from 2021-09-01T12:00 UTC (valid 2021-09-01T18:00 \u2192 2021-09-02T12:00). Depth cum frames exist at 6/12/18/24h only.",
+    "longer_modeling_recommendation": "Extend earlier (0\u20136h buildup) and later (24\u201336h drainage/recession) so pooling can grow and recede; native 1h MRMS (or 15-min) forcing would reduce blend-only motion."
   }
 }

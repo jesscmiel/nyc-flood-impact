@@ -2,7 +2,26 @@
   "n_paths": 3,
   "default_storm_path": "mrms_qpe_ida",
   "n_loop_frames_default": 19,
-  "step_note": "MRMS: native 6h + 1h temporal blends; Earth2: native 6h + 2h blends",
+  "step_note": "MRMS metro soft-edge: native 6h + 1h temporal blends; depth cum at 6/12/18/24h",
   "susceptibility_formula": "S = clip(0.35*weather + 0.40*landscape + 0.15*infra + 0.10*weather*landscape, 0, 1); landscape = 0.55*terrain_lowflat + 0.45*impervious; infra = 0.70*built_road_proxy + 0.30*(1 - drain_density_norm)",
-  "product_policy": "ida_hires_viz_with_earth2_scenarios"
+  "product_policy": "ida_hires_viz_with_earth2_scenarios",
+  "extent": "metro",
+  "soft_edge": true,
+  "time_window": {
+    "init_time_utc": "2021-09-01T12:00",
+    "first_valid_time_utc": "2021-09-01T18:00",
+    "last_valid_time_utc": "2021-09-02T12:00",
+    "lead_hours_min": 6.0,
+    "lead_hours_max": 24.0,
+    "native_leads_h": [
+      6,
+      12,
+      18,
+      24
+    ],
+    "loop_step_h": 1.0,
+    "n_frames": 19,
+    "note": "Ida MRMS awareness loop covers +6h\u2026+24h from 2021-09-01T12:00 UTC (valid 2021-09-01T18:00 \u2192 2021-09-02T12:00). Depth cum frames exist at 6/12/18/24h only.",
+    "longer_modeling_recommendation": "Extend earlier (0\u20136h buildup) and later (24\u201336h drainage/recession) so pooling can grow and recede; native 1h MRMS (or 15-min) forcing would reduce blend-only motion."
+  }
 }

@@ -165,6 +165,16 @@ details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft);
 .selected-card h3 {{ margin:0 0 6px; font:700 .95rem Sora,sans-serif; }}
 .selected-card p {{ margin:0; font-size:.78rem; color:var(--muted); line-height:1.4; }}
 .empty {{ padding:14px; text-align:center; color:var(--muted); font-size:.8rem; }}
+/* Soft radar-style overlays — continuous metro, no hard crop box */
+.leaflet-image-layer.precip-radar,
+.leaflet-image-layer.depth-radar,
+.leaflet-image-layer.susc-radar {{
+  -webkit-mask-image: radial-gradient(ellipse 92% 88% at 50% 50%, #000 58%, transparent 100%);
+  mask-image: radial-gradient(ellipse 92% 88% at 50% 50%, #000 58%, transparent 100%);
+  image-rendering: auto;
+  filter: saturate(1.08) contrast(1.04);
+}}
+.leaflet-image-layer.precip-radar {{ mix-blend-mode: screen; }}
 </style>
 </head>
 <body>
@@ -216,20 +226,22 @@ details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft);
     <h2>Storm + primary depth</h2>
     <div class="honesty" style="margin-top:0">Primary: <b>pysheds metro</b> · Alt: SFINCS (Advanced). Storm path locked to <b>MRMS QPE Ida</b>.</div>
     <div class="metric"><span>Storm path</span><b style="font-size:.68rem">MRMS QPE Ida (~1 km)</b></div>
-    <label class="layer-btn"><input id="lyDepthTot" type="checkbox" checked>Primary research depth (pysheds metro)</label>
-    <label class="layer-btn"><input id="lyE2" type="checkbox" checked>MRMS precip loop (awareness)</label>
-    <div class="opacity-row"><span>Precip</span><input id="opPrecip" type="range" min="10" max="85" value="28"><span id="opPrecipVal">28%</span></div>
-    <div class="opacity-row"><span>Est. depth</span><input id="opDepth" type="range" min="15" max="90" value="62"><span id="opDepthVal">62%</span></div>
+    <div class="metric" id="timeWindowMetric"><span>Time window</span><b style="font-size:.62rem" id="timeWindowVal">+6…+24h</b></div>
+    <label class="layer-btn"><input id="lyDepthTot" type="checkbox" checked>Primary research depth (evolves w/ loop)</label>
+    <label class="layer-btn"><input id="lyE2" type="checkbox" checked>MRMS precip loop (soft metro)</label>
+    <div class="opacity-row"><span>Precip</span><input id="opPrecip" type="range" min="10" max="85" value="34"><span id="opPrecipVal">34%</span></div>
+    <div class="opacity-row"><span>Est. depth</span><input id="opDepth" type="range" min="15" max="90" value="68"><span id="opDepthVal">68%</span></div>
     <div class="legend-swatch precip"></div>
     <div class="legend-swatch depth"></div>
+    <div class="honesty" id="depthTimelineNote">Depth follows nearest cum lead (6/12/18/24h) — early frames dry; wetness concentrates after ~+18h. HAND puddles are heuristic, not street-truth.</div>
     <div class="honesty" id="pathHonesty" style="display:none">Primary Ida awareness: MRMS QPE (~1 km).</div>
   </div>
 
   <div class="panel">
     <details class="advanced" id="screeningDetails">
       <summary>Screening (optional)</summary>
-      <div class="honesty" style="margin-top:0">Uncalibrated susceptibility heatmap — optional glance only, not flood probability.</div>
-      <div class="opacity-row"><span>Susceptibility</span><input id="opSusc" type="range" min="10" max="90" value="35"><span id="opSuscVal">35%</span></div>
+      <div class="honesty" style="margin-top:0">Uncalibrated screening — weather factor evolves with precip; landscape/infra are mostly static. Not flood probability / not depth.</div>
+      <div class="opacity-row"><span>Susceptibility</span><input id="opSusc" type="range" min="10" max="90" value="48"><span id="opSuscVal">48%</span></div>
       <div class="legend-swatch susc"></div>
       <label class="layer-btn" style="margin-top:4px"><input id="lySusc" type="checkbox">Show susceptibility screening</label>
     </details>
@@ -270,7 +282,8 @@ details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft);
       <p>
         <b>Product</b> = Asset Decision Desk for infrastructure/response <i>research</i> screening.<br>
         <b>Primary depth</b> = unified pysheds HAND/bathtub on metro DEM × spatial MRMS QPE Ida after open drainage capacity proxy (NLCD + optional drain density + literature mm/hr sink with surcharge; soft land mask). NOT DEP / SWMM.<br>
-        <b>Map + data domain</b> = metro continuous; SFINCS Queens remains alternate hydro track under Advanced.<br>
+        <b>Map + data domain</b> = metro continuous soft-edge overlays (no hard citywide crop); SFINCS Queens remains alternate hydro track under Advanced.<br>
+        <b>Time window</b> = Ida MRMS loop +6h…+24h from 2021-09-01T12:00 UTC (valid 18:00 Sep 1 → 12:00 Sep 2). Depth cum at 6/12/18/24h.<br>
         <b>Bands</b> = research ≥3 / ≥8 / ≥15 cm — not NWS watch/warning language.<br>
         <b>Cannot claim</b> = official NWS warning, calibrated DEP sewer / SWMM, decision-grade guidance, Enterprise/HENS.
       </p>
@@ -290,7 +303,7 @@ details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft);
     <button type="button" class="play" id="hudPlay">▶</button>
     <div>
       <div class="clock" id="hudClock">—</div>
-      <div class="sub" id="hudSub">MRMS awareness loop · not NEXRAD reflectivity</div>
+      <div class="sub" id="hudSub">MRMS soft metro · +6…+24h · not NEXRAD</div>
     </div>
     <div class="legend">
       <span id="hudLegendLabel">Precip (mm) · context</span>
@@ -383,8 +396,8 @@ function suscOpacity() {{ return (+document.getElementById("opSusc").value) / 10
 function depthOpacity() {{ return (+document.getElementById("opDepth").value) / 100; }}
 
 let activePath = stormPaths.find(p => p.id === pathSel.value) || stormPaths[0];
-let frames = [], suscFrames = [], e2Layers = [], suscLayers = [];
-let activeE2 = null, activeSusc = null, e2Total = null, depthTotal = null, sfincsLayer = null;
+let frames = [], suscFrames = [], depthCumFrames = [], e2Layers = [], suscLayers = [], depthLayers = [];
+let activeE2 = null, activeSusc = null, activeDepth = null, e2Total = null, depthTotal = null, sfincsLayer = null;
 let playing = false, playTimer = null;
 let desk = null, wetLayer = null, selectedLayer = null, selectedId = null;
 let typeFilter = "all";
@@ -400,29 +413,72 @@ function depthSetForPath(pathId) {{
   return inundation;
 }}
 
+function overlayBoundsPreferMetro(explicit) {{
+  if (explicit) return explicit;
+  return dataDomainBounds();
+}}
+
+function nearestDepthIndex(leadHours) {{
+  if (!depthCumFrames.length) return -1;
+  let best = 0, bestAbs = Infinity;
+  depthCumFrames.forEach((fr, idx) => {{
+    const d = Math.abs((fr.lead_hours || 0) - leadHours);
+    if (d < bestAbs) {{ bestAbs = d; best = idx; }}
+  }});
+  return best;
+}}
+
+function syncTimeWindowLabel() {{
+  const tw = (activePath.precip && activePath.precip.time_window)
+    || manifest.time_window
+    || null;
+  const el = document.getElementById("timeWindowVal");
+  if (!el) return;
+  if (tw && tw.first_valid_time_utc && tw.last_valid_time_utc) {{
+    el.textContent = "+" + tw.lead_hours_min + "…" + tw.lead_hours_max + "h · " +
+      String(tw.first_valid_time_utc).replace("T"," ") + "→" + String(tw.last_valid_time_utc).slice(11);
+  }} else if (frames.length) {{
+    el.textContent = "+" + frames[0].lead_hours + "…" + frames[frames.length-1].lead_hours + "h";
+  }} else {{
+    el.textContent = "+6…+24h";
+  }}
+}}
+
 function rebuildPathLayers() {{
   e2Layers.forEach(l => mapLeft.removeLayer(l));
   suscLayers.forEach(l => mapLeft.removeLayer(l));
+  depthLayers.forEach(l => mapLeft.removeLayer(l));
   if (e2Total) mapLeft.removeLayer(e2Total);
+  if (depthTotal && mapLeft.hasLayer(depthTotal)) mapLeft.removeLayer(depthTotal);
   frames = activePath.precip?.frames || [];
   suscFrames = activePath.susceptibility?.frames || [];
-  const precipBounds = (activePath.precip && activePath.precip.bounds) || currentBounds();
-  const suscBounds = (activePath.susceptibility && activePath.susceptibility.bounds) || precipBounds;
+  const precipBounds = overlayBoundsPreferMetro(activePath.precip && activePath.precip.bounds);
+  const suscBounds = overlayBoundsPreferMetro((activePath.susceptibility && activePath.susceptibility.bounds) || precipBounds);
   e2Layers = frames.map(f => L.imageOverlay(assets + f.png, precipBounds, {{
     opacity: precipOpacity(), interactive:false, pane:"rasterPane", className:"precip-radar"
   }}));
   suscLayers = suscFrames.map(f => L.imageOverlay(assets + f.png, suscBounds, {{
-    opacity: suscOpacity(), interactive:false, pane:"rasterPane"
+    opacity: suscOpacity(), interactive:false, pane:"rasterPane", className:"susc-radar"
   }}));
   e2Total = activePath.precip?.storm_total_png
-    ? L.imageOverlay(assets + activePath.precip.storm_total_png, precipBounds, {{ opacity: precipOpacity(), pane:"rasterPane", interactive:false }})
+    ? L.imageOverlay(assets + activePath.precip.storm_total_png, precipBounds, {{
+        opacity: precipOpacity(), pane:"rasterPane", interactive:false, className:"precip-radar"
+      }})
     : null;
   const ds = depthSetForPath(activePath.id);
-  if (depthTotal && mapLeft.hasLayer(depthTotal)) mapLeft.removeLayer(depthTotal);
+  const depthBounds = overlayBoundsPreferMetro((ds && ds.bounds) || precipBounds);
+  depthCumFrames = (ds && ds.cumulative_frames) ? ds.cumulative_frames.slice() : [];
+  depthLayers = depthCumFrames.map(fr => L.imageOverlay(assets + fr.png, depthBounds, {{
+    opacity: depthOpacity(), interactive:false, pane:"depthPane", className:"depth-radar"
+  }}));
   depthTotal = (ds && ds.storm_total && ds.storm_total.png)
-    ? L.imageOverlay(assets + ds.storm_total.png, (ds.bounds || precipBounds), {{ opacity: depthOpacity(), interactive:false, pane:"depthPane" }})
+    ? L.imageOverlay(assets + ds.storm_total.png, depthBounds, {{
+        opacity: depthOpacity(), interactive:false, pane:"depthPane", className:"depth-radar"
+      }})
     : (manifest.inundation_citywide && manifest.inundation_citywide.png)
-      ? L.imageOverlay(assets + manifest.inundation_citywide.png, dataDomainBounds(), {{ opacity: depthOpacity(), interactive:false, pane:"depthPane" }})
+      ? L.imageOverlay(assets + manifest.inundation_citywide.png, dataDomainBounds(), {{
+          opacity: depthOpacity(), interactive:false, pane:"depthPane", className:"depth-radar"
+        }})
       : null;
   if (manifest.inundation_sfincs && manifest.inundation_sfincs.png) {{
     const b = EXTENTS.south_queens?.bounds || EXTENTS.citywide.bounds;
@@ -431,8 +487,16 @@ function rebuildPathLayers() {{
     }});
   }}
   document.getElementById("pathHonesty").textContent = activePath.primary || activePath.ida_primary_viz
-    ? "Primary Ida awareness: MRMS QPE (~1 km). Temporal blends densify the loop — not NEXRAD tiles."
+    ? "Primary Ida awareness: soft-edge metro MRMS QPE (~1 km). Temporal blends densify the loop — not NEXRAD tiles."
     : (activePath.honesty || "Labeled AI / alternate scenario — coarse cells; not the decision surface.");
+  const note = document.getElementById("depthTimelineNote");
+  if (note) {{
+    note.textContent = depthCumFrames.length
+      ? ("Depth follows nearest cum lead (" + depthCumFrames.map(f => "+" + f.lead_hours + "h").join("/") +
+         ") — early frames dry; wetness concentrates after ~+18h. HAND puddles are heuristic, not street-truth.")
+      : "Depth is storm-total only on this path (no cum frames) — label as static if it does not change with the loop.";
+  }}
+  syncTimeWindowLabel();
   // Prefer bilinear-ish for MRMS awareness; keep Earth2 pixelated if selected
   const nearest = !(activePath.ida_primary_viz || activePath.id === "mrms_qpe_ida");
   document.querySelectorAll(".leaflet-image-layer").forEach(el => {{
@@ -456,9 +520,13 @@ function setLead(i) {{
       activeSusc.setOpacity(suscOpacity()); activeSusc.addTo(mapLeft);
     }}
   }}
-  if (document.getElementById("lyDepthTot").checked && depthTotal) {{
-    depthTotal.setOpacity(depthOpacity());
-    if (!mapLeft.hasLayer(depthTotal)) depthTotal.addTo(mapLeft);
+  if (activeDepth && mapLeft.hasLayer(activeDepth)) mapLeft.removeLayer(activeDepth);
+  if (depthTotal && mapLeft.hasLayer(depthTotal)) mapLeft.removeLayer(depthTotal);
+  const di = nearestDepthIndex(f.lead_hours);
+  activeDepth = (di >= 0 && depthLayers[di]) ? depthLayers[di] : depthTotal;
+  if (document.getElementById("lyDepthTot").checked && activeDepth) {{
+    activeDepth.setOpacity(depthOpacity());
+    activeDepth.addTo(mapLeft);
   }}
   if (document.getElementById("lySfincs").checked && sfincsLayer) {{
     if (!mapLeft.hasLayer(sfincsLayer)) sfincsLayer.addTo(mapLeft);
@@ -469,8 +537,13 @@ function setLead(i) {{
   }}
   const clock = (f.valid_time || "").replace("T", " ");
   document.getElementById("hudClock").textContent = clock + " UTC";
+  const depthLead = (di >= 0 && depthCumFrames[di]) ? depthCumFrames[di].lead_hours : null;
+  const depthBit = depthLead != null
+    ? (" · depth cum +" + depthLead + "h")
+    : (depthTotal ? " · depth storm-total (static)" : "");
   document.getElementById("hudSub").textContent =
-    activePath.label + " · +" + f.lead_hours + "h · " + (f.temporal_blend ? "blend" : "native") + " · awareness only";
+    activePath.label + " · +" + f.lead_hours + "h · " + (f.temporal_blend ? "blend" : "native") +
+    depthBit + " · awareness only";
   document.getElementById("leftLabel").textContent = "Asset Decision Desk · " + (activePath.label || "Ida");
 }}
 
@@ -716,14 +789,15 @@ document.getElementById("opSusc").oninput = () => {{
 }};
 document.getElementById("opDepth").oninput = () => {{
   document.getElementById("opDepthVal").textContent = document.getElementById("opDepth").value + "%";
-  if (depthTotal) depthTotal.setOpacity(depthOpacity());
+  if (activeDepth) activeDepth.setOpacity(depthOpacity());
+  else if (depthTotal) depthTotal.setOpacity(depthOpacity());
 }};
 document.getElementById("lyE2").onchange = () => setLead(0);
 document.getElementById("lySusc").onchange = () => setLead(0);
 document.getElementById("lyDepthTot").onchange = () => {{
-  if (!depthTotal) return;
-  if (document.getElementById("lyDepthTot").checked) {{ depthTotal.setOpacity(depthOpacity()); depthTotal.addTo(mapLeft); }}
-  else mapLeft.removeLayer(depthTotal);
+  if (activeDepth && mapLeft.hasLayer(activeDepth)) mapLeft.removeLayer(activeDepth);
+  if (depthTotal && mapLeft.hasLayer(depthTotal)) mapLeft.removeLayer(depthTotal);
+  if (document.getElementById("lyDepthTot").checked) setLead(0);
 }};
 document.getElementById("lySfincs").onchange = () => {{
   if (!sfincsLayer) return;

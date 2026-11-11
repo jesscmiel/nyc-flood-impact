@@ -49,7 +49,7 @@
     "citations_note": "Order-of-magnitude urban drainage design / pluvial screening sink rates (~5\u201325 mm/hr sustained; short-duration design often higher). Effective drainage hours \u226a full event length so storm-total screening does not over-credit conveyance. Not a calibrated NYC DEP network."
   },
   "storm_total": {
-    "png": "depth_citywide_mrms_qpe_ida_storm_total_m.png",
+    "png": "depth_metro_mrms_qpe_ida_storm_total_m.png",
     "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_citywide_mrms_qpe_ida_storm_total_m.tif",
     "metro_png": "depth_metro_mrms_qpe_ida_storm_total_m.png",
     "metro_tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_metro_mrms_qpe_ida_storm_total_m.tif",
@@ -66,35 +66,39 @@
   "cumulative_frames": [
     {
       "lead_hours": 6,
-      "png": "depth_mrms_cum_lead_06h_m.png",
+      "png": "depth_metro_mrms_cum_lead_06h_m.png",
       "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_mrms_cum_lead_06h_m.tif",
       "max_m": null,
       "wet_fraction": 0.0,
-      "drainage_proxy": "drainage_capacity_proxy_v1"
+      "drainage_proxy": "drainage_capacity_proxy_v1",
+      "evolves_with_timeline": true
     },
     {
       "lead_hours": 12,
-      "png": "depth_mrms_cum_lead_12h_m.png",
+      "png": "depth_metro_mrms_cum_lead_12h_m.png",
       "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_mrms_cum_lead_12h_m.tif",
       "max_m": 0.029798408970236778,
       "wet_fraction": 0.0023436425687247634,
-      "drainage_proxy": "drainage_capacity_proxy_v1"
+      "drainage_proxy": "drainage_capacity_proxy_v1",
+      "evolves_with_timeline": true
     },
     {
       "lead_hours": 18,
-      "png": "depth_mrms_cum_lead_18h_m.png",
+      "png": "depth_metro_mrms_cum_lead_18h_m.png",
       "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_mrms_cum_lead_18h_m.tif",
       "max_m": 0.13148796558380127,
       "wet_fraction": 0.009667252134561774,
-      "drainage_proxy": "drainage_capacity_proxy_v1"
+      "drainage_proxy": "drainage_capacity_proxy_v1",
+      "evolves_with_timeline": true
     },
     {
       "lead_hours": 24,
-      "png": "depth_mrms_cum_lead_24h_m.png",
+      "png": "depth_metro_mrms_cum_lead_24h_m.png",
       "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_mrms_cum_lead_24h_m.tif",
       "max_m": 0.13148796558380127,
       "wet_fraction": 0.009668502243946345,
-      "drainage_proxy": "drainage_capacity_proxy_v1"
+      "drainage_proxy": "drainage_capacity_proxy_v1",
+      "evolves_with_timeline": true
     }
   ],
   "colorbar": {
@@ -117,5 +121,23 @@
   "drainage_proxy": "drainage_capacity_proxy_v1",
   "official_nws": false,
   "decision_grade": false,
-  "stream_acc_threshold": 693.0
+  "stream_acc_threshold": 693.0,
+  "time_window": {
+    "init_time_utc": "2021-09-01T12:00",
+    "first_valid_time_utc": "2021-09-01T18:00",
+    "last_valid_time_utc": "2021-09-02T12:00",
+    "lead_hours_min": 6.0,
+    "lead_hours_max": 24.0,
+    "native_leads_h": [
+      6,
+      12,
+      18,
+      24
+    ],
+    "loop_step_h": 1.0,
+    "n_frames": 19,
+    "note": "Ida MRMS awareness loop covers +6h\u2026+24h from 2021-09-01T12:00 UTC (valid 2021-09-01T18:00 \u2192 2021-09-02T12:00). Depth cum frames exist at 6/12/18/24h only.",
+    "longer_modeling_recommendation": "Extend earlier (0\u20136h buildup) and later (24\u201336h drainage/recession) so pooling can grow and recede; native 1h MRMS (or 15-min) forcing would reduce blend-only motion."
+  },
+  "depth_timeline_note": "Cumulative depth frames at +6/+12/+18/+24h (HAND after drainage proxy). Product map swaps nearest cum frame with precip lead; early leads are dry/near-dry."
 }
