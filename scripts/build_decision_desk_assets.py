@@ -18,7 +18,9 @@ ASSETS = FIGURES_DIR / "product_assets"
 
 def main() -> None:
     gpkg = ASSETS / "exposure_citywide.gpkg"
-    depth = PROCESSED_DIR / "inundation" / "depth_citywide_mrms_qpe_ida_storm_total_m.tif"
+    depth = PROCESSED_DIR / "inundation" / "depth_metro_mrms_qpe_ida_storm_total_m.tif"
+    if not depth.exists():
+        depth = PROCESSED_DIR / "inundation" / "depth_citywide_mrms_qpe_ida_storm_total_m.tif"
     if not depth.exists():
         depth = PROCESSED_DIR / "inundation" / "depth_mrms_storm_total_m.tif"
     if not gpkg.exists():
@@ -55,10 +57,12 @@ def main() -> None:
             "assets_json": "decision_desk_assets.json",
             "assets_geojson": "decision_desk_assets.geojson",
             "primary_depth_engine": "pysheds_hand_bathtub_v2",
-            "primary_forcing": "mrms_qpe_ida",
+            "primary_depth_extent": "metro",
+            "primary_forcing": "spatial_mrms_qpe_ida",
             "default_ux": "susceptibility_then_affected_assets",
             "official_nws": False,
             "decision_grade": False,
+            "sfincs_role": "alternate_hydro_track",
         }
         manifest["depth_engines"] = payload.get("depth_engines_reconcile")
         mp.write_text(json.dumps(manifest, indent=2))

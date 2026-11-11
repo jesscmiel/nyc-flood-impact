@@ -1,2 +1,2 @@
-2026-11-10 14:36:05,930 - hydromt_sfincs.sfincs - model_api - WARNING - Replacing geom: region
-2026-11-10 14:36:05,954 - hydromt_sfincs.sfincs - sfincs - WARNING - zsini not in states, skipping
+2026-11-11 10:47:18,178 - hydromt_sfincs.sfincs - model_api - WARNING - Replacing geom: region
+2026-11-11 10:47:18,322 - hydromt_sfincs.sfincs - sfincs - WARNING - zsini not in states, skipping

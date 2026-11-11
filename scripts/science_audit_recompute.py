@@ -8,6 +8,7 @@ Earth2 remains scenario. Writes outputs/science_audit_recompute.json.
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -15,18 +16,17 @@ import rasterio
 from rasterio.enums import Resampling
 from rasterio.warp import reproject
 
-import sys
-
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "src"))
 
 from flood_risk.validate.scores import score_points_on_depth
 from nyc_flash_flood_case_study.config import FIGURES_DIR, PROCESSED_DIR, PROJECT_ROOT
-from nyc_flash_flood_case_study.extents import DEFAULT_MAP_EXTENT, EXTENTS
+from nyc_flash_flood_case_study.extents import DEFAULT_MAP_EXTENT, EXTENTS, PRIMARY_DATA_EXTENT
 
 ASSETS = FIGURES_DIR / "product_assets"
 INUN = PROCESSED_DIR / "inundation"
+PREC_METRO = PROCESSED_DIR / "mrms_qpe_metro"
 PREC = PROCESSED_DIR / "earth2_precip"
 OUT = PROJECT_ROOT / "outputs" / "science_audit_recompute.json"
 
@@ -53,24 +53,30 @@ def _raster_stats(path: Path, thresholds: tuple[float, ...] = (0.03, 0.05)) -> d
 
 
 def main() -> None:
-    depth_city = INUN / "depth_citywide_mrms_qpe_ida_storm_total_m.tif"
+    depth_primary = INUN / "depth_metro_mrms_qpe_ida_storm_total_m.tif"
+    if not depth_primary.exists():
+        depth_primary = INUN / "depth_citywide_mrms_qpe_ida_storm_total_m.tif"
     depth_sfincs = INUN / "depth_sfincs_queens_ida_m.tif"
-    rain = PREC / "mrms_qpe_ida_precip_storm_total.tif"
-    dem = PROJECT_ROOT / "data" / "raw" / "terrain" / "dem_usgs_citywide.tif"
+    rain = PREC_METRO / "mrms_qpe_metro_storm_total.tif"
+    if not rain.exists():
+        rain = PREC / "mrms_qpe_ida_precip_storm_total.tif"
+    dem = PROJECT_ROOT / "data" / "raw" / "terrain" / "dem_usgs_metro.tif"
+    if not dem.exists():
+        dem = PROJECT_ROOT / "data" / "raw" / "terrain" / "dem_usgs_citywide.tif"
 
     scores = score_points_on_depth(
-        depth_tif=depth_city,
+        depth_tif=depth_primary,
         reports_geojson=ASSETS / "observed_311.geojson",
         gauges_geojson=ASSETS / "nwm_ahps_gauges.geojson",
         depth_hit_m=0.03,
     )
 
-    pysheds = _raster_stats(depth_city)
+    pysheds = _raster_stats(depth_primary)
     sfincs = _raster_stats(depth_sfincs) if depth_sfincs.exists() else None
 
     overlap = None
     if sfincs is not None:
-        with rasterio.open(depth_sfincs) as sf, rasterio.open(depth_city) as ps:
+        with rasterio.open(depth_sfincs) as sf, rasterio.open(depth_primary) as ps:
             s = sf.read(1).astype(np.float64)
             if sf.nodata is not None:
                 s = np.where((s == sf.nodata) | (s < -100), np.nan, s)
@@ -116,8 +122,10 @@ def main() -> None:
                 "p10_mm": float(np.percentile(pos, 10)) if pos.size else None,
                 "p90_mm": float(np.percentile(pos, 90)) if pos.size else None,
                 "cv": float(np.std(pos) / np.mean(pos)) if pos.size else None,
-                "uniform_sfincs_mm_hr_12h": (mean_mm / 12.0) if mean_mm else None,
-                "forcing_note": "SFINCS Queens used domain-mean rate, not this spatial field",
+                "forcing_note": (
+                    "SFINCS Queens uses spatial MRMS rate field (setup_precip_forcing_from_grid); "
+                    "uniform domain-mean forcing removed from primary path."
+                ),
             }
 
     dem_meta = None
@@ -133,17 +141,42 @@ def main() -> None:
                 "bounds": [ds.bounds.left, ds.bounds.bottom, ds.bounds.right, ds.bounds.top],
             }
 
-    # Random-land baseline vs 311 collocation (exposes tautology risk)
     rng = np.random.default_rng(42)
     random_hit = None
-    with rasterio.open(depth_city) as ds:
+    land_mask_path = PROCESSED_DIR / "land_mask_metro.tif"
+    if not land_mask_path.exists():
+        land_mask_path = PROCESSED_DIR / "land_mask_citywide.tif"
+    with rasterio.open(depth_primary) as ds:
         d = ds.read(1).astype(np.float64)
         if ds.nodata is not None:
             d = np.where(d == ds.nodata, np.nan, d)
-        land = np.argwhere(np.isfinite(d))
-        idx = rng.choice(len(land), size=min(2000, len(land)), replace=False)
-        samples = d[land[idx, 0], land[idx, 1]]
-        random_hit = float(np.mean(samples >= 0.03))
+        # Sample land polygon cells (incl. dry=NaN), not only finite wet cells.
+        if land_mask_path.exists():
+            land_arr = np.zeros(d.shape, dtype=np.uint8)
+            with rasterio.open(land_mask_path) as lm:
+                reproject(
+                    source=rasterio.band(lm, 1),
+                    destination=land_arr,
+                    src_transform=lm.transform,
+                    src_crs=lm.crs,
+                    dst_transform=ds.transform,
+                    dst_crs=ds.crs,
+                    resampling=Resampling.nearest,
+                )
+            land = np.argwhere(land_arr > 0)
+        else:
+            land = np.argwhere(np.isfinite(d) | True)
+        if len(land):
+            idx = rng.choice(len(land), size=min(2000, len(land)), replace=False)
+            samples = d[land[idx, 0], land[idx, 1]]
+            # Treat NaN dry as 0 for hit-rate baseline
+            samples = np.where(np.isfinite(samples), samples, 0.0)
+            random_hit = float(np.mean(samples >= 0.03))
+
+    sfincs_build = PROJECT_ROOT / "outputs" / "sfincs_queens_ida" / "build_meta.json"
+    sfincs_forcing = None
+    if sfincs_build.exists():
+        sfincs_forcing = json.loads(sfincs_build.read_text())
 
     report = {
         "product": "flood_risk_research_prototype",
@@ -151,35 +184,58 @@ def main() -> None:
         "decision_grade": False,
         "ida_precip_truth_preference": "mrms_qpe",
         "earth2_role": "scenario_only",
+        "primary_depth": {
+            "engine": "pysheds_hand_bathtub_v2",
+            "extent": PRIMARY_DATA_EXTENT,
+            "forcing": "spatial_mrms_qpe_ida",
+            "path": str(depth_primary),
+            "role": "primary",
+        },
+        "alternate_depth": {
+            "engine": "sfincs_docker_queens",
+            "extent": "south_queens",
+            "forcing": (sfincs_forcing or {}).get("precip_forcing", "spatial_mrms_grid"),
+            "role": "alternate_hydro_track",
+            "comparable_to_primary": False,
+        },
         "extents": {
             "default_map_extent": DEFAULT_MAP_EXTENT,
-            "data_domain": EXTENTS["citywide"]["bounds"],
-            "map_frame_metro": EXTENTS["metro"]["bounds"],
+            "primary_data_extent": PRIMARY_DATA_EXTENT,
+            "data_domain_metro": EXTENTS["metro"]["bounds"],
+            "legacy_citywide": EXTENTS["citywide"]["bounds"],
             "sfincs_spike": EXTENTS["south_queens"]["bounds"],
         },
         "validation": scores,
         "random_land_hit_rate_ge_3cm": random_hit,
-        "pysheds_citywide_mrms": pysheds,
-        "sfincs_queens_uniform": sfincs,
+        "pysheds_metro_mrms": pysheds,
+        "sfincs_queens_spatial": sfincs,
         "overlap_queens": overlap,
         "mrms_storm_total": mrms,
         "dem": dem_meta,
+        "sfincs_build_meta": sfincs_forcing,
         "honesty": (
-            "311 hit≈1 with random-land ≪ 311 shows spatial concentration, but without "
-            "non-flood controls / magnitude checks this is not certified skill. "
-            "SFINCS vs pysheds magnitudes are not interchangeable."
+            "Primary depth = metro pysheds × spatial MRMS. SFINCS Queens is alternate hydro only. "
+            "311 hit rates show spatial concentration, not certified skill / magnitude skill."
         ),
     }
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(report, indent=2))
-    print(json.dumps({
-        "wrote": str(OUT),
-        "hit_rate_311": scores["summary"]["hit_rate_311"],
-        "hit_rate_gauges": scores["summary"]["hit_rate_gauges"],
-        "random_land_hit_rate_ge_3cm": random_hit,
-        "ratio_mean_sfincs_over_pysheds": (overlap or {}).get("ratio_mean_sfincs_over_pysheds"),
-        "default_map_extent": DEFAULT_MAP_EXTENT,
-    }, indent=2))
+    print(
+        json.dumps(
+            {
+                "wrote": str(OUT),
+                "hit_rate_311": scores["summary"]["hit_rate_311"],
+                "hit_rate_gauges": scores["summary"]["hit_rate_gauges"],
+                "random_land_hit_rate_ge_3cm": random_hit,
+                "ratio_mean_sfincs_over_pysheds": (overlap or {}).get("ratio_mean_sfincs_over_pysheds"),
+                "primary_max_m": pysheds.get("max_m"),
+                "sfincs_max_m": (sfincs or {}).get("max_m"),
+                "default_map_extent": DEFAULT_MAP_EXTENT,
+                "dem_approx_cell_m": (dem_meta or {}).get("approx_cell_m"),
+            },
+            indent=2,
+        )
+    )
 
 
 if __name__ == "__main__":

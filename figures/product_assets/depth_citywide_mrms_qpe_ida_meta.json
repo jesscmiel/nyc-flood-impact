@@ -1,26 +1,88 @@
 {
-  "borough_id": "citywide",
-  "forcing_id": "mrms_qpe_ida",
+  "product": "estimated_research_inundation_depth",
+  "primary": true,
+  "role": "primary_depth",
+  "extent": "metro",
+  "bounds": [
+    [
+      40.4,
+      -74.45
+    ],
+    [
+      41.05,
+      -73.5
+    ]
+  ],
+  "dem": "/home/jesscmiel/projects/nyc-flood-impact/data/raw/terrain/dem_usgs_metro_work30m.tif",
+  "dem_10m": "/home/jesscmiel/projects/nyc-flood-impact/data/raw/terrain/dem_usgs_metro.tif",
+  "dem_note": "HAND/product on ~30 m working grid derived from USGS 3DEP metro \u226410 m mosaic; native 10 m DEM retained for SFINCS / nested hydro.",
+  "forcing": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_storm_total.tif",
+  "forcing_kind": "spatial_mrms_qpe_ida",
+  "land_mask": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/land_mask_metro.tif",
+  "land_mask_style": "soft_polygon_alpha_nodata_outside_land",
+  "storm_total": {
+    "png": "depth_citywide_mrms_qpe_ida_storm_total_m.png",
+    "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_citywide_mrms_qpe_ida_storm_total_m.tif",
+    "metro_png": "depth_metro_mrms_qpe_ida_storm_total_m.png",
+    "metro_tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_metro_mrms_qpe_ida_storm_total_m.tif",
+    "max_m": 0.13966062664985657,
+    "p95_m": 0.1191340833902359,
+    "wet_fraction": 0.010055098571124974,
+    "display_vmax_m": 0.12595359981060028,
+    "forcing_max_mm": 203.22288513183594,
+    "shape": [
+      2395,
+      2672
+    ]
+  },
+  "cumulative_frames": [
+    {
+      "lead_hours": 6,
+      "png": "depth_mrms_cum_lead_06h_m.png",
+      "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_mrms_cum_lead_06h_m.tif",
+      "max_m": null,
+      "wet_fraction": 0.0
+    },
+    {
+      "lead_hours": 12,
+      "png": "depth_mrms_cum_lead_12h_m.png",
+      "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_mrms_cum_lead_12h_m.tif",
+      "max_m": 0.04353339225053787,
+      "wet_fraction": 0.008799363694323253
+    },
+    {
+      "lead_hours": 18,
+      "png": "depth_mrms_cum_lead_18h_m.png",
+      "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_mrms_cum_lead_18h_m.tif",
+      "max_m": 0.13966062664985657,
+      "wet_fraction": 0.009967747177878064
+    },
+    {
+      "lead_hours": 24,
+      "png": "depth_mrms_cum_lead_24h_m.png",
+      "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_mrms_cum_lead_24h_m.tif",
+      "max_m": 0.13966062664985657,
+      "wet_fraction": 0.009970091132974136
+    }
+  ],
+  "colorbar": {
+    "cmap": "Blues",
+    "units": "m",
+    "label": "Est. depth (m) \u2014 NOT flood warning"
+  },
+  "opacity_default": 0.75,
+  "not_flood_warning": true,
+  "disclaimer": "Primary research depth = unified pysheds HAND/bathtub on metro DEM forced by spatially varying MRMS QPE Ida. Soft land mask (alpha/nodata outside land). NOT official NWS. NOT decision-grade. SFINCS is an alternate hydro track only.",
   "engine": "pysheds_hand_bathtub_v2",
+  "label": "pysheds HAND/bathtub (unified metro path)",
+  "runoff_coefficient": 0.7,
+  "focal_window_cells": 9,
+  "stream_acc_percentile": 98.0,
+  "stream_acc_min": 50.0,
+  "hand_scale": 1.0,
+  "min_depth_m": 0.005,
+  "formula": "depth_m = max(rain_m \u2212 HAND, min(sink_capacity, rain_m), rain_m \u2212 (DEM \u2212 focal_min)); rain_m = runoff_coeff * precip_mm/1000",
   "official_nws": false,
   "decision_grade": false,
-  "enterprise": false,
-  "hens": false,
-  "runoff_coeff": 0.75,
-  "bounds": {
-    "xmin": -74.28,
-    "ymin": 40.48,
-    "xmax": -73.68,
-    "ymax": 40.93
-  },
-  "shape": [
-    540,
-    720
-  ],
-  "max_m": 0.15213757753372192,
-  "mean_wet_m": 0.09220906347036362,
-  "wet_fraction": 0.16771862139917695,
-  "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_citywide_mrms_qpe_ida_storm_total_m.tif",
-  "png": "depth_citywide_mrms_qpe_ida_storm_total_m.png",
-  "honesty": "Research borough spike (pysheds). NOT official NWS. SFINCS/LISFLOOD-FP blocked without binaries."
+  "stream_acc_threshold": 693.0
 }

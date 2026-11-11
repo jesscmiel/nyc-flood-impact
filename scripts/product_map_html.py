@@ -215,14 +215,15 @@ details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft);
 
   <div class="panel">
     <h2>Depth engine honesty</h2>
-    <div class="metric"><span>Primary (desk)</span><b style="font-size:.68rem">pysheds citywide</b></div>
-    <div class="metric"><span>Forcing</span><b style="font-size:.68rem">MRMS QPE Ida</b></div>
-    <div class="metric"><span>Approx max</span><b>~0.15 m</b></div>
+    <div class="metric"><span>Primary (desk)</span><b style="font-size:.68rem">pysheds metro</b></div>
+    <div class="metric"><span>Forcing</span><b style="font-size:.68rem">spatial MRMS QPE</b></div>
+    <div class="metric"><span>SFINCS</span><b style="font-size:.68rem">alt hydro only</b></div>
     <div class="honesty">
-      <b>Queens SFINCS</b> (Docker) is a hydro upgrade track — different domain/forcing; max ~3.76 m under uniform precip.
-      It is <b>not</b> equally authoritative with pysheds citywide. STRATA→SFINCS is methods-only, not Ida.
+      <b>Primary depth</b> = unified pysheds HAND/bathtub on metro DEM × spatially varying MRMS Ida.
+      <b>Queens SFINCS</b> = alternate hydro track (spatial precip, not domain-mean) — not peer-authoritative until comparable.
+      STRATA→SFINCS is methods-only, not Ida.
     </div>
-    <label class="layer-btn"><input id="lyDepthTot" type="checkbox" checked>Primary research depth (pysheds storm-total)</label>
+    <label class="layer-btn"><input id="lyDepthTot" type="checkbox" checked>Primary research depth (pysheds metro)</label>
     <label class="layer-btn"><input id="lySfincs" type="checkbox">Queens SFINCS (labeled alternate)</label>
     <div class="opacity-row"><span>Est. depth</span><input id="opDepth" type="range" min="15" max="90" value="62"><span id="opDepthVal">62%</span></div>
     <div class="legend-swatch depth"></div>
@@ -272,8 +273,8 @@ details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft);
       <summary>Science notes</summary>
       <p>
         <b>Product</b> = Asset Decision Desk for infrastructure/response <i>research</i> screening.<br>
-        <b>Primary depth</b> = pysheds HAND/bathtub citywide forced by MRMS QPE Ida.<br>
-        <b>Map frame</b> = metro continuous viewport; rasters still on five-borough data domain until DEM/forcing rebuild.<br>
+        <b>Primary depth</b> = unified pysheds HAND/bathtub on metro DEM × spatial MRMS QPE Ida (soft land mask).<br>
+        <b>Map + data domain</b> = metro continuous; SFINCS Queens remains alternate hydro track.<br>
         <b>Bands</b> = research ≥3 / ≥8 / ≥15 cm — renamed away from NWS watch/warning language.<br>
         <b>Cannot claim</b> = official NWS warning, calibrated DEP sewer, decision-grade guidance, Enterprise/HENS.
       </p>
@@ -288,7 +289,7 @@ details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft);
     <h3 id="selName">—</h3>
     <p id="selBody">—</p>
   </div>
-  <div class="footer-note">Research prototype — NOT NWS / NOT decision-grade. pysheds citywide is primary depth; SFINCS Queens is alternate.</div>
+  <div class="footer-note">Research prototype — NOT NWS / NOT decision-grade. pysheds metro is primary depth; SFINCS Queens is alternate hydro.</div>
   <div class="radar-hud">
     <button type="button" class="play" id="hudPlay">▶</button>
     <div>
@@ -366,9 +367,13 @@ function currentBounds() {{
   const b = (EXTENTS[extentSel.value] || EXTENTS.metro || EXTENTS.citywide).bounds;
   return [[b.ymin, b.xmin],[b.ymax, b.xmax]];
 }}
-/** Data overlays keep native georef; map frame can be larger (metro) without hard crop. */
+/** Native georef for data overlays — metro after DEM/MRMS rebuild; soft land mask (no painted box). */
 function dataDomainBounds() {{
-  const b = (EXTENTS.citywide || EXTENTS.metro).bounds;
+  const fromMeta = (manifest.inundation && manifest.inundation.bounds)
+    || (manifest.inundation_citywide && manifest.inundation_citywide.bounds)
+    || (manifest.layer_bounds && manifest.layer_bounds.data_domain_bounds);
+  if (fromMeta) return fromMeta;
+  const b = (EXTENTS.metro || EXTENTS.citywide).bounds;
   return [[b.ymin, b.xmin],[b.ymax, b.xmax]];
 }}
 function fitMapFrame() {{
@@ -417,7 +422,7 @@ function rebuildPathLayers() {{
   depthTotal = (ds && ds.storm_total && ds.storm_total.png)
     ? L.imageOverlay(assets + ds.storm_total.png, (ds.bounds || precipBounds), {{ opacity: depthOpacity(), interactive:false, pane:"depthPane" }})
     : (manifest.inundation_citywide && manifest.inundation_citywide.png)
-      ? L.imageOverlay(assets + manifest.inundation_citywide.png, currentBounds(), {{ opacity: depthOpacity(), interactive:false, pane:"depthPane" }})
+      ? L.imageOverlay(assets + manifest.inundation_citywide.png, dataDomainBounds(), {{ opacity: depthOpacity(), interactive:false, pane:"depthPane" }})
       : null;
   if (manifest.inundation_sfincs && manifest.inundation_sfincs.png) {{
     const b = EXTENTS.south_queens?.bounds || EXTENTS.citywide.bounds;
@@ -708,7 +713,7 @@ document.getElementById("lySfincs").onchange = () => {{
     const b = document.getElementById("assetBanner");
     if (b) {{
       b.style.display = "block";
-      b.innerHTML = "<b>SFINCS Queens is an alternate hydro track</b> — not peer-authoritative with pysheds citywide ranking. Magnitudes are not comparable.";
+      b.innerHTML = "<b>SFINCS Queens is an alternate hydro track</b> — not peer-authoritative with primary pysheds metro ranking. Magnitudes are not comparable.";
     }}
   }} else {{
     mapLeft.removeLayer(sfincsLayer);

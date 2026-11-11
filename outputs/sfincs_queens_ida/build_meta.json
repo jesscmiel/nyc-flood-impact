@@ -2,12 +2,23 @@
   "model_dir": "/home/jesscmiel/projects/nyc-flood-impact/outputs/sfincs_queens_ida",
   "extent": "south_queens",
   "res_m": 50,
-  "precip_mm_hr": 10.2652290432983,
-  "precip_source": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_storm_total.tif",
-  "dem": "/home/jesscmiel/projects/nyc-flood-impact/data/raw/terrain/dem_usgs_citywide.tif",
+  "precip_forcing": "spatial_mrms_grid",
+  "precip_netcdf": {
+    "path": "/home/jesscmiel/projects/nyc-flood-impact/outputs/sfincs_queens_ida/forcing/mrms_spatial_precip_mmhr.nc",
+    "source_tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_storm_total.tif",
+    "hours": 12.0,
+    "mean_rate_mm_hr": 10.161332538607123,
+    "max_rate_mm_hr": 16.935240427652996,
+    "cv": 0.29974688352111356,
+    "spatial": true,
+    "uniform_mean_forbidden": true
+  },
+  "precip_source": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_storm_total.tif",
+  "dem": "/home/jesscmiel/projects/nyc-flood-impact/data/raw/terrain/dem_usgs_metro.tif",
   "tstart": "20210901 120000",
   "tstop": "20210902 000000",
   "enterprise": false,
   "hens": false,
-  "official_nws": false
+  "official_nws": false,
+  "note": "Dropped uniform setup_precip_forcing(magnitude=mean); using spatial MRMS rate field."
 }

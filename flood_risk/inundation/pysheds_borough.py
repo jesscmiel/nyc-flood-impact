@@ -1,4 +1,4 @@
-"""Improved pysheds HAND/bathtub inundation for one borough (South Queens spike).
+"""pysheds HAND/bathtub inundation for a bbox clip — uses unified hand_bathtub params.
 
 Research estimate only — NOT official NWS flood warning / NOT decision-grade.
 """
@@ -16,23 +16,16 @@ from PIL import Image
 from rasterio.enums import Resampling
 from rasterio.mask import mask as rio_mask
 from rasterio.warp import reproject
-from scipy import ndimage
 from shapely.geometry import box, mapping
 
-if not hasattr(np, "in1d"):
-    np.in1d = np.isin  # type: ignore[attr-defined]
-
-from pysheds.grid import Grid  # noqa: E402
-
-RUNOFF_COEFF = 0.75
-MIN_DEPTH_M = 0.005
-FOCAL_WIN = 7
-
-
-def _window_from_bounds(src: rasterio.io.DatasetReader, bounds: dict[str, float]):
-    from rasterio.windows import from_bounds
-
-    return from_bounds(bounds["xmin"], bounds["ymin"], bounds["xmax"], bounds["ymax"], src.transform)
+from flood_risk.inundation.hand_bathtub import (
+    ENGINE_ID,
+    MIN_DEPTH_M,
+    RUNOFF_COEFF,
+    compute_terrain_from_array,
+    depth_from_rain,
+    param_meta,
+)
 
 
 def _read_clip(path: Path, bounds: dict[str, float]) -> tuple[np.ndarray, rasterio.Affine, rasterio.crs.CRS]:
@@ -45,7 +38,7 @@ def _read_clip(path: Path, bounds: dict[str, float]) -> tuple[np.ndarray, raster
         return arr, transform, src.crs
 
 
-def _reproject_to(src_path: Path, shape: tuple[int, int], transform, crs, bounds_clip: dict[str, float] | None = None) -> np.ndarray:
+def _reproject_to(src_path: Path, shape: tuple[int, int], transform, crs) -> np.ndarray:
     dst = np.full(shape, np.nan, dtype=np.float32)
     with rasterio.open(src_path) as src:
         data = src.read(1).astype(np.float32)
@@ -63,63 +56,6 @@ def _reproject_to(src_path: Path, shape: tuple[int, int], transform, crs, bounds
             dst_nodata=np.nan,
         )
     return dst
-
-
-def compute_hand_bathtub(dem: np.ndarray, rain_m: np.ndarray, transform) -> dict[str, np.ndarray]:
-    """Return depth_m, hand, sink_capacity using pysheds + local bathtub."""
-    # pysheds wants a file path — write a temp grid
-    import tempfile
-
-    with tempfile.TemporaryDirectory() as td:
-        dem_path = Path(td) / "dem.tif"
-        with rasterio.open(
-            dem_path,
-            "w",
-            driver="GTiff",
-            height=dem.shape[0],
-            width=dem.shape[1],
-            count=1,
-            dtype="float32",
-            crs="EPSG:4326",
-            transform=transform,
-            nodata=-9999,
-        ) as dst:
-            out = np.where(np.isfinite(dem), dem, -9999).astype(np.float32)
-            dst.write(out, 1)
-
-        grid = Grid.from_raster(str(dem_path))
-        dem_g = grid.read_raster(str(dem_path))
-        pit = grid.fill_pits(dem_g)
-        flooded = grid.fill_depressions(pit)
-        inflated = grid.resolve_flats(flooded)
-        fdir = grid.flowdir(inflated)
-        hand = np.asarray(grid.compute_hand(fdir, inflated, np.ones_like(inflated, dtype=bool)), dtype=np.float32)
-
-    dem_f = dem.astype(np.float32)
-    rain = np.nan_to_num(rain_m, nan=0.0).astype(np.float32)
-    effective = rain * RUNOFF_COEFF
-
-    # Depression capacity relative to filled surface
-    filled_approx = ndimage.maximum_filter(np.nan_to_num(dem_f, nan=np.nanmedian(dem_f)), size=FOCAL_WIN)
-    sink_cap = np.maximum(filled_approx - dem_f, 0.0).astype(np.float32)
-
-    # Local relative-elevation bathtub
-    focal_min = ndimage.minimum_filter(np.nan_to_num(dem_f, nan=np.nanmax(dem_f)), size=FOCAL_WIN)
-    local_bath = np.maximum(effective - (dem_f - focal_min), 0.0)
-
-    # HAND excess: rain ponding above HAND drainage height (simplified)
-    hand_excess = np.maximum(effective - np.nan_to_num(hand, nan=0.0) * 0.15, 0.0)
-
-    depth = np.maximum.reduce(
-        [
-            hand_excess,
-            np.minimum(sink_cap, effective),
-            local_bath,
-        ]
-    ).astype(np.float32)
-    depth = np.where(np.isfinite(dem_f), depth, np.nan)
-    depth = np.where(depth >= MIN_DEPTH_M, depth, 0.0)
-    return {"depth_m": depth, "hand": hand, "sink_capacity_m": sink_cap}
 
 
 def _write_tif(path: Path, data: np.ndarray, transform, crs="EPSG:4326") -> None:
@@ -141,7 +77,13 @@ def _write_tif(path: Path, data: np.ndarray, transform, crs="EPSG:4326") -> None
 
 
 def _write_png(path: Path, depth: np.ndarray, vmax: float | None = None) -> None:
-    vmax = float(vmax or max(np.nanpercentile(depth[np.isfinite(depth) & (depth > 0)], 98) if np.any(depth > 0) else 0.1, 0.05))
+    vmax = float(
+        vmax
+        or max(
+            np.nanpercentile(depth[np.isfinite(depth) & (depth > 0)], 98) if np.any(depth > 0) else 0.1,
+            0.05,
+        )
+    )
     cmap = colormaps["Blues"]
     norm = np.clip(np.nan_to_num(depth, nan=0.0) / vmax, 0, 1)
     rgba = (cmap(norm) * 255).astype(np.uint8)
@@ -159,40 +101,46 @@ def run_borough_spike(
     forcing_id: str = "mrms_qpe_ida",
 ) -> dict[str, Any]:
     dem, transform, crs = _read_clip(dem_path, bounds)
-    rain = _reproject_to(rain_path, dem.shape, transform, crs)
-    # rain is mm in our products — convert
-    rain_mm = rain.astype(np.float32)
-    # detect units: if max > 5 assume mm
-    rain_m = rain_mm / 1000.0 if np.nanmax(rain_mm) > 5 else rain_mm
-
-    layers = compute_hand_bathtub(dem, rain_m, transform)
-    depth = layers["depth_m"]
+    rain_mm = _reproject_to(rain_path, dem.shape, transform, crs)
+    terrain = compute_terrain_from_array(dem, transform, crs=str(crs) if crs else "EPSG:4326")
+    depth = depth_from_rain(
+        rain_mm,
+        terrain["hand"],
+        terrain["sink_capacity_m"],
+        terrain["dem"],
+    )
+    # PNG writer expects zeros rather than NaN for dry cells
+    depth_png = np.where(np.isfinite(depth), depth, 0.0).astype(np.float32)
 
     out_dir.mkdir(parents=True, exist_ok=True)
     assets_dir.mkdir(parents=True, exist_ok=True)
     tif = out_dir / f"depth_{borough_id}_{forcing_id}_storm_total_m.tif"
     png = assets_dir / f"depth_{borough_id}_{forcing_id}_storm_total_m.png"
-    _write_tif(tif, depth, transform, crs)
-    _write_tif(out_dir / f"hand_{borough_id}.tif", layers["hand"], transform, crs)
-    _write_png(png, depth)
+    _write_tif(tif, depth_png, transform, crs)
+    _write_tif(out_dir / f"hand_{borough_id}.tif", terrain["hand"], transform, crs)
+    _write_png(png, depth_png)
 
     meta = {
         "borough_id": borough_id,
         "forcing_id": forcing_id,
-        "engine": "pysheds_hand_bathtub_v2",
+        "engine": ENGINE_ID,
         "official_nws": False,
         "decision_grade": False,
         "enterprise": False,
         "hens": False,
         "runoff_coeff": RUNOFF_COEFF,
+        "params": param_meta(),
         "bounds": bounds,
         "shape": list(depth.shape),
         "max_m": float(np.nanmax(depth)) if np.isfinite(depth).any() else None,
-        "mean_wet_m": float(np.nanmean(depth[depth > MIN_DEPTH_M])) if np.any(depth > MIN_DEPTH_M) else 0.0,
-        "wet_fraction": float(np.mean(depth > MIN_DEPTH_M)),
+        "mean_wet_m": float(np.nanmean(depth[np.isfinite(depth)])) if np.isfinite(depth).any() else 0.0,
+        "wet_fraction": float(np.mean(np.isfinite(depth) & (depth >= MIN_DEPTH_M))),
         "tif": str(tif),
         "png": png.name,
-        "honesty": "Research borough spike (pysheds). NOT official NWS. SFINCS/LISFLOOD-FP blocked without binaries.",
+        "honesty": (
+            "Research borough spike (unified pysheds HAND/bathtub). NOT official NWS. "
+            "SFINCS remains alternate hydro track until spatially forced + comparable."
+        ),
     }
     (out_dir / f"depth_{borough_id}_{forcing_id}_meta.json").write_text(json.dumps(meta, indent=2))
     (assets_dir / f"depth_{borough_id}_{forcing_id}_meta.json").write_text(json.dumps(meta, indent=2))

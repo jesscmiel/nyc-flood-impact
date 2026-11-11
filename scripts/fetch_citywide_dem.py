@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Fetch a citywide DEM for pluvial susceptibility (best-effort).
 
+Legacy five-borough ~90 m export. Prefer ``scripts/fetch_metro_dem.py`` for the
+primary metro ≤10 m mosaic used by the inundation rebuild.
+
 Tries USGS 3DEP ImageServer export at modest resolution. Falls back to existing
 South Queens DEM if the download fails — never invents elevation.
 """

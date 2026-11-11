@@ -75,8 +75,16 @@ __pycache__/
 !/outputs/sfincs_queens_ida/**
 !/data/raw/terrain/dem_usgs_citywide.tif
 !/data/raw/terrain/dem_citywide_fetch.json
+!/data/raw/terrain/dem_usgs_metro_work30m.tif
+!/data/raw/terrain/dem_metro_fetch.json
+!/data/raw/terrain/dem_metro_work30m.json
+# dem_usgs_metro.tif (~138 MB ≤10 m mosaic) stays local — regenerate via scripts/fetch_metro_dem.py
+!/data/processed/mrms_qpe_metro/
+!/data/processed/mrms_qpe_metro/**
+!/data/processed/land_mask_metro.tif
 !/data/processed/susceptibility_factors/
 !/data/processed/susceptibility_factors/**
+!/outputs/science_audit_recompute.json
 !/data/forecasts/nyc_precip_ida_ens2_citywide.nc
 
 # STRATA aux / spike outputs (HF weights + generated SCRIP; local only)

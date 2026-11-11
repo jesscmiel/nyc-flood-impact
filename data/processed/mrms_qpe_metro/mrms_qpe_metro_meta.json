@@ -1,0 +1,74 @@
+{
+  "dem": "/home/jesscmiel/projects/nyc-flood-impact/data/raw/terrain/dem_usgs_metro_work30m.tif",
+  "extent": "metro",
+  "bounds": {
+    "xmin": -74.45,
+    "ymin": 40.4,
+    "xmax": -73.5,
+    "ymax": 41.05
+  },
+  "method": "bilinear_reproject_to_dem_grid",
+  "uniform_mean_forbidden": true,
+  "layers": {
+    "storm_total": {
+      "status": "ok",
+      "source": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_storm_total.tif",
+      "path": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_storm_total.tif",
+      "shape": [
+        2395,
+        2672
+      ],
+      "mean_pos_mm": 121.93598937988281,
+      "max_mm": 203.22288513183594,
+      "cv": 0.29974690079689026
+    },
+    "lead_06h": {
+      "status": "ok",
+      "source": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_lead_06h.tif",
+      "path": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_lead_06h.tif",
+      "shape": [
+        2395,
+        2672
+      ],
+      "mean_pos_mm": 1.9922484159469604,
+      "max_mm": 4.917330265045166,
+      "cv": 0.3079706132411957
+    },
+    "lead_12h": {
+      "status": "ok",
+      "source": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_lead_12h.tif",
+      "path": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_lead_12h.tif",
+      "shape": [
+        2395,
+        2672
+      ],
+      "mean_pos_mm": 24.274015426635742,
+      "max_mm": 61.2336540222168,
+      "cv": 0.4365072548389435
+    },
+    "lead_18h": {
+      "status": "ok",
+      "source": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_lead_18h.tif",
+      "path": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_lead_18h.tif",
+      "shape": [
+        2395,
+        2672
+      ],
+      "mean_pos_mm": 98.05735778808594,
+      "max_mm": 141.99755859375,
+      "cv": 0.26463109254837036
+    },
+    "lead_24h": {
+      "status": "ok",
+      "source": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/earth2_precip/mrms_qpe_ida_precip_lead_24h.tif",
+      "path": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_lead_24h.tif",
+      "shape": [
+        2395,
+        2672
+      ],
+      "mean_pos_mm": 0.7324047088623047,
+      "max_mm": 1.9517256021499634,
+      "cv": 0.6054663062095642
+    }
+  }
+}

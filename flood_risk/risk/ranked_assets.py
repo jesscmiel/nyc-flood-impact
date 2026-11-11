@@ -243,10 +243,10 @@ def build_ranked_assets(
                 "NOT official NWS thresholds. NOT decision-grade infrastructure guidance."
             ),
             "scenario": {
-                "id": "ida_mrms_citywide",
+                "id": "ida_mrms_metro",
                 "label": "Ida · MRMS QPE · NYC metro (research)",
                 "case_study": "Hurricane Ida remnants 2021-09-01",
-                "forcing": "mrms_qpe_ida",
+                "forcing": "mrms_qpe_ida_spatial",
             },
             "depth_engine": {
                 "id": engine_id,
@@ -254,27 +254,25 @@ def build_ranked_assets(
                 "label": engine_label,
                 "depth_tif": str(depth_tif),
                 "note": (
-                    "Primary research depth for citywide asset ranking. "
-                    "pysheds HAND/bathtub max depth ~0.15 m on this Ida MRMS run."
+                    "Primary research depth for metro asset ranking. "
+                    "Unified pysheds HAND/bathtub on metro DEM × spatial MRMS QPE Ida."
                 ),
             },
             "depth_engines_reconcile": {
                 "primary": {
                     "id": "pysheds_hand_bathtub_v2",
-                    "extent": "citywide",
-                    "forcing": "mrms_qpe_ida",
-                    "approx_max_m": 0.15,
-                    "use_for": "Default Asset Decision Desk ranking",
+                    "extent": "metro",
+                    "forcing": "spatial_mrms_qpe_ida",
+                    "use_for": "Default Asset Decision Desk ranking (primary depth)",
                 },
                 "alternate": {
                     "id": "sfincs_docker_queens",
                     "extent": "Queens spike domain",
-                    "forcing": "uniform MRMS-derived rate (not spatial field)",
-                    "approx_max_m": 3.76,
-                    "use_for": "Hydro upgrade track only — magnitudes not comparable to pysheds citywide",
+                    "forcing": "spatial MRMS precip grid (HydroMT setup_precip_forcing_from_grid)",
+                    "use_for": "Alternate hydro track only — magnitudes not peer-comparable to primary pysheds",
                     "honesty": (
-                        "SFINCS Queens and pysheds citywide are NOT equally authoritative. "
-                        "Different domain, forcing, and physics — do not treat as peer depth products."
+                        "SFINCS Queens and pysheds metro are NOT equally authoritative. "
+                        "Different domain/physics — do not treat as peer depth products until calibrated."
                     ),
                 },
                 "strata_spike": {

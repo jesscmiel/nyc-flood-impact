@@ -26,21 +26,19 @@ EVENTS = {
 }
 
 EXTENTS = {
-    # Data-domain rectangle used by existing DEM / MRMS / pysheds rasters (~90 m DEM).
-    # Overlays stay georeferenced to these bounds until a continuous-domain rebuild.
+    # Legacy five-borough rectangle (pre-rebuild ~90 m DEM / MRMS clips).
     "citywide": {
         "id": "citywide",
-        "label": "NYC five-borough data domain",
+        "label": "NYC five-borough (legacy data domain)",
         "bounds": {"xmin": -74.28, "ymin": 40.48, "xmax": -73.68, "ymax": 40.93},
-        "role": "data_domain",
+        "role": "legacy_data_domain",
     },
-    # Map framing only — larger continuous viewport so the UI is not a tight Queens/box crop.
-    # Raster products still cover `citywide` until DEM + forcing are re-fetched for metro.
+    # Primary data + map domain after metro DEM / MRMS / HAND rebuild.
     "metro": {
         "id": "metro",
-        "label": "NYC metro continuous (map frame)",
+        "label": "NYC metro continuous",
         "bounds": {"xmin": -74.45, "ymin": 40.40, "xmax": -73.50, "ymax": 41.05},
-        "role": "map_frame",
+        "role": "data_domain_and_map_frame",
     },
     "south_queens": {
         "id": "south_queens",
@@ -50,8 +48,9 @@ EXTENTS = {
     },
 }
 
-# Default map framing prefers continuous metro view over the hard data rectangle.
+# Default map framing + primary inundation data domain.
 DEFAULT_MAP_EXTENT = "metro"
+PRIMARY_DATA_EXTENT = "metro"
 
 
 def bounds_list(extent_id: str) -> list[list[float]]:
