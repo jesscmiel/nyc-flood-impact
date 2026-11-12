@@ -246,10 +246,63 @@ details.drawer[open] > summary::after { content:"–"; }
 .leaflet-image-layer.susc-radar { mix-blend-mode: multiply; filter: saturate(1.25) contrast(1.12); }
 .leaflet-control-zoom a { border-radius:8px !important; }
 .marker-key {
-  margin:8px 0 0; padding:8px 10px; border-radius:10px; font-size:.68rem; line-height:1.35;
+  margin:8px 0 0; padding:10px 11px; border-radius:12px; font-size:.68rem; line-height:1.35;
   color:var(--muted); background:rgba(8,40,52,.04); border:1px solid var(--line-soft);
 }
-.marker-key b { color:var(--ink-soft); font-weight:700; }
+.marker-key > b { display:block; color:var(--ink-soft); font:700 .62rem Syne,sans-serif;
+  letter-spacing:.1em; text-transform:uppercase; margin-bottom:8px; }
+.map-dot-toggles { display:grid; grid-template-columns:1fr 1fr; gap:5px; margin:0 0 10px; }
+.map-dot-toggles .layer-btn { font-size:.7rem; padding:7px 8px 7px 26px; }
+.map-legend-rows { display:flex; flex-direction:column; gap:6px; }
+.map-legend-row { display:flex; align-items:center; gap:8px; color:var(--ink-soft); font-size:.7rem; }
+.map-legend-row span { color:var(--muted); }
+.leg-sw { flex:0 0 auto; width:18px; height:18px; position:relative; }
+.leg-sw svg { display:block; width:18px; height:18px; }
+.access-legend {
+  margin-top:8px; padding-top:8px; border-top:1px dashed var(--line-soft);
+  display:flex; flex-direction:column; gap:5px;
+}
+.access-legend .cap {
+  font:700 .58rem Syne,sans-serif; letter-spacing:.1em; text-transform:uppercase; color:#7d91a1;
+}
+.map-key-float {
+  position:absolute; z-index:650; left:12px; bottom:86px; max-width:min(280px, calc(100% - 24px));
+  padding:10px 12px; border-radius:12px; background:rgba(7,24,32,.88); color:#d7eef2;
+  border:1px solid rgba(255,255,255,.12); box-shadow:0 10px 28px rgba(0,0,0,.28);
+  font-size:.68rem; line-height:1.35; backdrop-filter:blur(10px);
+  animation:riseIn .4s var(--ease);
+}
+.map-key-float.collapsed .map-key-float-body { display:none; }
+.map-key-float-head {
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
+  font:700 .62rem Syne,sans-serif; letter-spacing:.1em; text-transform:uppercase; color:#9fd7de;
+}
+.map-key-float-head button {
+  border:0; background:rgba(255,255,255,.08); color:#cfe8ec; border-radius:6px;
+  width:22px; height:22px; cursor:pointer; font:700 .75rem Figtree,sans-serif;
+}
+.map-key-float-head button:hover { background:rgba(255,255,255,.16); }
+.map-key-float-body { margin-top:8px; display:flex; flex-direction:column; gap:6px; }
+.map-key-float .map-legend-row { color:#e8f7f9; }
+.map-key-float .map-legend-row span { color:#9eb8c0; }
+.leaflet-div-icon.access-div {
+  background:transparent; border:0; width:24px !important; height:24px !important;
+}
+.access-marker {
+  width:22px; height:22px; display:flex; align-items:center; justify-content:center;
+  font:700 .48rem Syne,sans-serif; letter-spacing:.04em; color:#fff;
+  border:2px solid; box-shadow:0 1px 4px rgba(0,0,0,.35); line-height:1;
+}
+.access-marker.dot { border-radius:4px; background:rgba(180,83,9,.94); border-color:#7c2d12; border-style:dashed; }
+.access-marker.dot.limited { background:rgba(159,18,57,.94); border-color:#7f1d1d; }
+.access-marker.ev511 {
+  clip-path:polygon(50% 6%, 94% 88%, 6% 88%); border:0; border-radius:0;
+  background:#b45309; box-shadow:none; font-size:.4rem; padding-top:7px;
+}
+.access-marker.ev511.limited { background:#9f1239; }
+.access-marker.mta { border-radius:50%; background:rgba(13,143,156,.94); border-color:#045963; border-style:solid; }
+.access-marker.mta.limited { background:rgba(159,18,57,.94); border-color:#7f1d1d; border-style:dashed; }
+.access-marker.mta.watch { border-style:dashed; border-color:#b45309; background:rgba(180,83,9,.9); }
 </style>
 </head>
 <body>
@@ -292,7 +345,43 @@ details.drawer[open] > summary::after { content:"–"; }
     </div>
     <div class="asset-list" id="assetList" aria-label="Ranked wet assets"><div class="empty">Loading ranked assets…</div></div>
     <div class="marker-key" id="markerKey">
-      <b>Map dots (no Advanced toggles):</b> wet desk assets (amber/orange/red by band) + FloodNet posts (cyan, on by default). Inventory Stations/Facilities live under Advanced.
+      <b>Map layers</b>
+      <div class="map-dot-toggles" role="group" aria-label="Map dot toggles">
+        <label class="layer-btn"><input id="lyWet" type="checkbox" checked>Wet assets</label>
+        <label class="layer-btn"><input id="lyTopHits" type="checkbox" checked>Top hits</label>
+        <label class="layer-btn"><input id="lyFloodNet" type="checkbox" checked>FloodNet</label>
+        <label class="layer-btn"><input id="lyAccess" type="checkbox" checked>DOT / access</label>
+      </div>
+      <div class="map-legend-rows" aria-label="Teal selection key">
+        <div class="map-legend-row">
+          <span class="leg-sw" aria-hidden="true"><svg viewBox="0 0 18 18"><circle cx="9" cy="9" r="6.5" fill="rgba(27,192,205,.15)" stroke="#0d8f9c" stroke-width="1.6" stroke-dasharray="3.2 2.4"/></svg></span>
+          <span><b style="color:var(--ink-soft)">Dashed teal</b> — top shortlist hit</span>
+        </div>
+        <div class="map-legend-row">
+          <span class="leg-sw" aria-hidden="true"><svg viewBox="0 0 18 18"><circle cx="9" cy="9" r="5.5" fill="#1bc0cd" stroke="#042227" stroke-width="2"/></svg></span>
+          <span><b style="color:var(--ink-soft)">Filled teal</b> — selected asset</span>
+        </div>
+        <div class="map-legend-row">
+          <span class="leg-sw" aria-hidden="true"><svg viewBox="0 0 18 18"><line x1="2" y1="9" x2="16" y2="9" stroke="#045963" stroke-width="3.5" stroke-linecap="round"/><line x1="3" y1="3" x2="15" y2="15" stroke="#0d8f9c" stroke-width="1.4" opacity=".85"/></svg></span>
+          <span><b style="color:var(--ink-soft)">Teal line-through</b> — selected road</span>
+        </div>
+      </div>
+      <div class="access-legend">
+        <div class="cap">DOT / access overlay</div>
+        <div class="map-legend-row">
+          <span class="leg-sw" aria-hidden="true"><svg viewBox="0 0 18 18"><rect x="3" y="3" width="12" height="12" rx="2" fill="#b45309" stroke="#7c2d12" stroke-width="1.4" stroke-dasharray="2.5 2"/><text x="9" y="12" text-anchor="middle" fill="#fff" font-size="5.5" font-family="Syne,sans-serif" font-weight="700">DOT</text></svg></span>
+          <span>Square — NYC DOT speed (watch / limited)</span>
+        </div>
+        <div class="map-legend-row">
+          <span class="leg-sw" aria-hidden="true"><svg viewBox="0 0 18 18"><path d="M9 2.5 L15.5 14.5 H2.5 Z" fill="#9f1239" stroke="#7f1d1d" stroke-width="1"/><text x="9" y="13" text-anchor="middle" fill="#fff" font-size="4.2" font-family="Syne,sans-serif" font-weight="700">511</text></svg></span>
+          <span>Triangle — 511-style closure / event</span>
+        </div>
+        <div class="map-legend-row">
+          <span class="leg-sw" aria-hidden="true"><svg viewBox="0 0 18 18"><circle cx="9" cy="9" r="6" fill="#0d8f9c" stroke="#045963" stroke-width="1.5"/><text x="9" y="11.2" text-anchor="middle" fill="#fff" font-size="4.5" font-family="Syne,sans-serif" font-weight="700">MTA</text></svg></span>
+          <span>Circle — MTA alert on wet station</span>
+        </div>
+      </div>
+      <p class="drawer-note" style="margin-top:8px">Amber/red wet dots = depth band (≥3 / ≥8 / ≥15). Inventory Stations/Facilities stay under Advanced.</p>
     </div>
   </section>
 
@@ -302,7 +391,7 @@ details.drawer[open] > summary::after { content:"–"; }
       <p class="drawer-note">Post-level Ida OOM check — does not rescale citywide HAND.</p>
       <div id="floodnetSummary" class="metric"><span>Loading…</span><b>—</b></div>
       <div id="floodnetMeta" class="metric" style="display:none"><span>Primary HAND @ posts</span><b>—</b></div>
-      <label class="layer-btn"><input id="lyFloodNet" type="checkbox" checked>FloodNet posts on map</label>
+      <p class="drawer-note">Map toggle lives under <b>Map layers</b> above (FloodNet).</p>
       <div class="floodnet-list" id="floodnetList" aria-label="FloodNet Ida peak comparison"><div class="empty">Loading sensor peaks…</div></div>
     </details>
   </section>
@@ -349,7 +438,7 @@ details.drawer[open] > summary::after { content:"–"; }
         <label class="layer-btn"><input id="lySfincs" type="checkbox">SFINCS Queens</label>
         <label class="layer-btn"><input id="lyE2Tot" type="checkbox">Storm-total</label>
         <div class="group-label">Access (research)</div>
-        <label class="layer-btn"><input id="lyAccess" type="checkbox">Access signals (open data / research)</label>
+        <p class="drawer-note">DOT / 511 / MTA overlay defaults <b>on</b> — use <b>Map layers → DOT / access</b> to hide. Distinct shapes: square=DOT · triangle=511 · circle=MTA.</p>
         <label class="layer-btn"><input id="lyAccessLive" type="checkbox">Prefer live DOT / 511 / MTA feeds</label>
         <div id="accessFeedStatus" class="drawer-note" style="margin-top:4px">Fixture default · Ida replay</div>
         <div class="group-label">Exposure</div>
@@ -379,6 +468,30 @@ details.drawer[open] > summary::after { content:"–"; }
     <div class="sel-chips" id="selChips"></div>
     <div class="sel-hint" id="selHint"></div>
     <div class="sel-access-note" id="selAccessNote"></div>
+  </div>
+  <div class="map-key-float" id="mapKeyFloat">
+    <div class="map-key-float-head">
+      <span>Map key</span>
+      <button type="button" id="mapKeyFloatToggle" aria-label="Collapse map key" aria-expanded="true">–</button>
+    </div>
+    <div class="map-key-float-body">
+      <div class="map-legend-row">
+        <span class="leg-sw" aria-hidden="true"><svg viewBox="0 0 18 18"><circle cx="9" cy="9" r="6.5" fill="rgba(27,192,205,.15)" stroke="#1bc0cd" stroke-width="1.6" stroke-dasharray="3.2 2.4"/></svg></span>
+        <span>Dashed = top hit</span>
+      </div>
+      <div class="map-legend-row">
+        <span class="leg-sw" aria-hidden="true"><svg viewBox="0 0 18 18"><circle cx="9" cy="9" r="5.5" fill="#1bc0cd" stroke="#042227" stroke-width="2"/></svg></span>
+        <span>Filled = selected</span>
+      </div>
+      <div class="map-legend-row">
+        <span class="leg-sw" aria-hidden="true"><svg viewBox="0 0 18 18"><line x1="2" y1="9" x2="16" y2="9" stroke="#7dd3de" stroke-width="3.2" stroke-linecap="round"/><line x1="3" y1="3" x2="15" y2="15" stroke="#1bc0cd" stroke-width="1.3"/></svg></span>
+        <span>Line-through = selected road</span>
+      </div>
+      <div class="map-legend-row">
+        <span class="leg-sw" aria-hidden="true"><svg viewBox="0 0 18 18"><rect x="3.5" y="3.5" width="11" height="11" rx="2" fill="#b45309" stroke="#fff" stroke-width="1" stroke-dasharray="2 1.5"/></svg></span>
+        <span>DOT square · 511 △ · MTA ○</span>
+      </div>
+    </div>
   </div>
   <div class="radar-hud" id="radarHud">
     <button type="button" class="play" id="hudPlay" aria-label="Play or pause storm loop">▶</button>
@@ -777,10 +890,17 @@ function selectAsset(id) {
     });
   }
   if (geomLayer && geomLayer.feature && geomLayer.feature.geometry && geomLayer.feature.geometry.type !== "Point") {
-    selectedLayer = L.geoJSON(geomLayer.feature, {
-      pane: "selectPane",
-      style: { color:"#045963", weight:7, opacity:1 }
-    }).addTo(mapLeft);
+    // Teal "line-through" selection: bright corridor stroke + darker underlay.
+    selectedLayer = L.layerGroup([
+      L.geoJSON(geomLayer.feature, {
+        pane: "selectPane",
+        style: { color:"#042227", weight:11, opacity:0.55, lineCap:"round", lineJoin:"round" }
+      }),
+      L.geoJSON(geomLayer.feature, {
+        pane: "selectPane",
+        style: { color:"#1bc0cd", weight:5.5, opacity:1, lineCap:"round", lineJoin:"round", dashArray:"10 6" }
+      }),
+    ]).addTo(mapLeft);
   } else {
     selectedLayer = L.circleMarker(ll, {
       pane: "selectPane", radius: 11, color:"#042227", weight:3,
@@ -838,11 +958,30 @@ function topHighlightTargets() {
   return (desk.assets || []).filter(a => a.nyc_demo_geography !== false).slice(0, AUTO_HIGHLIGHT_N);
 }
 
+function topHitsEnabled() {
+  const el = document.getElementById("lyTopHits");
+  return !el || el.checked;
+}
+function wetAssetsEnabled() {
+  const el = document.getElementById("lyWet");
+  return !el || el.checked;
+}
+function syncWetLayerVisibility() {
+  if (!wetLayer) return;
+  if (wetAssetsEnabled()) {
+    if (!mapLeft.hasLayer(wetLayer)) wetLayer.addTo(mapLeft);
+  } else if (mapLeft.hasLayer(wetLayer)) {
+    mapLeft.removeLayer(wetLayer);
+  }
+}
 function applyAutoHighlight(selectFirst) {
   if (highlightLayer) { mapLeft.removeLayer(highlightLayer); highlightLayer = null; }
   const tops = topHighlightTargets();
   highlightIds = tops.map(a => a.id);
-  if (!tops.length) return;
+  if (!tops.length) {
+    renderAssetList();
+    return;
+  }
   const feats = tops.map(a => ({
     type: "Feature",
     properties: { id: a.id, name: a.name, band: a.band },
@@ -851,14 +990,15 @@ function applyAutoHighlight(selectFirst) {
   highlightLayer = L.geoJSON({ type: "FeatureCollection", features: feats }, {
     pane: "selectPane",
     pointToLayer: (f, ll) => L.circleMarker(ll, {
-      radius: 14, color: "#0d8f9c", weight: 2, dashArray: "5 4",
+      radius: 14, color: "#0d8f9c", weight: 2.5, dashArray: "5 4",
       fillColor: "#1bc0cd", fillOpacity: 0.12, pane: "selectPane"
     }),
     onEachFeature: (f, layer) => {
       layer.bindTooltip("Top hit · " + (f.properties.name || ""));
       layer.on("click", () => selectAsset(f.properties.id));
     }
-  }).addTo(mapLeft);
+  });
+  if (topHitsEnabled()) highlightLayer.addTo(mapLeft);
   renderAssetList();
   if (selectFirst) selectAsset(tops[0].id);
 }
@@ -905,7 +1045,8 @@ function loadDecisionDesk() {
           layer.on("click", () => selectAsset(f.properties.id));
           layer.bindTooltip((f.properties.name || "") + " · " + (f.properties.band_label || ""));
         }
-      }).addTo(mapLeft);
+      });
+      syncWetLayerVisibility();
     }
     applyAutoHighlight(true);
     rebuildAccessOverlay();
@@ -921,10 +1062,37 @@ async function fetchGeoJSON(path) {
   if (!r.ok) throw new Error(path + " HTTP " + r.status);
   return r.json();
 }
-function accessPointStyle(kind) {
-  if (kind === "limited" || kind === "closure") return { color: "#9f1239", dash: "6 4" };
-  if (kind === "watch" || kind === "slow") return { color: "#b45309", dash: "4 4" };
-  return { color: "#0d8f9c", dash: null };
+function accessKindClass(kind) {
+  if (kind === "limited" || kind === "closure") return "limited";
+  if (kind === "watch" || kind === "slow") return "watch";
+  return "open";
+}
+function accessSourceLabel(source) {
+  if (source === "nyc_dot_speeds") return "NYC DOT speed";
+  if (source === "nysdot_511_events" || source === "nyc_street_closures") return "511-style event";
+  if (source === "mta_alerts") return "MTA alert";
+  return source || "Access signal";
+}
+function accessDivIcon(source, kind) {
+  const k = accessKindClass(kind);
+  let cls = "access-marker ";
+  let label = "";
+  if (source === "nyc_dot_speeds") {
+    cls += "dot" + (k === "limited" ? " limited" : "");
+    label = "DOT";
+  } else if (source === "nysdot_511_events" || source === "nyc_street_closures") {
+    cls += "ev511" + (k === "limited" ? " limited" : "");
+    label = "511";
+  } else {
+    cls += "mta" + (k === "limited" ? " limited" : k === "watch" ? " watch" : "");
+    label = "MTA";
+  }
+  return L.divIcon({
+    className: "access-div",
+    html: `<div class="${cls}" title="${accessSourceLabel(source)}">${label}</div>`,
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
+  });
 }
 function rebuildAccessOverlay() {
   if (accessLayer) { mapLeft.removeLayer(accessLayer); accessLayer = null; }
@@ -934,9 +1102,14 @@ function rebuildAccessOverlay() {
   (accessFixture.dot_speeds || []).forEach(sp => {
     if (sp.lon == null || sp.lat == null) return;
     const limited = sp.speed_ratio != null && Number(sp.speed_ratio) < 0.35;
+    const ratio = sp.speed_ratio != null ? (" · " + Math.round(Number(sp.speed_ratio) * 100) + "% free-flow") : "";
     feats.push({
       type: "Feature",
-      properties: { kind: limited ? "limited" : "watch", label: sp.label || "DOT speed", source: "nyc_dot_speeds" },
+      properties: {
+        kind: limited ? "limited" : "watch",
+        label: (sp.label || "DOT speed") + ratio,
+        source: "nyc_dot_speeds",
+      },
       geometry: { type: "Point", coordinates: [sp.lon, sp.lat] }
     });
   });
@@ -944,7 +1117,11 @@ function rebuildAccessOverlay() {
     if (ev.lon == null || ev.lat == null) return;
     feats.push({
       type: "Feature",
-      properties: { kind: ev.closure ? "limited" : "watch", label: ev.label || "511 event", source: "nysdot_511_events" },
+      properties: {
+        kind: ev.closure ? "limited" : "watch",
+        label: ev.label || "511 event",
+        source: ev.source || "nysdot_511_events",
+      },
       geometry: { type: "Point", coordinates: [ev.lon, ev.lat] }
     });
   });
@@ -963,15 +1140,15 @@ function rebuildAccessOverlay() {
   if (!feats.length) return;
   accessLayer = L.geoJSON({ type: "FeatureCollection", features: feats }, {
     pane: "selectPane",
-    pointToLayer: (f, ll) => {
-      const st = accessPointStyle(f.properties.kind);
-      return L.circleMarker(ll, {
-        radius: 9, color: st.color, weight: 2, dashArray: st.dash,
-        fillColor: st.color, fillOpacity: 0.25, pane: "selectPane"
-      });
-    },
+    pointToLayer: (f, ll) => L.marker(ll, {
+      icon: accessDivIcon(f.properties.source, f.properties.kind),
+      pane: "selectPane",
+      keyboard: false,
+    }),
     onEachFeature: (f, layer) => {
-      layer.bindTooltip((f.properties.source || "") + " · " + (f.properties.label || ""));
+      const src = accessSourceLabel(f.properties.source);
+      const kind = accessKindClass(f.properties.kind);
+      layer.bindTooltip(src + " · " + kind + " · " + (f.properties.label || ""));
     }
   }).addTo(mapLeft);
 }
@@ -1000,7 +1177,9 @@ function loadAccessSignals() {
             : ("Live · " + nDot + " speeds · " + n511 + " closures · " + nMta + " alerts")
         );
       } else {
-        setAccessFeedStatus("Fixture · Ida research replay");
+        setAccessFeedStatus(
+          "Fixture · Ida · " + nDot + " DOT · " + n511 + " closures · " + nMta + " MTA (shapes on map)"
+        );
       }
       rebuildAccessOverlay();
       return;
@@ -1354,10 +1533,30 @@ document.getElementById("lyE2Tot").onchange = () => {
   else mapLeft.removeLayer(e2Total);
 };
 document.getElementById("lyAccess").onchange = () => rebuildAccessOverlay();
+document.getElementById("lyWet").onchange = () => syncWetLayerVisibility();
+document.getElementById("lyTopHits").onchange = () => {
+  if (!highlightLayer) return;
+  if (topHitsEnabled()) {
+    if (!mapLeft.hasLayer(highlightLayer)) highlightLayer.addTo(mapLeft);
+  } else if (mapLeft.hasLayer(highlightLayer)) {
+    mapLeft.removeLayer(highlightLayer);
+  }
+};
 document.getElementById("lyAccessLive").onchange = () => {
   loadAccessSignals();
   // Live overlay does not rebuild desk ranks in-browser; run fetch_live_access_feeds.py --apply-desk for joined chips.
 };
+(function wireMapKeyFloat() {
+  const box = document.getElementById("mapKeyFloat");
+  const btn = document.getElementById("mapKeyFloatToggle");
+  if (!box || !btn) return;
+  btn.addEventListener("click", () => {
+    const collapsed = box.classList.toggle("collapsed");
+    btn.textContent = collapsed ? "+" : "–";
+    btn.setAttribute("aria-expanded", collapsed ? "false" : "true");
+    btn.setAttribute("aria-label", collapsed ? "Expand map key" : "Collapse map key");
+  });
+})();
 
 rebuildPathLayers();
 fitMapFrame();
