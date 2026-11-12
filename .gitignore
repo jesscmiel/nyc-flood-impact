@@ -53,6 +53,11 @@ __pycache__/
 !/data/forecasts/nyc_precip_ida_citywide.nc
 !/data/raw/infrastructure/
 !/data/raw/infrastructure/osm_drains_south_queens.geojson
+# Metro drain inventory regenerable via scripts/fetch_osm_drains_metro.py (~40 MB GeoJSON)
+/data/raw/infrastructure/osm_drains_metro.geojson
+/data/raw/infrastructure/nycdep_catch_basins_metro.csv
+!/data/raw/infrastructure/osm_drains_metro_fetch_meta.json
+!/data/raw/infrastructure/nycdep_catch_basins_metro.json
 !/data/raw/landcover/nlcd_2021_impervious_citywide.tif
 !/data/processed/
 !/data/processed/drainage_demo/
@@ -89,8 +94,21 @@ __pycache__/
 !/data/processed/susceptibility_factors/**
 !/outputs/science_audit_recompute.json
 !/outputs/floodnet_validation.json
+!/outputs/hand_nest_10m_comparison.json
+!/outputs/sfincs_hand_overlap.json
+!/outputs/live_mrms_stub_meta.json
+!/outputs/osm_drains_metro_fetch_meta.json
+!/outputs/drainage_capacity_meta.json
 !/data/processed/floodnet/
 !/data/processed/floodnet/**
+!/data/processed/drainage_capacity/
+!/data/processed/drainage_capacity/**
+# 10 m nest rasters regenerable via scripts/build_hand_nest_10m.py — keep comparison JSON
+/data/processed/inundation/dem_south_queens_10m.tif
+/data/processed/inundation/depth_hand_nest_10m_south_queens_ida_m.tif
+/data/processed/inundation/hand_south_queens_10m.tif
+!/data/processed/inundation/hand_nest_10m_comparison.json
+!/data/processed/inundation/sfincs_hand_overlap.json
 # Full NYC Open Data FloodNet dumps stay local; Ida extract is under processed/.
 !/data/raw/floodnet/
 !/data/raw/floodnet/README.md

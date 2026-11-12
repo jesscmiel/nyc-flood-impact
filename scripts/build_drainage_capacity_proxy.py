@@ -26,6 +26,8 @@ from flood_risk.inundation.drainage_capacity import (  # noqa: E402
     ENGINE_ID,
     apply_capacity_to_rate_mm_hr,
     capacity_mm_hr,
+    default_drain_candidate_paths,
+    drain_coverage_fraction,
     drain_density_norm,
     effective_sink_mm,
     load_drain_points,
@@ -134,15 +136,16 @@ def main() -> dict:
     print("Loading NLCD impervious → metro grid…")
     impervious = load_impervious_fraction(shape, transform, crs, NLCD)
 
-    drain_candidates = [
-        RAW_DIR / "infrastructure" / "osm_drains_south_queens.geojson",
-        ASSETS / "catch_basins.geojson",
-        FIGURES_DIR / "ida_v0_assets" / "catch_basins.geojson",
-        RAW_DIR / "infrastructure" / "nycdep_catch_basins_south_queens.json",
-    ]
+    drain_candidates = default_drain_candidate_paths(
+        RAW_DIR / "infrastructure",
+        ASSETS,
+        FIGURES_DIR / "ida_v0_assets",
+        RAW_DIR,
+    )
     points, drains_path, drains_status = load_drain_points(drain_candidates)
     print(f"Drain points: n={len(points)} status={drains_status} path={drains_path}")
     drain_norm = drain_density_norm(shape, transform, points)
+    coverage = drain_coverage_fraction(drain_norm, land)
 
     capacity = capacity_mm_hr(impervious, drain_norm)
 
@@ -199,11 +202,13 @@ def main() -> dict:
             "311 hit-rates show spatial concentration only — no magnitude skill, no ROC, "
             "no non-flood controls. Narrative depth bands are qualitative Ida reporting "
             "ranges, not FloodNet station calibration (no citywide FloodNet grid on disk). "
-            "Drain density uses open OSM inlet/manhole points in South Queens only — "
-            "synthetic demo drainage_nodes are excluded; citywide DEP catch-basin SODA "
-            "pull was unavailable — capacity falls back to NLCD-modulated base rate "
-            "outside those points. Primary HAND depths remain shallow vs Ida narratives."
+            "Drain density uses open OSM inlet/manhole points (metro-wide when present) — "
+            "synthetic demo drainage_nodes are excluded; DEP catch-basin SODA is used only "
+            "when rows are present (often service-unavailable). Cells with zero drain "
+            "density get NLCD-modulated base capacity only — transparent nodata for inlet "
+            "credit. Primary HAND depths remain shallow vs Ida / FloodNet street peaks."
         ),
+        "drain_coverage": None,  # filled below
     }
     reports = ASSETS / "observed_311.geojson"
     if depth_drained.exists() and reports.exists():
@@ -254,9 +259,12 @@ def main() -> dict:
             "n": len(points),
             "status": drains_status,
             "path": str(drains_path) if drains_path else None,
+            "coverage": coverage,
             "note": (
-                "Open OSM/demo drain nodes only where present. "
-                "nycdep_catch_basins_south_queens.json is a SODA error payload — unused."
+                "Merged open OSM metro (± Queens) inlet/manhole points when present. "
+                "DEP SODA error payloads are unused. Coverage fraction = land cells with "
+                "drain_norm > 0; elsewhere capacity is NLCD base only (not secret uniform "
+                "DEP credit)."
             ),
         },
         "paths": {
@@ -290,9 +298,12 @@ def main() -> dict:
         "disclaimer": (
             "Open drainage capacity proxy only — NOT DEP sewer, NOT SWMM, NOT official NWS. "
             "Reduces effective precip via literature mm/hr sink modulated by NLCD impervious "
-            "and sparse open drain density, with surcharge efficiency collapse in extreme rates."
+            "and sparse open drain density (metro OSM when available), with surcharge "
+            "efficiency collapse in extreme rates. Coverage fraction documents where inlet "
+            "credit exists."
         ),
     }
+    meta["calibration"]["drain_coverage"] = coverage
     (OUT / "drainage_capacity_meta.json").write_text(json.dumps(meta, indent=2))
     (ASSETS / "drainage_capacity_meta.json").write_text(json.dumps(meta, indent=2))
     (PROJECT_ROOT / "outputs" / "drainage_capacity_meta.json").write_text(json.dumps(meta, indent=2))

@@ -1,0 +1,104 @@
+{
+  "source": "https://data.cityofnewyork.us/api/views/2w2g-fk3i/rows.csv?accessType=DOWNLOAD",
+  "n_features": 154212,
+  "extent": "metro",
+  "bounds": {
+    "xmin": -74.45,
+    "ymin": 40.4,
+    "xmax": -73.5,
+    "ymax": 41.05
+  },
+  "sample": [
+    {
+      "type": "Feature",
+      "properties": {
+        "node_id": "dep_CB422934",
+        "unitid": "CB422934",
+        "source": "nyc_open_data_catch_basin",
+        "kind": "catch_basin",
+        "synthetic": false,
+        "demo_only": false
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.78500418,
+          40.74170533
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "node_id": "dep_CB460384",
+        "unitid": "CB460384",
+        "source": "nyc_open_data_catch_basin",
+        "kind": "catch_basin",
+        "synthetic": false,
+        "demo_only": false
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.80924644,
+          40.70497191
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "node_id": "dep_CB418594",
+        "unitid": "CB418594",
+        "source": "nyc_open_data_catch_basin",
+        "kind": "catch_basin",
+        "synthetic": false,
+        "demo_only": false
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.79321304,
+          40.78610054
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "node_id": "dep_CB402561",
+        "unitid": "CB402561",
+        "source": "nyc_open_data_catch_basin",
+        "kind": "catch_basin",
+        "synthetic": false,
+        "demo_only": false
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.81332519,
+          40.68284001
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "node_id": "dep_CB511457",
+        "unitid": "CB511457",
+        "source": "nyc_open_data_catch_basin",
+        "kind": "catch_basin",
+        "synthetic": false,
+        "demo_only": false
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -74.11131613,
+          40.58184005
+        ]
+      }
+    }
+  ],
+  "note": "Full rows in nycdep_catch_basins_metro.csv; GeoJSON merge in osm_drains_metro.geojson"
+}

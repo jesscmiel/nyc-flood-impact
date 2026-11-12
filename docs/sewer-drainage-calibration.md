@@ -48,8 +48,9 @@ depth          = HAND/bathtub(excess_mm)               # primary product
 **Open inputs only**
 
 - NLCD 2021 impervious (warped to metro grid)
-- OSM inlet/manhole points in South Queens (**84** points) when present
-- Synthetic demo `drainage_nodes` / empty DEP SODA payload **excluded** (no fake network credit)
+- Metro open catch-basin inventory when present (`scripts/fetch_osm_drains_metro.py` → NYC Open Data CSV + OSM); South Queens OSM (**84**) is the thin fallback
+- Coverage fraction of land cells with inlet credit is recorded in `drainage_capacity_meta.json` (transparent NLCD-base elsewhere)
+- Synthetic demo `drainage_nodes` / SODA error payloads **excluded** (no fake network credit)
 
 ---
 

@@ -281,10 +281,10 @@ details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft);
       <summary>Science notes</summary>
       <p>
         <b>Product</b> = Asset Decision Desk for infrastructure/response <i>research</i> screening.<br>
-        <b>Primary depth</b> = unified pysheds HAND/bathtub on metro DEM × spatial MRMS QPE Ida after open drainage capacity proxy (NLCD + optional drain density + literature mm/hr sink with surcharge; soft land mask). NOT DEP / SWMM.<br>
-        <b>Map + data domain</b> = metro continuous soft-edge overlays (no hard citywide crop); SFINCS Queens remains alternate hydro track under Advanced.<br>
+        <b>Primary depth</b> = unified pysheds HAND/bathtub on metro DEM × spatial MRMS QPE Ida after open drainage capacity proxy (NLCD + metro open catch-basin / inlet density + literature mm/hr sink with surcharge; soft land mask). NOT DEP sewer model / NOT SWMM — cells without inlet credit use NLCD base only.<br>
+        <b>Map + data domain</b> = metro continuous soft-edge overlays (no hard citywide crop); SFINCS Queens remains alternate hydro track under Advanced (shared excess-rate sink when rebuilt; not a peer depth toggle).<br>
         <b>Time window</b> = Ida MRMS native hourly +0h…+36h from 2021-09-01T12:00 UTC (valid 12:00 Sep 1 → 00:00 Sep 3). Depth cum every 3h with buildup + recession.<br>
-        <b>Bands</b> = research ≥3 / ≥8 / ≥15 cm — not NWS watch/warning language.<br>
+        <b>Bands</b> = research ≥3 / ≥8 / ≥15 cm — not NWS watch/warning language. 10&nbsp;m HAND nest is a documented experiment only — product default stays ~30&nbsp;m metro HAND.<br>
         <b>Cannot claim</b> = official NWS warning, calibrated DEP sewer / SWMM, decision-grade guidance, Enterprise/HENS.
       </p>
     </details>

@@ -91,23 +91,105 @@ def _accept_drain_props(props: dict | None) -> bool:
     if props.get("synthetic") is True:
         return False
     source = str(props.get("source") or "").lower()
-    # Explicit OSM / open inlet points are OK even if map UI marks demo_only.
-    if source.startswith("osm") or "manhole" in source or "inlet" in source:
-        return True
-    # Reject demo catchment-graph nodes (road-derived / placeholder basins).
-    if props.get("demo_only") is True and "catch_basin" in str(props.get("kind", "")).lower():
-        if "open_data" in source or source.startswith("nyc"):
-            # Would be OK if real SODA pull; reject placeholders named basin_N.
-            node_id = str(props.get("node_id") or "")
-            if node_id.startswith("basin_"):
-                return False
-        else:
+    # Explicit OSM / NYC Open Data catch-basin / inlet points are OK.
+    if (
+        source.startswith("osm")
+        or source.startswith("nyc_open_data")
+        or source.startswith("nycdep")
+        or "manhole" in source
+        or "inlet" in source
+        or "catch_basin" in source
+    ):
+        # Still reject synthetic demo graph placeholders named basin_N.
+        node_id = str(props.get("node_id") or "")
+        if props.get("synthetic") is True or (
+            props.get("demo_only") is True and node_id.startswith("basin_")
+        ):
             return False
+        return True
+    # Reject remaining demo catchment-graph nodes (road-derived placeholders).
+    if props.get("demo_only") is True and "catch_basin" in str(props.get("kind", "")).lower():
+        return False
     return True
 
 
-def load_drain_points(paths: list[Path]) -> tuple[list[Point], Path | None, str]:
-    """Load open drain / catch-basin points; skip SODA errors and synthetic demo nodes."""
+def _points_from_payload(raw: Any) -> list[Point]:
+    """Extract accepted drain points from GeoJSON / Overpass / SODA payloads."""
+    if isinstance(raw, dict) and raw.get("errorCode"):
+        return []
+    pts: list[Point] = []
+    feats = raw.get("features") if isinstance(raw, dict) else None
+    if feats is None and isinstance(raw, list):
+        # NYC SODA row list with the_geom / lat-lon
+        for row in raw:
+            if not isinstance(row, dict):
+                continue
+            if not _accept_drain_props(row):
+                continue
+            geom = row.get("the_geom")
+            if isinstance(geom, dict) and geom.get("type") == "Point":
+                lon, lat = geom["coordinates"][:2]
+                pts.append(Point(float(lon), float(lat)))
+            elif row.get("longitude") is not None and row.get("latitude") is not None:
+                pts.append(Point(float(row["longitude"]), float(row["latitude"])))
+        return pts
+    if feats is None and isinstance(raw, dict) and "elements" in raw:
+        for el in raw["elements"]:
+            if "lat" in el and "lon" in el:
+                pts.append(Point(float(el["lon"]), float(el["lat"])))
+        return pts
+    for feat in feats or []:
+        if not _accept_drain_props(feat.get("properties")):
+            continue
+        geom = feat.get("geometry") or {}
+        if geom.get("type") == "Point":
+            lon, lat = geom["coordinates"][:2]
+            pts.append(Point(float(lon), float(lat)))
+        elif geom.get("type") == "MultiPoint":
+            for lon, lat, *_ in geom["coordinates"]:
+                pts.append(Point(float(lon), float(lat)))
+    return pts
+
+
+def default_drain_candidate_paths(raw_dir: Path, *extra_roots: Path) -> list[Path]:
+    """Prefer metro-wide OSM inventory, then Queens, then catch-basin caches / DEP SODA."""
+    roots = [raw_dir, *extra_roots]
+    ordered: list[Path] = []
+    names = (
+        "osm_drains_metro.geojson",
+        "osm_drains_south_queens.geojson",
+        "catch_basins.geojson",
+        "nycdep_catch_basins_metro.json",
+        "nycdep_catch_basins_south_queens.json",
+    )
+    for name in names:
+        for root in roots:
+            candidate = root / name
+            if candidate not in ordered:
+                ordered.append(candidate)
+            infra = root / "infrastructure" / name
+            if infra not in ordered:
+                ordered.append(infra)
+            ida = root / "ida_v0_assets" / name
+            if ida not in ordered:
+                ordered.append(ida)
+    return ordered
+
+
+def load_drain_points(
+    paths: list[Path],
+    *,
+    merge: bool = True,
+) -> tuple[list[Point], Path | None, str]:
+    """Load open drain / catch-basin points; skip SODA errors and synthetic demo nodes.
+
+    When ``merge`` is True (default), union points across all readable open inventories
+    so metro OSM densification is not shadowed by a thinner Queens-only file earlier
+    in the candidate list. Returns the highest-priority path that contributed points.
+    """
+    merged: list[Point] = []
+    seen: set[tuple[float, float]] = set()
+    primary_path: Path | None = None
     for path in paths:
         if not path.exists():
             continue
@@ -115,28 +197,39 @@ def load_drain_points(paths: list[Path]) -> tuple[list[Point], Path | None, str]
             raw = json.loads(path.read_text())
         except (OSError, json.JSONDecodeError):
             continue
-        if isinstance(raw, dict) and raw.get("errorCode"):
+        pts = _points_from_payload(raw)
+        if not pts:
             continue
-        pts: list[Point] = []
-        feats = raw.get("features") if isinstance(raw, dict) else None
-        if feats is None and isinstance(raw, dict) and "elements" in raw:
-            for el in raw["elements"]:
-                if "lat" in el and "lon" in el:
-                    pts.append(Point(float(el["lon"]), float(el["lat"])))
-        else:
-            for feat in feats or []:
-                if not _accept_drain_props(feat.get("properties")):
-                    continue
-                geom = feat.get("geometry") or {}
-                if geom.get("type") == "Point":
-                    lon, lat = geom["coordinates"][:2]
-                    pts.append(Point(float(lon), float(lat)))
-                elif geom.get("type") == "MultiPoint":
-                    for lon, lat, *_ in geom["coordinates"]:
-                        pts.append(Point(float(lon), float(lat)))
-        if pts:
+        if primary_path is None:
+            primary_path = path
+        if not merge:
             return pts, path, "open_points"
+        for p in pts:
+            key = (round(p.x, 6), round(p.y, 6))
+            if key in seen:
+                continue
+            seen.add(key)
+            merged.append(p)
+    if merged:
+        return merged, primary_path, "open_points"
     return [], None, "missing"
+
+
+def drain_coverage_fraction(
+    drain_norm: np.ndarray,
+    land: np.ndarray | None = None,
+) -> dict[str, float | int]:
+    """Honest coverage: share of land (or all) cells with any inlet-density credit."""
+    mask = np.ones(drain_norm.shape, dtype=bool) if land is None else land.astype(bool)
+    n = int(mask.sum())
+    if n == 0:
+        return {"n_land": 0, "n_with_drain_credit": 0, "fraction_with_drain_credit": 0.0}
+    credited = int(((drain_norm > 0) & mask).sum())
+    return {
+        "n_land": n,
+        "n_with_drain_credit": credited,
+        "fraction_with_drain_credit": float(credited / n),
+    }
 
 
 def drain_density_norm(

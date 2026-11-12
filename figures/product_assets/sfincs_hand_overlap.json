@@ -1,0 +1,37 @@
+{
+  "phase": "E",
+  "product": "sfincs_hand_overlap",
+  "extent": "south_queens",
+  "wet_threshold_m": 0.005,
+  "n_aoi_cells": 8511,
+  "wet_dry": {
+    "sfincs_wet": 8511,
+    "hand_wet": 8511,
+    "both_wet": 8511,
+    "sfincs_only": 0,
+    "hand_only": 0,
+    "agreement_fraction_on_union": 1.0
+  },
+  "magnitude_on_both_wet": {
+    "sfincs_mean_m": 0.12468543648719788,
+    "hand_mean_m": 0.06455429643392563,
+    "sfincs_over_hand_mean_ratio": 1.9888017177581787,
+    "note": "Non-peer magnitudes \u2014 report ratio, do not blend."
+  },
+  "shared_sink": {
+    "applied_on_sfincs_forcing": true,
+    "engine": "drainage_capacity_proxy_v1",
+    "drain_points_n": 154786,
+    "note": "Same drainage_capacity_proxy_v1 language as HAND excess precip when SFINCS rebuild applies excess-rate forcing."
+  },
+  "sfincs_meta": {
+    "max_m": 3.092606544494629,
+    "forcing": "spatial_mrms_precip_2d_minus_drainage_capacity_proxy",
+    "role": "alternate_hydro_track",
+    "primary": false
+  },
+  "product_default_unchanged": true,
+  "honesty": "SFINCS Queens remains Advanced/alt. Overlap is wet/dry + residual gap \u2014 never a peer depth toggle with metro HAND.",
+  "official_nws": false,
+  "decision_grade": false
+}

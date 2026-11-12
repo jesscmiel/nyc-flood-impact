@@ -7,11 +7,21 @@
     "path": "/home/jesscmiel/projects/nyc-flood-impact/outputs/sfincs_queens_ida/forcing/mrms_spatial_precip_mmhr.nc",
     "source_tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_storm_total.tif",
     "hours": 12.0,
-    "mean_rate_mm_hr": 10.161332538607123,
-    "max_rate_mm_hr": 16.935240427652996,
-    "cv": 0.29974688352111356,
+    "mean_rate_mm_hr": 7.903560638427734,
+    "max_rate_mm_hr": 18.573183059692383,
+    "cv": 0.5311006307601929,
     "spatial": true,
-    "uniform_mean_forbidden": true
+    "uniform_mean_forbidden": true,
+    "drainage_capacity_proxy": {
+      "applied": true,
+      "engine": "drainage_capacity_proxy_v1",
+      "drain_points_n": 154786,
+      "drain_status": "open_points",
+      "drain_path": "/home/jesscmiel/projects/nyc-flood-impact/data/raw/infrastructure/osm_drains_metro.geojson",
+      "mean_efficiency": 0.9271453619003296,
+      "mean_rate_raw_mm_hr": 10.383927266862438,
+      "not_dep_sewer": true
+    }
   },
   "precip_source": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_storm_total.tif",
   "dem": "/home/jesscmiel/projects/nyc-flood-impact/data/raw/terrain/dem_usgs_metro.tif",

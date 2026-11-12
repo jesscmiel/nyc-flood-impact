@@ -103,12 +103,14 @@ def write_spatial_precip_netcdf(
         nlcd = RAW_DIR / "landcover" / "nlcd_2021_impervious_citywide.tif"
         if nlcd.exists():
             impervious = load_impervious_fraction((height, width), transform, crs, nlcd)
+            from flood_risk.inundation.drainage_capacity import default_drain_candidate_paths
+
             pts, dpath, dstatus = load_drain_points(
-                [
-                    RAW_DIR / "infrastructure" / "osm_drains_south_queens.geojson",
-                    FIGURES_DIR / "product_assets" / "catch_basins.geojson",
-                    RAW_DIR / "infrastructure" / "nycdep_catch_basins_south_queens.json",
-                ]
+                default_drain_candidate_paths(
+                    RAW_DIR / "infrastructure",
+                    FIGURES_DIR / "product_assets",
+                    RAW_DIR,
+                )
             )
             cap = capacity_mm_hr(impervious, drain_density_norm((height, width), transform, pts))
             rate, eff = apply_capacity_to_rate_mm_hr(rate_raw, cap)

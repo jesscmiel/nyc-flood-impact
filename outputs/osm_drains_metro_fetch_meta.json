@@ -1,0 +1,26 @@
+{
+  "product": "metro_drain_inventory",
+  "phase": "C",
+  "fetched_at_utc": "2026-11-12T15:06:02.989134+00:00",
+  "extent": "metro",
+  "bounds": {
+    "xmin": -74.45,
+    "ymin": 40.4,
+    "xmax": -73.5,
+    "ymax": 41.05
+  },
+  "n_features_merged": 154766,
+  "n_dep": 154212,
+  "n_osm": 570,
+  "path": "/home/jesscmiel/projects/nyc-flood-impact/data/raw/infrastructure/osm_drains_metro.geojson",
+  "dep_csv": {
+    "cached": true,
+    "path": "/home/jesscmiel/projects/nyc-flood-impact/data/raw/infrastructure/nycdep_catch_basins_metro.csv",
+    "bytes": 16310437,
+    "n_csv_rows": 154212,
+    "n_in_metro_bbox": 154212,
+    "n_features": 154212,
+    "ok": true
+  },
+  "honesty": "Open catch-basin inventory densified metro-wide from NYC Open Data CSV (+ OSM inlet/manhole points when present). NOT a DEP sewer model / NOT SWMM. Capacity proxy still falls back to NLCD base where drain density is zero."
+}

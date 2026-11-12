@@ -1,0 +1,24 @@
+{
+  "phase": "F",
+  "product": "live_mrms_qpe_stub",
+  "qpe_product": "MultiSensor_QPE_01H_Pass1_00.00",
+  "status": "ok",
+  "chosen_valid_time_utc": "2026-11-12T13:00:00+00:00",
+  "chosen_path": "/home/jesscmiel/projects/nyc-flood-impact/data/raw/rainfall/mrms_qpe_01h/MRMS_MultiSensor_QPE_01H_Pass1_00.00_20261112-130000.grib2.gz",
+  "attempts": [
+    {
+      "valid_time_utc": "2026-11-12T13:00:00+00:00",
+      "path": "/home/jesscmiel/projects/nyc-flood-impact/data/raw/rainfall/mrms_qpe_01h/MRMS_MultiSensor_QPE_01H_Pass1_00.00_20261112-130000.grib2.gz",
+      "ok": true,
+      "bytes": 690679
+    }
+  ],
+  "second_event": {
+    "status": "not_run",
+    "note": "Second historical event through the full metro HAND pipeline is deferred \u2014 stub only documents live MRMS ingest generalization."
+  },
+  "pipeline_hook": "Replay path: scripts/fetch_ida_mrms_hourly_metro.py (Ida fixed window). Live path: this stub \u2192 future regrid_mrms_to_metro(valid_time=\u2026) \u2192 HAND. Earth2 live remains scripts/run_live_pipeline.py (scenario, not street precip).",
+  "official_nws": false,
+  "decision_grade": false,
+  "honesty": "Latency prototype only \u2014 does not rebuild Decision Desk or claim ops readiness."
+}

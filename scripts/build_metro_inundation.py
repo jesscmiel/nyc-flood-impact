@@ -35,6 +35,8 @@ from flood_risk.inundation.drainage_capacity import (  # noqa: E402
     EFFECTIVE_DRAINAGE_HOURS,
     ENGINE_ID as DRAINAGE_PROXY_ID,
     capacity_mm_hr,
+    default_drain_candidate_paths,
+    drain_coverage_fraction,
     drain_density_norm,
     effective_sink_mm,
     load_drain_points,
@@ -257,16 +259,17 @@ def main() -> dict:
     if not nlcd.exists():
         raise FileNotFoundError(f"Missing NLCD impervious for drainage proxy: {nlcd}")
     impervious = load_impervious_fraction(shape, transform, crs, nlcd)
-    # Prefer real OSM inlets; never use synthetic demo drainage_nodes graph.
+    # Prefer metro OSM inlets; never use synthetic demo drainage_nodes graph.
     drain_pts, drain_path, drain_status = load_drain_points(
-        [
-            RAW_DIR / "infrastructure" / "osm_drains_south_queens.geojson",
-            ASSETS / "catch_basins.geojson",
-            FIGURES_DIR / "ida_v0_assets" / "catch_basins.geojson",
-            RAW_DIR / "infrastructure" / "nycdep_catch_basins_south_queens.json",
-        ]
+        default_drain_candidate_paths(
+            RAW_DIR / "infrastructure",
+            ASSETS,
+            FIGURES_DIR / "ida_v0_assets",
+            RAW_DIR,
+        )
     )
     drain_norm = drain_density_norm(shape, transform, drain_pts)
+    drain_coverage = drain_coverage_fraction(drain_norm, land)
     capacity = capacity_mm_hr(impervious, drain_norm)
     sink_mm, excess_rain, efficiency = effective_sink_mm(
         rain,
@@ -383,6 +386,7 @@ def main() -> dict:
         "drain_points_n": len(drain_pts),
         "drain_points_status": drain_status,
         "drain_points_path": str(drain_path) if drain_path else None,
+        "drain_coverage": drain_coverage,
         "nlcd": str(nlcd),
         "capacity_mean_mm_hr_land": float(np.mean(capacity[land])) if land.any() else None,
         "excess_mean_mm_land": float(np.nanmean(excess_rain[land])) if land.any() else None,

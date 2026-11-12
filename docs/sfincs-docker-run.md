@@ -19,14 +19,14 @@ Logged copy: `outputs/sfincs_queens_docker_commands.txt`
 - DEM: `/home/jesscmiel/projects/nyc-flood-impact/data/raw/terrain/dem_usgs_metro.tif` clipped via HydroMT region (South Queens bbox)
 - Forcing: **spatial** MRMS precip grid (`setup_precip_forcing_from_grid`, aggregate=False) — not domain-mean
 - Precip NetCDF: `/home/jesscmiel/projects/nyc-flood-impact/outputs/sfincs_queens_ida/forcing/mrms_spatial_precip_mmhr.nc`
-- Rate stats (mm/hr): mean≈10.161332538607123, max≈16.935240427652996, CV≈0.29974688352111356
+- Rate stats (mm/hr): mean≈7.903560638427734, max≈18.573183059692383, CV≈0.5311006307601929
 - Window: 2021-09-01 12Z → 2021-09-02 00Z
 
 ## Outputs
 
 - Depth GeoTIFF: `data/processed/inundation/depth_sfincs_queens_ida_m.tif`
 - PNG overlay: `figures/product_assets/depth_sfincs_queens_ida_m.png`
-- Max depth ≈ **3.469573736190796** m (research)
+- Max depth ≈ **3.092606544494629** m (research)
 
 ## vs pysheds (primary)
 

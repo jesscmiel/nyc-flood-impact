@@ -12,10 +12,15 @@
   "event_duration_hr": 12.0,
   "effective_drainage_hours": 3.0,
   "drain_points": {
-    "n": 84,
+    "n": 154786,
     "status": "open_points",
-    "path": "/home/jesscmiel/projects/nyc-flood-impact/data/raw/infrastructure/osm_drains_south_queens.geojson",
-    "note": "Open OSM/demo drain nodes only where present. nycdep_catch_basins_south_queens.json is a SODA error payload \u2014 unused."
+    "path": "/home/jesscmiel/projects/nyc-flood-impact/data/raw/infrastructure/osm_drains_metro.geojson",
+    "coverage": {
+      "n_land": 4390390,
+      "n_with_drain_credit": 653715,
+      "fraction_with_drain_credit": 0.14889679504554265
+    },
+    "note": "Merged open OSM metro (\u00b1 Queens) inlet/manhole points when present. DEP SODA error payloads are unused. Coverage fraction = land cells with drain_norm > 0; elsewhere capacity is NLCD base only (not secret uniform DEP credit)."
   },
   "paths": {
     "impervious_fraction": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/drainage_capacity/impervious_fraction_metro.tif",
@@ -39,54 +44,54 @@
     },
     "drain_density_norm": {
       "n": 4390390,
-      "mean": 0.0006042743334546685,
+      "mean": 0.14889679849147797,
       "p50": 0.0,
-      "p90": 0.0,
+      "p90": 1.0,
       "max": 1.0,
       "min": 0.0
     },
     "capacity_mm_hr": {
       "n": 4390390,
-      "mean": 9.468585014343262,
+      "mean": 10.966964721679688,
       "p50": 10.0,
-      "p90": 10.0,
+      "p90": 16.36642074584961,
       "max": 22.0,
       "min": 6.5
     },
     "sink_mm": {
       "n": 4390390,
-      "mean": 2.3333730697631836,
-      "p50": 0.0,
-      "p90": 11.51830768585205,
+      "mean": 30.72191047668457,
+      "p50": 29.540292739868164,
+      "p90": 49.03406524658203,
       "max": 66.0,
-      "min": 0.0
+      "min": 4.730910301208496
     },
     "excess_precip_mm": {
       "n": 4390390,
-      "mean": 10.70113754272461,
-      "p50": 0.0,
-      "p90": 28.655010223388672,
-      "max": 193.38319396972656,
+      "mean": 106.41639709472656,
+      "p50": 108.09112548828125,
+      "p90": 161.6641387939453,
+      "max": 222.87818908691406,
       "min": 0.0
     },
     "efficiency": {
       "n": 4390390,
-      "mean": 0.9854726791381836,
-      "p50": 1.0,
+      "mean": 0.9194693565368652,
+      "p50": 0.9889112114906311,
       "p90": 1.0,
       "max": 1.0,
-      "min": 0.3369060754776001
+      "min": 0.24258504807949066
     },
     "mrms_storm_total_mm": {
-      "n": 1816717,
-      "mean": 31.5,
-      "p50": 0.0,
-      "p90": 138.9237060546875,
-      "max": 203.22288513183594,
-      "min": 0.0
+      "n": 4390390,
+      "mean": 137.1383056640625,
+      "p50": 141.02186584472656,
+      "p90": 185.4848175048828,
+      "max": 228.3676300048828,
+      "min": 35.91131591796875
     },
-    "fraction_precip_removed_mean": 0.17901502549648285,
-    "excess_mean_mm_where_rain_pos": 100.2587661743164
+    "fraction_precip_removed_mean": 0.22402136027812958,
+    "excess_mean_mm_where_rain_pos": 106.41639709472656
   },
   "calibration": {
     "method": "loose_spatial_311_plus_ida_narrative_bands",
@@ -118,10 +123,15 @@
         "note": "deep underpasses / basement risk"
       }
     ],
-    "limits": "311 hit-rates show spatial concentration only \u2014 no magnitude skill, no ROC, no non-flood controls. Narrative depth bands are qualitative Ida reporting ranges, not FloodNet station calibration (no citywide FloodNet grid on disk). Drain density uses open OSM inlet/manhole points in South Queens only \u2014 synthetic demo drainage_nodes are excluded; citywide DEP catch-basin SODA pull was unavailable \u2014 capacity falls back to NLCD-modulated base rate outside those points. Primary HAND depths remain shallow vs Ida narratives.",
+    "limits": "311 hit-rates show spatial concentration only \u2014 no magnitude skill, no ROC, no non-flood controls. Narrative depth bands are qualitative Ida reporting ranges, not FloodNet station calibration (no citywide FloodNet grid on disk). Drain density uses open OSM inlet/manhole points (metro-wide when present) \u2014 synthetic demo drainage_nodes are excluded; DEP catch-basin SODA is used only when rows are present (often service-unavailable). Cells with zero drain density get NLCD-modulated base capacity only \u2014 transparent nodata for inlet credit. Primary HAND depths remain shallow vs Ida / FloodNet street peaks.",
+    "drain_coverage": {
+      "n_land": 4390390,
+      "n_with_drain_credit": 653715,
+      "fraction_with_drain_credit": 0.14889679504554265
+    },
     "with_drainage_proxy": {
       "hit_rate_311": 0.9794871794871794,
-      "hit_rate_gauges": 0.0,
+      "hit_rate_gauges": 0.8571428571428571,
       "confidence": null
     },
     "undrained_baseline": {
@@ -142,5 +152,5 @@
   "official_nws": false,
   "decision_grade": false,
   "citations_note": "Order-of-magnitude urban drainage design / pluvial screening sink rates (~5\u201325 mm/hr sustained; short-duration design often higher). Effective drainage hours \u226a full event length so storm-total screening does not over-credit conveyance. Not a calibrated NYC DEP network.",
-  "disclaimer": "Open drainage capacity proxy only \u2014 NOT DEP sewer, NOT SWMM, NOT official NWS. Reduces effective precip via literature mm/hr sink modulated by NLCD impervious and sparse open drain density, with surcharge efficiency collapse in extreme rates."
+  "disclaimer": "Open drainage capacity proxy only \u2014 NOT DEP sewer, NOT SWMM, NOT official NWS. Reduces effective precip via literature mm/hr sink modulated by NLCD impervious and sparse open drain density (metro OSM when available), with surcharge efficiency collapse in extreme rates. Coverage fraction documents where inlet credit exists."
 }
