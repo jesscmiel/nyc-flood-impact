@@ -1,0 +1,282 @@
+{
+  "product": "flood_risk_research_prototype",
+  "official_nws": false,
+  "decision_grade": false,
+  "certified_skill": false,
+  "citywide_perfection": false,
+  "updated_utc": "2026-11-12T15:35:39Z",
+  "engine": "floodnet_ida_hotspot_hydro_v1",
+  "engine_label": "FloodNet Ida hotspot hydro (excess-precip ponding \u00d7 linear calib)",
+  "init_time_utc": "2021-09-01T12:00:00Z",
+  "goal": "first_step_reproduce_ida_at_floodnet_posts",
+  "not_goal": "citywide_hand_perfection",
+  "predictor": {
+    "name": "local_excess_precip_ponding",
+    "runoff_coeff": 0.7,
+    "excess_precip_tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/drainage_capacity/excess_precip_mm.tif",
+    "note": "Ignores stream HAND at the post. Primary HAND is dry when HAND \u226b rain; street sensors often sit off the HAND wet channel."
+  },
+  "calibration": {
+    "scale": 8.80875241064781,
+    "bias_m": -0.14016554702414308,
+    "n_fit": 5,
+    "fit_ok": true,
+    "method": "ols_scale_bias_clip0",
+    "formula": "depth_m = max(0, scale * runoff_coeff * excess_precip_mm/1000 + bias_m)",
+    "runoff_coeff": 0.7,
+    "in_sample_rmse_m": 0.21163356305041328,
+    "in_sample_bias_m": 1.9984014443252818e-16,
+    "in_sample_mae_m": 0.15152091525980177,
+    "lstsq_rank": 2
+  },
+  "leave_one_out": {
+    "n": 5,
+    "rmse_m": 0.31736339138459435,
+    "bias_m": 0.0031116660411923736,
+    "mae_m": 0.22937336937640365,
+    "residuals_m": [
+      -0.015685488331267636,
+      -0.1192219888936884,
+      -0.4307467811130721,
+      0.031096306221993886,
+      0.5501162823219962
+    ],
+    "loo_predictions_m": [
+      0.05721251166873237,
+      0.5858820111063117,
+      0.473239218886928,
+      0.06919630622199388,
+      0.8130062823219961
+    ]
+  },
+  "in_sample_note": "Scale/bias fitted on the same n FloodNet Ida peaks scored below \u2014 in-sample. Leave-one-out RMSE is the honesty check. Do not claim out-of-event skill.",
+  "summary": {
+    "n_sensors": 5,
+    "obs_peak_mean_m": 0.39659560000000005,
+    "obs_peak_max_m": 0.9039860000000001,
+    "primary_hand": {
+      "n": 5,
+      "rmse_m": 0.5273024216739385,
+      "bias_m": -0.39659560000000005,
+      "mae_m": 0.39659560000000005,
+      "model_mean_m": 0.0,
+      "model_max_m": 0.0,
+      "oom_ok_n": 0,
+      "oom_ok_fraction": 0.0
+    },
+    "hand_nest_10m": {
+      "n": 5,
+      "rmse_m": 0.4987281593733407,
+      "bias_m": -0.3795787838607788,
+      "mae_m": 0.3795787838607788,
+      "model_mean_m": 0.01701681613922119,
+      "model_max_m": 0.08508408069610596,
+      "oom_ok_n": 0,
+      "oom_ok_fraction": 0.0
+    },
+    "sfincs_queens_all_posts": {
+      "n": 5,
+      "rmse_m": 0.504705521196738,
+      "bias_m": -0.3622498262062431,
+      "mae_m": 0.36884469439891576,
+      "model_mean_m": 0.03434577379375696,
+      "model_max_m": 0.054587170481681824,
+      "oom_ok_n": 2,
+      "oom_ok_fraction": 0.4
+    },
+    "sfincs_queens_borough_posts": {
+      "n": 2,
+      "rmse_m": 0.024352955875972575,
+      "bias_m": -0.006875162469387054,
+      "mae_m": 0.023362332951068883,
+      "model_mean_m": 0.048623837530612946,
+      "model_max_m": 0.054587170481681824,
+      "oom_ok_n": 2,
+      "oom_ok_fraction": 1.0
+    },
+    "hotspot_calibrated": {
+      "n": 5,
+      "rmse_m": 0.21163356305041328,
+      "bias_m": 1.9984014443252818e-16,
+      "mae_m": 0.15152091525980177,
+      "model_mean_m": 0.3965956000000002,
+      "model_max_m": 0.6264612801320921,
+      "oom_ok_n": 5,
+      "oom_ok_fraction": 1.0
+    },
+    "queens_sfincs_obs_pairs": [
+      {
+        "sensor_id": "Q-russell-st-2-07zt40",
+        "obs_m": 0.072898,
+        "sfincs_m": 0.04266050457954407
+      },
+      {
+        "sensor_id": "Q-russell-st-1-07zqc0",
+        "obs_m": 0.038099999999999995,
+        "sfincs_m": 0.054587170481681824
+      }
+    ]
+  },
+  "stations": [
+    {
+      "sensor_id": "Q-russell-st-2-07zt40",
+      "sensor_name": "Q - Russell St 2",
+      "borough": "Queens",
+      "lon": -73.831736,
+      "lat": 40.654254,
+      "obs_peak_m": 0.072898,
+      "obs_peak_lead_h": 14.184666666666667,
+      "excess_precip_mm": 33.255645751953125,
+      "ponding_predictor_m": 0.023278952026367185,
+      "primary_hand_m": 0.0,
+      "primary_hand_nearest_wet_250m": {
+        "depth_m": null,
+        "dist_m": null,
+        "lon": null,
+        "lat": null,
+        "search_m": 250.0
+      },
+      "hand_nest_10m_m": 0.0,
+      "sfincs_queens_m": 0.04266050457954407,
+      "hotspot_cal_m": 0.06489297775547356,
+      "residual_m": -0.008005022244526441,
+      "abs_error_m": 0.008005022244526441,
+      "ratio_cal_obs": 0.8901887261032341,
+      "oom_ok": true,
+      "primary_hand_residual_m": -0.072898,
+      "hand_nest_residual_m": -0.072898,
+      "sfincs_residual_m": -0.030237495420455937,
+      "sfincs_oom_ok": true
+    },
+    {
+      "sensor_id": "BK-9th-st-smith-st-0etvg0",
+      "sensor_name": "BK - 9th St/Smith St",
+      "borough": "Brooklyn",
+      "lon": -73.995396,
+      "lat": 40.673654,
+      "obs_peak_m": 0.7051040000000001,
+      "obs_peak_lead_h": 14.449277777777779,
+      "excess_precip_mm": 124.30014038085938,
+      "ponding_predictor_m": 0.08701009826660155,
+      "primary_hand_m": 0.0,
+      "primary_hand_nearest_wet_250m": {
+        "depth_m": 0.11077342927455902,
+        "dist_m": 171.0941579552896,
+        "lon": -73.99402133233534,
+        "lat": 40.674791231732776,
+        "search_m": 250.0
+      },
+      "hand_nest_10m_m": 0.0,
+      "sfincs_queens_m": 0.01209461409598589,
+      "hotspot_cal_m": 0.6262848658324861,
+      "residual_m": -0.07881913416751396,
+      "abs_error_m": 0.07881913416751396,
+      "ratio_cal_obs": 0.8882162997692341,
+      "oom_ok": true,
+      "primary_hand_residual_m": -0.7051040000000001,
+      "hand_nest_residual_m": -0.7051040000000001,
+      "sfincs_residual_m": -0.6930093859040142,
+      "sfincs_oom_ok": false
+    },
+    {
+      "sensor_id": "BK-carroll-st-4th-av-0ery00",
+      "sensor_name": "BK - Carroll St/4th Av",
+      "borough": "Brooklyn",
+      "lon": -73.984089,
+      "lat": 40.676281,
+      "obs_peak_m": 0.9039860000000001,
+      "obs_peak_lead_h": 13.801111111111112,
+      "excess_precip_mm": 121.98474884033203,
+      "ponding_predictor_m": 0.08538932418823242,
+      "primary_hand_m": 0.0,
+      "primary_hand_nearest_wet_250m": {
+        "depth_m": null,
+        "dist_m": null,
+        "lon": null,
+        "lat": null,
+        "search_m": 250.0
+      },
+      "hand_nest_10m_m": 0.08508408069610596,
+      "sfincs_queens_m": 0.049878958612680435,
+      "hotspot_cal_m": 0.6120078682625365,
+      "residual_m": -0.29197813173746356,
+      "abs_error_m": 0.29197813173746356,
+      "ratio_cal_obs": 0.6770103389461081,
+      "oom_ok": true,
+      "primary_hand_residual_m": -0.9039860000000001,
+      "hand_nest_residual_m": -0.8189019193038941,
+      "sfincs_residual_m": -0.8541070413873196,
+      "sfincs_oom_ok": false
+    },
+    {
+      "sensor_id": "Q-russell-st-1-07zqc0",
+      "sensor_name": "Q - Russell St 1",
+      "borough": "Queens",
+      "lon": -73.831566,
+      "lat": 40.654312,
+      "obs_peak_m": 0.038099999999999995,
+      "obs_peak_lead_h": 14.644944444444445,
+      "excess_precip_mm": 31.38056755065918,
+      "ponding_predictor_m": 0.021966397285461427,
+      "primary_hand_m": 0.0,
+      "primary_hand_nearest_wet_250m": {
+        "depth_m": null,
+        "dist_m": null,
+        "lon": null,
+        "lat": null,
+        "search_m": 250.0
+      },
+      "hand_nest_10m_m": 0.0,
+      "sfincs_queens_m": 0.054587170481681824,
+      "hotspot_cal_m": 0.05333100801741275,
+      "residual_m": 0.015231008017412756,
+      "abs_error_m": 0.015231008017412756,
+      "ratio_cal_obs": 1.39976398995834,
+      "oom_ok": true,
+      "primary_hand_residual_m": -0.038099999999999995,
+      "hand_nest_residual_m": -0.038099999999999995,
+      "sfincs_residual_m": 0.01648717048168183,
+      "sfincs_oom_ok": true
+    },
+    {
+      "sensor_id": "BK-hoyt-st-5th-st-007sk0",
+      "sensor_name": "BK - Hoyt St/5th St",
+      "borough": "Brooklyn",
+      "lon": -73.994591,
+      "lat": 40.676672,
+      "obs_peak_m": 0.26288999999999996,
+      "obs_peak_lead_h": 13.687888888888889,
+      "excess_precip_mm": 124.32875061035156,
+      "ponding_predictor_m": 0.08703012542724609,
+      "primary_hand_m": 0.0,
+      "primary_hand_nearest_wet_250m": {
+        "depth_m": 0.11077342927455902,
+        "dist_m": 213.3905257511114,
+        "lon": -73.99402133233534,
+        "lat": 40.674791231732776,
+        "search_m": 250.0
+      },
+      "hand_nest_10m_m": 0.0,
+      "sfincs_queens_m": 0.012507621198892593,
+      "hotspot_cal_m": 0.6264612801320921,
+      "residual_m": 0.36357128013209217,
+      "abs_error_m": 0.36357128013209217,
+      "ratio_cal_obs": 2.38297873685607,
+      "oom_ok": true,
+      "primary_hand_residual_m": -0.26288999999999996,
+      "hand_nest_residual_m": -0.26288999999999996,
+      "sfincs_residual_m": -0.25038237880110736,
+      "sfincs_oom_ok": false
+    }
+  ],
+  "demo_honesty": "Primary product depth remains metro HAND (cm-scale screening). Hotspot hydro is a transparent FloodNet-post calibration for Ida reproduction only \u2014 not DEP / not SWMM / not citywide depth / not decision-grade. SFINCS Queens may already be OOM at Queens posts without calib; Brooklyn posts need hotspot.",
+  "lead_with": [
+    "FloodNet hotspot peak RMSE / bias after transparent scale+bias",
+    "residual table vs obs at each Ida sensor",
+    "primary HAND still dry / cm-scale at posts (unchanged)"
+  ],
+  "do_not_lead_with": [
+    "311_hit_rate",
+    "citywide_hand_rescaled"
+  ]
+}

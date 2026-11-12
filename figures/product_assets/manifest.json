@@ -3505,8 +3505,9 @@
     "official": false,
     "certified_skill": false,
     "floodnet": "floodnet_validation.json",
-    "lead_metric": "floodnet_peak_rmse_bias_timing",
-    "bury_311_hit_rate": true
+    "lead_metric": "floodnet_hotspot_rmse_bias_residual",
+    "bury_311_hit_rate": true,
+    "ida_reproduction": "ida_floodnet_reproduction.json"
   },
   "inundation_sfincs": {
     "png": "depth_sfincs_queens_ida_m.png",
@@ -3724,5 +3725,39 @@
     "status": "ok",
     "chosen_valid_time_utc": "2026-11-12T13:00:00+00:00",
     "second_event": "not_run"
+  },
+  "ida_event_reproduction": {
+    "scores": "ida_floodnet_reproduction.json",
+    "stations_geojson": "floodnet_ida_hotspot_stations.geojson",
+    "engine": "floodnet_ida_hotspot_hydro_v1",
+    "role": "floodnet_post_peak_reproduction",
+    "primary_depth_unchanged": true,
+    "official": false,
+    "certified_skill": false,
+    "citywide_perfection": false,
+    "calibration": {
+      "scale": 8.80875241064781,
+      "bias_m": -0.14016554702414308,
+      "formula": "depth_m = max(0, scale * runoff_coeff * excess_precip_mm/1000 + bias_m)",
+      "n_fit": 5
+    },
+    "summary": {
+      "n_sensors": 5,
+      "hotspot_rmse_m": 0.21163356305041328,
+      "hotspot_bias_m": 1.9984014443252818e-16,
+      "hotspot_oom_ok_n": 5,
+      "primary_hand_rmse_m": 0.5273024216739385,
+      "loo_rmse_m": 0.31736339138459435
+    },
+    "lead_with": [
+      "FloodNet hotspot peak RMSE / bias after transparent scale+bias",
+      "residual table vs obs at each Ida sensor",
+      "primary HAND still dry / cm-scale at posts (unchanged)"
+    ],
+    "do_not_lead_with": [
+      "311_hit_rate",
+      "citywide_hand_rescaled"
+    ],
+    "demo_honesty": "Primary product depth remains metro HAND (cm-scale screening). Hotspot hydro is a transparent FloodNet-post calibration for Ida reproduction only \u2014 not DEP / not SWMM / not citywide depth / not decision-grade. SFINCS Queens may already be OOM at Queens posts without calib; Brooklyn posts need hotspot."
   }
 }

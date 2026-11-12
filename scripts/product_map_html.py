@@ -266,6 +266,7 @@ details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft);
         <label class="layer-btn"><input id="lyRoads" type="checkbox">All roads</label>
         <label class="layer-btn"><input id="lyFac" type="checkbox">All facilities</label>
         <label class="layer-btn"><input id="ly311" type="checkbox">311 reports</label>
+        <label class="layer-btn"><input id="lyFloodNet" type="checkbox">FloodNet Ida posts (hotspot cal)</label>
         <div class="group-label">Reference context</div>
         <label class="layer-btn"><input id="lyFema" type="checkbox">FEMA NFHL</label>
         <label class="layer-btn"><input id="lyNwm" type="checkbox">NWM reaches</label>
@@ -282,6 +283,7 @@ details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft);
       <p>
         <b>Product</b> = Asset Decision Desk for infrastructure/response <i>research</i> screening.<br>
         <b>Primary depth</b> = unified pysheds HAND/bathtub on metro DEM × spatial MRMS QPE Ida after open drainage capacity proxy (NLCD + metro open catch-basin / inlet density + literature mm/hr sink with surcharge; soft land mask). NOT DEP sewer model / NOT SWMM — cells without inlet credit use NLCD base only.<br>
+        <b>FloodNet Ida reproduction</b> = separate transparent hotspot hydro (runoff × excess precip + fitted scale/bias at the sparse 2021 posts). Does <i>not</i> rescale citywide HAND. First-step peak OOM at sensors only — residual error documented; not citywide perfection.<br>
         <b>Map + data domain</b> = metro continuous soft-edge overlays (no hard citywide crop); SFINCS Queens remains alternate hydro track under Advanced (shared excess-rate sink when rebuilt; not a peer depth toggle).<br>
         <b>Time window</b> = Ida MRMS native hourly +0h…+36h from 2021-09-01T12:00 UTC (valid 12:00 Sep 1 → 00:00 Sep 3). Depth cum every 3h with buildup + recession.<br>
         <b>Bands</b> = research ≥3 / ≥8 / ≥15 cm — not NWS watch/warning language. 10&nbsp;m HAND nest is a documented experiment only — product default stays ~30&nbsp;m metro HAND.<br>
@@ -741,18 +743,61 @@ function loadOptionalLayers() {{
   const fnName = (manifest.validation_dashboard && manifest.validation_dashboard.floodnet)
     || (manifest.validation_floodnet && manifest.validation_floodnet.scores)
     || "floodnet_validation.json";
+  const reproName = (manifest.validation_dashboard && manifest.validation_dashboard.ida_reproduction)
+    || (manifest.ida_event_reproduction && manifest.ida_event_reproduction.scores)
+    || "ida_floodnet_reproduction.json";
+  const hotspotGeo = (manifest.ida_event_reproduction && manifest.ida_event_reproduction.stations_geojson)
+    || "floodnet_ida_hotspot_stations.geojson";
   const scoresName = (manifest.validation_dashboard && manifest.validation_dashboard.scores) || "validation_scores.json";
+  fetchGeoJSON(hotspotGeo).then(geo => {{
+    bindToggle("lyFloodNet", L.geoJSON(geo, {{
+      pointToLayer: (f, ll) => {{
+        const p = f.properties || {{}};
+        const ok = !!p.oom_ok;
+        return L.circleMarker(ll, {{
+          radius: 7,
+          fillColor: ok ? "#0a8a96" : "#8d3d14",
+          color: "#071018",
+          weight: 1.5,
+          fillOpacity: 0.92,
+          pane: "pointPane",
+        }});
+      }},
+      onEachFeature: (f, layer) => {{
+        const p = f.properties || {{}};
+        const fmt = (x) => (x == null || Number.isNaN(Number(x))) ? "—" : Number(x).toFixed(3);
+        layer.bindPopup(
+          `<b>${{p.sensor_name || p.sensor_id || "FloodNet"}}</b><br>` +
+          `obs peak ${{fmt(p.obs_peak_m)}} m · hotspot cal ${{fmt(p.hotspot_cal_m)}} m<br>` +
+          `residual ${{fmt(p.residual_m)}} m · HAND@post ${{fmt(p.primary_hand_m)}} m<br>` +
+          `<span style="opacity:.8">Ida reproduction only — not primary depth</span>`
+        );
+      }},
+    }}));
+  }}).catch(()=>{{}});
   Promise.all([
     fetch(assets + fnName, {{ cache:"no-cache" }}).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch(assets + reproName, {{ cache:"no-cache" }}).then(r => r.ok ? r.json() : null).catch(() => null),
     fetch(assets + scoresName, {{ cache:"no-cache" }}).then(r => r.ok ? r.json() : null).catch(() => null),
-  ]).then(([fn, scores]) => {{
+  ]).then(([fn, repro, scores]) => {{
     const el = document.getElementById("validationPanel");
     if (!el) return;
+    const fmt = (x) => (x == null || Number.isNaN(x)) ? "—" : Number(x).toFixed(3);
+    if (repro && repro.summary && repro.summary.hotspot_calibrated) {{
+      const h = repro.summary.hotspot_calibrated;
+      const hand = repro.summary.primary_hand || {{}};
+      const cal = repro.calibration || {{}};
+      const loo = repro.leave_one_out || {{}};
+      el.innerHTML =
+        `<b>Ida @ FloodNet posts</b> — hotspot cal RMSE ${{fmt(h.rmse_m)}} m · bias ${{fmt(h.bias_m)}} m · OOM ${{h.oom_ok_n || 0}}/${{h.n || 0}}` +
+        ` (scale ${{fmt(cal.scale)}}, bias ${{fmt(cal.bias_m)}} m; LOO RMSE ${{fmt(loo.rmse_m)}} m).` +
+        ` Primary HAND still dry/cm-scale (RMSE ${{fmt(hand.rmse_m)}} m) — not rescaled citywide. Research only; never lead with 311.`;
+      return;
+    }}
     if (fn && fn.summary) {{
       const rmse = fn.summary.peak_rmse_m;
       const bias = fn.summary.peak_bias_m && fn.summary.peak_bias_m.mean;
       const n = fn.summary.n_sensors;
-      const fmt = (x) => (x == null || Number.isNaN(x)) ? "—" : Number(x).toFixed(3);
       el.innerHTML = `<b>FloodNet vs primary HAND</b> — n=${{n}} sensors · peak RMSE ${{fmt(rmse)}} m · bias ${{fmt(bias)}} m (model−obs). Research only; cm-scale HAND ≪ street peaks. Never lead with 311 hit-rate.`;
       return;
     }}
