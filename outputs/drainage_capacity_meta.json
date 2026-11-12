@@ -1,0 +1,156 @@
+{
+  "product": "drainage_capacity_proxy",
+  "engine": "drainage_capacity_proxy_v1",
+  "extent": "metro",
+  "shape": [
+    2395,
+    2672
+  ],
+  "dem": "/home/jesscmiel/projects/nyc-flood-impact/data/raw/terrain/dem_usgs_metro_work30m.tif",
+  "nlcd_impervious": "/home/jesscmiel/projects/nyc-flood-impact/data/raw/landcover/nlcd_2021_impervious_citywide.tif",
+  "mrms_storm_total": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_storm_total.tif",
+  "event_duration_hr": 12.0,
+  "effective_drainage_hours": 3.0,
+  "drain_points": {
+    "n": 154786,
+    "status": "open_points",
+    "path": "/home/jesscmiel/projects/nyc-flood-impact/data/raw/infrastructure/osm_drains_metro.geojson",
+    "coverage": {
+      "n_land": 4390390,
+      "n_with_drain_credit": 653715,
+      "fraction_with_drain_credit": 0.14889679504554265
+    },
+    "note": "Merged open OSM metro (\u00b1 Queens) inlet/manhole points when present. DEP SODA error payloads are unused. Coverage fraction = land cells with drain_norm > 0; elsewhere capacity is NLCD base only (not secret uniform DEP credit)."
+  },
+  "paths": {
+    "impervious_fraction": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/drainage_capacity/impervious_fraction_metro.tif",
+    "drain_density_norm": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/drainage_capacity/drain_density_norm_metro.tif",
+    "capacity_mm_hr": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/drainage_capacity/drainage_capacity_mm_hr.tif",
+    "sink_mm": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/drainage_capacity/drainage_sink_mm.tif",
+    "excess_precip_mm": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/drainage_capacity/excess_precip_mm.tif",
+    "efficiency": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/drainage_capacity/drainage_efficiency.tif",
+    "excess_rate_mm_hr": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/drainage_capacity/excess_precip_rate_mm_hr.tif",
+    "preview_capacity_png": "drainage_capacity_mm_hr.png",
+    "preview_excess_png": "excess_precip_after_drainage_mm.png"
+  },
+  "stats_on_land": {
+    "impervious_fraction": {
+      "n": 4390390,
+      "mean": 0.15359234809875488,
+      "p50": 0.0,
+      "p90": 0.6990857124328613,
+      "max": 1.0,
+      "min": 0.0
+    },
+    "drain_density_norm": {
+      "n": 4390390,
+      "mean": 0.14889679849147797,
+      "p50": 0.0,
+      "p90": 1.0,
+      "max": 1.0,
+      "min": 0.0
+    },
+    "capacity_mm_hr": {
+      "n": 4390390,
+      "mean": 10.966964721679688,
+      "p50": 10.0,
+      "p90": 16.36642074584961,
+      "max": 22.0,
+      "min": 6.5
+    },
+    "sink_mm": {
+      "n": 4390390,
+      "mean": 30.72191047668457,
+      "p50": 29.540292739868164,
+      "p90": 49.03406524658203,
+      "max": 66.0,
+      "min": 4.730910301208496
+    },
+    "excess_precip_mm": {
+      "n": 4390390,
+      "mean": 106.41639709472656,
+      "p50": 108.09112548828125,
+      "p90": 161.6641387939453,
+      "max": 222.87818908691406,
+      "min": 0.0
+    },
+    "efficiency": {
+      "n": 4390390,
+      "mean": 0.9194693565368652,
+      "p50": 0.9889112114906311,
+      "p90": 1.0,
+      "max": 1.0,
+      "min": 0.24258504807949066
+    },
+    "mrms_storm_total_mm": {
+      "n": 4390390,
+      "mean": 137.1383056640625,
+      "p50": 141.02186584472656,
+      "p90": 185.4848175048828,
+      "max": 228.3676300048828,
+      "min": 35.91131591796875
+    },
+    "fraction_precip_removed_mean": 0.22402136027812958,
+    "excess_mean_mm_where_rain_pos": 106.41639709472656
+  },
+  "calibration": {
+    "method": "loose_spatial_311_plus_ida_narrative_bands",
+    "floodnet_citywide_grid": false,
+    "dep_sewer_model": false,
+    "ida_narrative_bands_m": [
+      {
+        "id": "nuisance",
+        "min_m": 0.03,
+        "max_m": 0.08,
+        "note": "curb / nuisance"
+      },
+      {
+        "id": "ankle",
+        "min_m": 0.08,
+        "max_m": 0.2,
+        "note": "ankle-deep street"
+      },
+      {
+        "id": "knee",
+        "min_m": 0.2,
+        "max_m": 0.45,
+        "note": "knee-deep pockets (Ida narratives)"
+      },
+      {
+        "id": "extreme",
+        "min_m": 0.45,
+        "max_m": null,
+        "note": "deep underpasses / basement risk"
+      }
+    ],
+    "limits": "311 hit-rates show spatial concentration only \u2014 no magnitude skill, no ROC, no non-flood controls. Narrative depth bands are qualitative Ida reporting ranges, not FloodNet station calibration (no citywide FloodNet grid on disk). Drain density uses open OSM inlet/manhole points (metro-wide when present) \u2014 synthetic demo drainage_nodes are excluded; DEP catch-basin SODA is used only when rows are present (often service-unavailable). Cells with zero drain density get NLCD-modulated base capacity only \u2014 transparent nodata for inlet credit. Primary HAND depths remain shallow vs Ida / FloodNet street peaks.",
+    "drain_coverage": {
+      "n_land": 4390390,
+      "n_with_drain_credit": 653715,
+      "fraction_with_drain_credit": 0.14889679504554265
+    },
+    "with_drainage_proxy": {
+      "hit_rate_311": 0.9794871794871794,
+      "hit_rate_gauges": 0.8571428571428571,
+      "confidence": null
+    },
+    "undrained_baseline": {
+      "hit_rate_311": 0.9651741293532339,
+      "hit_rate_gauges": 1.0
+    }
+  },
+  "label": "Open drainage capacity proxy (NLCD + optional drain density + mm/hr sink)",
+  "cap_base_mm_hr": 10.0,
+  "cap_max_mm_hr": 22.0,
+  "alpha_impervious": 0.35,
+  "surcharge_k": 0.85,
+  "default_event_duration_hr": 12.0,
+  "drain_buffer_deg": 0.0015,
+  "formula": "capacity_mm_hr = (CAP_BASE + (CAP_MAX-CAP_BASE)*drain_norm) * (1 - \u03b1\u00b7impervious); intensity = precip/event_duration; efficiency = 1/(1 + k\u00b7max(0, intensity/capacity - 1)\u00b2); excess_precip_mm = precip_mm - min(precip, capacity\u00b7effective_drainage_hours\u00b7efficiency)",
+  "not_dep_sewer": true,
+  "not_swmm": true,
+  "official_nws": false,
+  "decision_grade": false,
+  "citations_note": "Order-of-magnitude urban drainage design / pluvial screening sink rates (~5\u201325 mm/hr sustained; short-duration design often higher). Effective drainage hours \u226a full event length so storm-total screening does not over-credit conveyance. Not a calibrated NYC DEP network.",
+  "disclaimer": "Open drainage capacity proxy only \u2014 NOT DEP sewer, NOT SWMM, NOT official NWS. Reduces effective precip via literature mm/hr sink modulated by NLCD impervious and sparse open drain density (metro OSM when available), with surcharge efficiency collapse in extreme rates. Coverage fraction documents where inlet credit exists."
+}

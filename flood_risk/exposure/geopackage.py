@@ -106,6 +106,76 @@ def point_depth(ds: rasterio.io.DatasetReader, geom) -> float:
     return float(_sample_points(ds, np.array([geom.x]), np.array([geom.y]))[0])
 
 
+def point_nearby_max_depth(
+    ds: rasterio.io.DatasetReader,
+    geom,
+    *,
+    search_m: float = 250.0,
+    wet_m: float = 0.005,
+) -> tuple[float, float | None]:
+    """Max depth within ~search_m of a point (HAND cell misalignment).
+
+    Returns (depth_m, offset_m). Offset is None when the sample is the pin cell
+    or when no wet cell is found. Same rationale as FloodNet nearest-wet checks.
+    """
+    from rasterio.transform import rowcol, xy
+
+    if geom is None or geom.is_empty:
+        return float("nan"), None
+    if geom.geom_type == "MultiPoint":
+        best_d, best_off = float("nan"), None
+        for p in geom.geoms:
+            d, off = point_nearby_max_depth(ds, p, search_m=search_m, wet_m=wet_m)
+            if np.isfinite(d) and (not np.isfinite(best_d) or d > best_d):
+                best_d, best_off = d, off
+        return best_d, best_off
+    if geom.geom_type != "Point":
+        geom = geom.centroid
+
+    lon, lat = float(geom.x), float(geom.y)
+    direct = point_depth(ds, geom)
+    row, col = rowcol(ds.transform, lon, lat)
+    if not (0 <= row < ds.height and 0 <= col < ds.width):
+        return direct, None
+
+    m_per_deg_lat = 110540.0
+    m_per_deg_lon = 111320.0 * float(np.cos(np.deg2rad(lat)))
+    px_m = abs(ds.res[0]) * m_per_deg_lon
+    py_m = abs(ds.res[1]) * m_per_deg_lat
+    rad_x = max(1, int(np.ceil(search_m / max(px_m, 1e-6))))
+    rad_y = max(1, int(np.ceil(search_m / max(py_m, 1e-6))))
+    r0, r1 = max(0, row - rad_y), min(ds.height, row + rad_y + 1)
+    c0, c1 = max(0, col - rad_x), min(ds.width, col + rad_x + 1)
+    win = ds.read(1, window=((r0, r1), (c0, c1))).astype(np.float64)
+    if ds.nodata is not None:
+        win = np.where(win == ds.nodata, np.nan, win)
+    win = np.where(win < -100, np.nan, win)
+
+    best: tuple[float, float] | None = None  # depth, dist_m
+    for i in range(win.shape[0]):
+        for j in range(win.shape[1]):
+            d = win[i, j]
+            if not np.isfinite(d) or d < wet_m:
+                continue
+            rr, cc = r0 + i, c0 + j
+            x, y = xy(ds.transform, rr, cc, offset="center")
+            dist = float(
+                np.hypot((float(x) - lon) * m_per_deg_lon, (float(y) - lat) * m_per_deg_lat)
+            )
+            if dist > search_m:
+                continue
+            if best is None or d > best[0] or (d == best[0] and dist < best[1]):
+                best = (float(d), dist)
+
+    if best is None:
+        return direct, None
+    depth, dist = best
+    # Prefer nearby max when it exceeds the pin cell (typical channel offset).
+    if np.isfinite(direct) and direct >= depth:
+        return float(direct), 0.0 if dist < 1.0 else None
+    return float(depth), float(dist)
+
+
 def intersect_depth_gpkg(
     gpkg: Path,
     depth_tif: Path,

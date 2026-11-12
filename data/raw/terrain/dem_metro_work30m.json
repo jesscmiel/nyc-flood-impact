@@ -1,0 +1,15 @@
+{
+  "path": "data/raw/terrain/dem_usgs_metro_work30m.tif",
+  "shape": [
+    2395,
+    2672
+  ],
+  "target_res_m": 30.0,
+  "approx_cell_m": [
+    29.994625974437955,
+    30.00041753653438
+  ],
+  "min": -11.323749542236328,
+  "max": 366.42864990234375,
+  "source_10m": "data/raw/terrain/dem_usgs_metro.tif"
+}

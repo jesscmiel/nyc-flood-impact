@@ -1,33 +1,45 @@
 {
+  "map_extent_default": "metro",
   "precip": [
     [
-      40.48,
-      -74.28
+      40.4,
+      -74.45
     ],
     [
-      40.93,
-      -73.68
+      41.05,
+      -73.5
     ]
   ],
-  "mrms": [
+  "susceptibility": [
     [
-      40.48,
-      -74.28
+      40.4,
+      -74.45
     ],
     [
-      40.93,
-      -73.68
+      41.05,
+      -73.5
     ]
   ],
-  "pluvial": [
+  "inundation": [
     [
-      40.48,
-      -74.28
+      40.4,
+      -74.45
     ],
     [
-      40.93,
-      -73.68
+      41.05,
+      -73.5
     ]
   ],
-  "map_extent_default": "citywide"
+  "data_domain": "metro",
+  "data_domain_bounds": [
+    [
+      40.4,
+      -74.45
+    ],
+    [
+      41.05,
+      -73.5
+    ]
+  ],
+  "note": "metro = continuous soft-edge overlays for precip/susc/depth"
 }

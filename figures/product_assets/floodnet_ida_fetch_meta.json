@@ -1,0 +1,34 @@
+{
+  "updated_utc": "2026-11-12T14:19:18Z",
+  "window_start_utc": "2021-09-01T12:00:00Z",
+  "window_end_utc": "2021-09-03T00:00:00Z",
+  "downloads": {
+    "sensor_metadata": {
+      "url": "https://data.cityofnewyork.us/api/views/kb2e-tjy3/rows.csv?accessType=DOWNLOAD",
+      "path": "/home/jesscmiel/projects/nyc-flood-impact/data/raw/floodnet/floodnet_sensor_metadata.csv",
+      "bytes": 91657,
+      "cached": true
+    },
+    "flooding_events": {
+      "url": "https://data.cityofnewyork.us/api/views/aq7i-eu5q/rows.csv?accessType=DOWNLOAD",
+      "path": "/home/jesscmiel/projects/nyc-flood-impact/data/raw/floodnet/floodnet_flooding_events.csv",
+      "bytes": 6024454,
+      "cached": true
+    }
+  },
+  "zenodo_sep_2021": {
+    "url": "https://zenodo.org/records/10211443/files/floodnet-flood-sensor-sep-2021.csv?download=1",
+    "available": true,
+    "path": "/home/jesscmiel/projects/nyc-flood-impact/data/raw/floodnet/floodnet-flood-sensor-sep-2021.csv",
+    "bytes": 16025889,
+    "http_status": 200,
+    "cached": false
+  },
+  "n_ida_events": 5,
+  "n_ida_sensors": 5,
+  "outputs": {
+    "events_geojson": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/floodnet/floodnet_ida_events.geojson",
+    "stations_geojson": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/floodnet/floodnet_ida_stations.geojson"
+  },
+  "gaps": []
+}

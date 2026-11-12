@@ -1,8 +1,9 @@
 # Validation dashboard
 
-- Scores: `figures/product_assets/validation_scores.json`
-- Metrics: 311 and AHPS gauge hit rates on citywide research depth (≥3 cm)
-- Confidence chip in UI (`#validationConfidence`) — exploratory, not certified skill
-- Build: `python scripts/build_validation_dashboard.py`
+**Lead metric:** FloodNet peak RMSE / bias / timing vs primary metro HAND — see [floodnet-validation.md](./floodnet-validation.md) and `figures/product_assets/floodnet_validation.json`.
+
+- FloodNet skill card: `scripts/run_floodnet_validation.py`
+- Exploratory 311 / AHPS hit rates (buried): `figures/product_assets/validation_scores.json` via `scripts/build_validation_dashboard.py`
+- Map panel: limitations-first; prefers FloodNet RMSE/bias; **never leads with 311 hit-rate**
 
 NOT NWS verification / NOT decision-grade.

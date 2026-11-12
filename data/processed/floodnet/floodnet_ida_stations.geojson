@@ -1,0 +1,164 @@
+{
+  "type": "FeatureCollection",
+  "name": "floodnet_ida_stations",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.831736,
+          40.654254
+        ]
+      },
+      "properties": {
+        "sensor_id": "Q-russell-st-2-07zt40",
+        "sensor_name": "Q - Russell St 2",
+        "borough": "Queens",
+        "street_name": "Russell Street",
+        "flood_start_utc": "2021-09-02T01:51:03Z",
+        "flood_end_utc": "2021-09-02T07:08:22Z",
+        "peak_time_utc": "2021-09-02T02:11:04.800000Z",
+        "peak_lead_h": 14.184666666666667,
+        "max_depth_in": 2.87,
+        "max_depth_m": 0.072898,
+        "time_to_max_min": 20.03,
+        "duration_min": 317.32,
+        "tidally_influenced": "Yes",
+        "date_installed": "03/05/2021",
+        "date_removed": "02/15/2024",
+        "lon": -73.831736,
+        "lat": 40.654254
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.995396,
+          40.673654
+        ]
+      },
+      "properties": {
+        "sensor_id": "BK-9th-st-smith-st-0etvg0",
+        "sensor_name": "BK - 9th St/Smith St",
+        "borough": "Brooklyn",
+        "street_name": "9th Street",
+        "flood_start_utc": "2021-09-02T00:11:58Z",
+        "flood_end_utc": "2021-09-02T04:42:32Z",
+        "peak_time_utc": "2021-09-02T02:26:57.400000Z",
+        "peak_lead_h": 14.449277777777779,
+        "max_depth_in": 27.76,
+        "max_depth_m": 0.7051040000000001,
+        "time_to_max_min": 134.99,
+        "duration_min": 270.57,
+        "tidally_influenced": "No",
+        "date_installed": "07/16/2021",
+        "date_removed": "12/10/2021",
+        "lon": -73.995396,
+        "lat": 40.673654
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.984089,
+          40.676281
+        ]
+      },
+      "properties": {
+        "sensor_id": "BK-carroll-st-4th-av-0ery00",
+        "sensor_name": "BK - Carroll St/4th Av",
+        "borough": "Brooklyn",
+        "street_name": "Carroll Street",
+        "flood_start_utc": "2021-09-02T01:27:16Z",
+        "flood_end_utc": "2021-09-02T03:11:26Z",
+        "peak_time_utc": "2021-09-02T01:48:04Z",
+        "peak_lead_h": 13.801111111111112,
+        "max_depth_in": 35.59,
+        "max_depth_m": 0.9039860000000001,
+        "time_to_max_min": 20.8,
+        "duration_min": 104.17,
+        "tidally_influenced": "No",
+        "date_installed": "07/15/2021",
+        "date_removed": "",
+        "lon": -73.984089,
+        "lat": 40.676281
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.831566,
+          40.654312
+        ]
+      },
+      "properties": {
+        "sensor_id": "Q-russell-st-1-07zqc0",
+        "sensor_name": "Q - Russell St 1",
+        "borough": "Queens",
+        "street_name": "Russell Street",
+        "flood_start_utc": "2021-09-02T02:03:01Z",
+        "flood_end_utc": "2021-09-02T06:21:09Z",
+        "peak_time_utc": "2021-09-02T02:38:41.800000Z",
+        "peak_lead_h": 14.644944444444445,
+        "max_depth_in": 1.5,
+        "max_depth_m": 0.038099999999999995,
+        "time_to_max_min": 35.68,
+        "duration_min": 258.14,
+        "tidally_influenced": "Yes",
+        "date_installed": "03/05/2021",
+        "date_removed": "",
+        "lon": -73.831566,
+        "lat": 40.654312
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.994591,
+          40.676672
+        ]
+      },
+      "properties": {
+        "sensor_id": "BK-hoyt-st-5th-st-007sk0",
+        "sensor_name": "BK - Hoyt St/5th St",
+        "borough": "Brooklyn",
+        "street_name": "Hoyt Street",
+        "flood_start_utc": "2021-09-02T01:24:41Z",
+        "flood_end_utc": "2021-09-02T03:08:33Z",
+        "peak_time_utc": "2021-09-02T01:41:16.400000Z",
+        "peak_lead_h": 13.687888888888889,
+        "max_depth_in": 10.35,
+        "max_depth_m": 0.26288999999999996,
+        "time_to_max_min": 16.59,
+        "duration_min": 103.88,
+        "tidally_influenced": "No",
+        "date_installed": "10/05/2020",
+        "date_removed": "",
+        "lon": -73.994591,
+        "lat": 40.676672
+      }
+    }
+  ],
+  "properties": {
+    "source_events": "/home/jesscmiel/projects/nyc-flood-impact/data/raw/floodnet/floodnet_flooding_events.csv",
+    "source_metadata": "/home/jesscmiel/projects/nyc-flood-impact/data/raw/floodnet/floodnet_sensor_metadata.csv",
+    "window_start_utc": "2021-09-01T12:00:00Z",
+    "window_end_utc": "2021-09-03T00:00:00Z",
+    "n_events": 5,
+    "n_sensors": 5,
+    "skipped_no_meta": 0,
+    "units_note": "FloodNet depths stored as inches in source; max_depth_m = inches * 0.0254",
+    "license_note": "FloodNet data via NYC Open Data (FloodNet: Street Flooding Events / Sensor Deployment Metadata). Review FloodNet data access terms before redistribution beyond research use.",
+    "series_stripped": true,
+    "full_events_geojson": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/floodnet/floodnet_ida_events.geojson"
+  }
+}

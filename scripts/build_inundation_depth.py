@@ -28,29 +28,59 @@ from matplotlib import colormaps
 from PIL import Image
 from rasterio.enums import Resampling
 from rasterio.warp import reproject
-from scipy import ndimage
 
+from flood_risk.inundation.hand_bathtub import (
+    ENGINE_ID,
+    FOCAL_WIN,
+    MIN_DEPTH_M,
+    RUNOFF_COEFF,
+    compute_terrain_from_dem_path,
+    depth_from_rain as unified_depth_from_rain,
+    param_meta,
+)
 from nyc_flash_flood_case_study.config import FIGURES_DIR, PROCESSED_DIR, PROJECT_ROOT
-from nyc_flash_flood_case_study.extents import EXTENTS
-
-if not hasattr(np, "in1d"):
-    np.in1d = np.isin  # type: ignore[attr-defined]
-
-from pysheds.grid import Grid  # noqa: E402
+from nyc_flash_flood_case_study.extents import EXTENTS, PRIMARY_DATA_EXTENT
 
 ASSETS = FIGURES_DIR / "product_assets"
 OUT_DIR = PROCESSED_DIR / "inundation"
-DEM_PATH = PROJECT_ROOT / "data" / "raw" / "terrain" / "dem_usgs_citywide.tif"
-LAND_MASK = PROCESSED_DIR / "land_mask_citywide.tif"
-BOUNDS = EXTENTS["citywide"]["bounds"]
-RUNOFF_COEFF = 0.70
-MIN_DEPTH_M = 0.005
-FOCAL_WIN = 9
+# Prefer metro hi-res DEM after rebuild; fall back to legacy citywide.
+_METRO_DEM = PROJECT_ROOT / "data" / "raw" / "terrain" / "dem_usgs_metro.tif"
+_CITY_DEM = PROJECT_ROOT / "data" / "raw" / "terrain" / "dem_usgs_citywide.tif"
+DEM_PATH = _METRO_DEM if _METRO_DEM.exists() else _CITY_DEM
+LAND_MASK = (
+    PROCESSED_DIR / "land_mask_metro.tif"
+    if (PROCESSED_DIR / "land_mask_metro.tif").exists()
+    else PROCESSED_DIR / "land_mask_citywide.tif"
+)
+_EXTENT_ID = PRIMARY_DATA_EXTENT if DEM_PATH == _METRO_DEM else "citywide"
+BOUNDS = EXTENTS[_EXTENT_ID]["bounds"]
 DEPTH_CMAP = "Blues"
 
 FORCINGS = {
+    "mrms_qpe_ida": {
+        "label": "MRMS QPE Ida (~1 km) primary forcing",
+        "storm_path_id": "mrms_qpe_ida",
+        "total": PROCESSED_DIR / "mrms_qpe_metro" / "mrms_qpe_metro_storm_total.tif",
+        "leads": [
+            (6, PROCESSED_DIR / "mrms_qpe_metro" / "mrms_qpe_metro_lead_06h.tif"),
+            (12, PROCESSED_DIR / "mrms_qpe_metro" / "mrms_qpe_metro_lead_12h.tif"),
+            (18, PROCESSED_DIR / "mrms_qpe_metro" / "mrms_qpe_metro_lead_18h.tif"),
+            (24, PROCESSED_DIR / "mrms_qpe_metro" / "mrms_qpe_metro_lead_24h.tif"),
+        ],
+        "total_fallback": PROCESSED_DIR / "earth2_precip" / "mrms_qpe_ida_precip_storm_total.tif",
+        "leads_fallback": [
+            (6, PROCESSED_DIR / "earth2_precip" / "mrms_qpe_ida_precip_lead_06h.tif"),
+            (12, PROCESSED_DIR / "earth2_precip" / "mrms_qpe_ida_precip_lead_12h.tif"),
+            (18, PROCESSED_DIR / "earth2_precip" / "mrms_qpe_ida_precip_lead_18h.tif"),
+            (24, PROCESSED_DIR / "earth2_precip" / "mrms_qpe_ida_precip_lead_24h.tif"),
+        ],
+        "prefix": "depth_mrms_",
+        "source_note": (
+            "NOAA MRMS Multi-Sensor QPE (~1 km) — primary Ida forcing (spatial, never domain-mean)."
+        ),
+    },
     "earth2_control": {
-        "label": "Earth2 (primary) forcing",
+        "label": "Earth2 (scenario) forcing",
         "storm_path_id": "earth2_control",
         "total": PROCESSED_DIR / "earth2_precip" / "precip_storm_total.tif",
         "leads": [
@@ -60,31 +90,7 @@ FORCINGS = {
             (24, PROCESSED_DIR / "earth2_precip" / "precip_lead_24h.tif"),
         ],
         "prefix": "depth_",
-        "source_note": "Earth2 FCN+PrecipitationAFNO Ida precip",
-    },
-    "mrms_qpe_ida": {
-        "label": "MRMS QPE Ida (~1 km) alt forcing",
-        "storm_path_id": "mrms_qpe_ida",
-        "total": PROCESSED_DIR / "earth2_precip" / "mrms_qpe_ida_precip_storm_total.tif",
-        "leads": [
-            (6, PROCESSED_DIR / "earth2_precip" / "mrms_qpe_ida_precip_lead_06h.tif"),
-            (12, PROCESSED_DIR / "earth2_precip" / "mrms_qpe_ida_precip_lead_12h.tif"),
-            (18, PROCESSED_DIR / "earth2_precip" / "mrms_qpe_ida_precip_lead_18h.tif"),
-            (24, PROCESSED_DIR / "earth2_precip" / "mrms_qpe_ida_precip_lead_24h.tif"),
-        ],
-        # Fallback to raw MRMS dir if export not present
-        "total_fallback": PROCESSED_DIR / "mrms_qpe" / "mrms_qpe_storm_total.tif",
-        "leads_fallback": [
-            (6, PROCESSED_DIR / "mrms_qpe" / "mrms_qpe_lead_06h_citywide.tif"),
-            (12, PROCESSED_DIR / "mrms_qpe" / "mrms_qpe_lead_12h_citywide.tif"),
-            (18, PROCESSED_DIR / "mrms_qpe" / "mrms_qpe_lead_18h_citywide.tif"),
-            (24, PROCESSED_DIR / "mrms_qpe" / "mrms_qpe_lead_24h_citywide.tif"),
-        ],
-        "prefix": "depth_mrms_",
-        "source_note": (
-            "NOAA MRMS Multi-Sensor QPE (~1 km) — labeled alternate Ida scenario forcing. "
-            "NOT a live competing weather product."
-        ),
+        "source_note": "Earth2 FCN+PrecipitationAFNO Ida precip — labeled AI scenario only",
     },
 }
 
@@ -140,30 +146,7 @@ def _warp_to_dem(src_path: Path, dem_shape, dem_transform, dem_crs) -> np.ndarra
 
 
 def compute_terrain(dem_path: Path) -> dict:
-    grid = Grid.from_raster(str(dem_path))
-    dem = grid.read_raster(str(dem_path))
-    pit = grid.fill_pits(dem)
-    flooded = grid.fill_depressions(pit)
-    inflated = grid.resolve_flats(flooded)
-    fdir = grid.flowdir(inflated, routing="d8")
-    acc = grid.accumulation(fdir, routing="d8")
-    acc_a = np.asarray(acc, dtype=np.float64)
-    thr = max(50.0, float(np.percentile(acc_a[np.isfinite(acc_a)], 98)))
-    hand = grid.compute_hand(fdir, inflated, acc > thr, routing="d8")
-    dem_a = np.asarray(dem, dtype=np.float32)
-    filled_a = np.asarray(flooded, dtype=np.float32)
-    hand_a = np.asarray(hand, dtype=np.float32)
-    dem_a[~np.isfinite(dem_a)] = np.nan
-    filled_a[~np.isfinite(filled_a)] = np.nan
-    hand_a[~np.isfinite(hand_a)] = np.nan
-    sink_cap = np.clip(filled_a - dem_a, 0, None)
-    return {
-        "dem": dem_a,
-        "filled": filled_a,
-        "hand": hand_a,
-        "sink_capacity_m": sink_cap.astype(np.float32),
-        "stream_acc_threshold": thr,
-    }
+    return compute_terrain_from_dem_path(dem_path)
 
 
 def depth_from_rain(
@@ -173,18 +156,9 @@ def depth_from_rain(
     dem_m: np.ndarray,
     runoff: float = RUNOFF_COEFF,
 ) -> np.ndarray:
-    rain_m = np.clip(np.nan_to_num(rain_mm, nan=0.0), 0, None) / 1000.0 * runoff
-    hand_depth = rain_m - np.nan_to_num(hand_m, nan=np.inf)
-    hand_depth = np.where(np.isfinite(hand_m), hand_depth, np.nan)
-    dep_depth = np.minimum(np.nan_to_num(sink_cap_m, nan=0.0), rain_m)
-    dem_fill = np.where(np.isfinite(dem_m), dem_m, np.nanmax(dem_m[np.isfinite(dem_m)]))
-    focal_min = ndimage.minimum_filter(dem_fill, size=FOCAL_WIN)
-    rel = dem_fill - focal_min
-    rel_depth = rain_m - rel
-    depth = np.fmax(np.fmax(hand_depth, dep_depth), rel_depth)
-    depth = np.where(np.isfinite(dem_m), depth, np.nan)
-    depth = np.where(depth >= MIN_DEPTH_M, depth, np.nan)
-    return depth.astype(np.float32)
+    return unified_depth_from_rain(
+        rain_mm, hand_m, sink_cap_m, dem_m, runoff=runoff
+    )
 
 
 def apply_land_mask(depth: np.ndarray, transform, crs) -> np.ndarray:
@@ -332,14 +306,15 @@ def main() -> dict:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     ASSETS.mkdir(parents=True, exist_ok=True)
 
-    print("Computing pysheds HAND + depression terrain on citywide DEM…")
+    print(f"Computing unified HAND/bathtub terrain on {_EXTENT_ID} DEM…")
     terrain = compute_terrain(DEM_PATH)
     with rasterio.open(DEM_PATH) as dem_ds:
         transform = dem_ds.transform
         crs = dem_ds.crs
         dem_shape = (dem_ds.height, dem_ds.width)
 
-    _write_tif(OUT_DIR / "hand_citywide.tif", terrain["hand"], transform, crs)
+    hand_name = "hand_metro.tif" if _EXTENT_ID == "metro" else "hand_citywide.tif"
+    _write_tif(OUT_DIR / hand_name, terrain["hand"], transform, crs)
     _write_tif(OUT_DIR / "sink_capacity_m.tif", terrain["sink_capacity_m"], transform, crs)
 
     by_path: dict[str, dict] = {}
@@ -362,43 +337,38 @@ def main() -> dict:
     if not by_path:
         raise RuntimeError("No inundation depth sets produced")
 
-    # Backward-compatible top-level fields = Earth2 primary set (or first available)
-    primary = by_path.get("earth2_control") or next(iter(by_path.values()))
-    # Preferred display when user selects hi-res alt: mrms set
-    preferred_hires = by_path.get("mrms_qpe_ida")
+    # Primary = MRMS spatial; Earth2 remains labeled scenario
+    primary = by_path.get("mrms_qpe_ida") or next(iter(by_path.values()))
+    scenario = by_path.get("earth2_control")
 
     leaflet_bounds = primary["bounds"]
     meta = {
         "product": "estimated_research_inundation_depth",
+        "primary": True,
+        "role": "primary_depth",
+        "extent": _EXTENT_ID,
         "model": "pysheds HAND + depression/relative-elevation rainfall-excess bathtub",
-        "engine": "pysheds",
+        "engine": ENGINE_ID,
         "dem": str(DEM_PATH),
-        "runoff_coefficient": RUNOFF_COEFF,
-        "focal_window_cells": FOCAL_WIN,
-        "formula": (
-            "depth_m = max(HAND excess, min(sink_capacity, rain_m), rain_m − (DEM − focal_min)); "
-            "rain_m = runoff_coeff * precip_mm/1000"
-        ),
         "units": "meters",
         "disclaimer": (
-            "Estimated research inundation only. NOT an official NWS flood warning, "
-            "NOT a calibrated NYC DEP/SWMM product, NOT emergency guidance. "
-            "Depth follows the selected storm path forcing when a matching depth set exists "
-            "(Earth2 primary or MRMS QPE Ida alt)."
+            "Primary research depth = unified pysheds on metro/citywide DEM × spatial MRMS. "
+            "Earth2 depth set is a labeled AI scenario only. NOT official NWS / NOT decision-grade. "
+            "SFINCS is an alternate hydro track until comparable."
         ),
         "not_flood_warning": True,
-        "hand_tif": str(OUT_DIR / "hand_citywide.tif"),
+        "hand_tif": str(OUT_DIR / hand_name),
         "stream_acc_threshold": terrain["stream_acc_threshold"],
         "default_depth_path": primary["id"],
         "by_path": by_path,
-        # Flat aliases for Earth2 (backward compatible with prior UI)
         "storm_total": primary["storm_total"],
         "interval_frames": primary["interval_frames"],
         "cumulative_frames": primary["cumulative_frames"],
         "bounds": leaflet_bounds,
         "colorbar": primary["colorbar"],
         "opacity_default": 0.75,
-        "hires_alt_depth_path": preferred_hires["id"] if preferred_hires else None,
+        "scenario_depth_path": scenario["id"] if scenario else None,
+        **param_meta(),
     }
     (OUT_DIR / "inundation_meta.json").write_text(json.dumps(meta, indent=2))
     (ASSETS / "inundation_meta.json").write_text(json.dumps(meta, indent=2))

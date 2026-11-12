@@ -1,0 +1,21 @@
+{
+  "dem": "/home/jesscmiel/projects/nyc-flood-impact/data/raw/terrain/dem_usgs_metro_work30m.tif",
+  "extent": "metro",
+  "bounds": {
+    "xmin": -74.45,
+    "ymin": 40.4,
+    "xmax": -73.5,
+    "ymax": 41.05
+  },
+  "method": "native_hourly_mrms_qpe_bilinear_to_metro_dem",
+  "hourly_meta": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_hourly_meta.json",
+  "lead_hours_min": 0,
+  "lead_hours_max": 36,
+  "n_native_hourly": 37,
+  "storm_total": {
+    "path": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_storm_total.tif",
+    "max_mm": 228.3676300048828,
+    "mean_mm": 124.60712432861328,
+    "lead_hours": 36
+  }
+}

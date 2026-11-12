@@ -1,0 +1,60 @@
+{
+  "gpkg": "/home/jesscmiel/projects/nyc-flood-impact/figures/product_assets/exposure_citywide.gpkg",
+  "depth_tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_sfincs_strata_queens_m.tif",
+  "layers": {
+    "roads": {
+      "n": 2200,
+      "wet": 13,
+      "max_depth_m": 1.6220018863677979,
+      "mean_wet_m": 0.8481851586928735,
+      "band_counts": {
+        "ponding": 0,
+        "deep_ponding": 0,
+        "hazard": 13
+      }
+    },
+    "stations": {
+      "n": 309,
+      "wet": 0,
+      "max_depth_m": null,
+      "mean_wet_m": 0.0,
+      "band_counts": {
+        "ponding": 0,
+        "deep_ponding": 0,
+        "hazard": 0
+      }
+    },
+    "facilities": {
+      "n": 26,
+      "wet": 0,
+      "max_depth_m": null,
+      "mean_wet_m": 0.0,
+      "band_counts": {
+        "ponding": 0,
+        "deep_ponding": 0,
+        "hazard": 0
+      }
+    }
+  },
+  "bands": [
+    {
+      "id": "ponding",
+      "label": "Ponding \u22653 cm",
+      "min_m": 0.03,
+      "max_m": 0.08
+    },
+    {
+      "id": "deep_ponding",
+      "label": "Deep ponding \u22658 cm",
+      "min_m": 0.08,
+      "max_m": 0.15
+    },
+    {
+      "id": "hazard",
+      "label": "Hazard ponding \u226515 cm",
+      "min_m": 0.15,
+      "max_m": null
+    }
+  ],
+  "honesty": "Asset intersects on STRATA\u2192SFINCS research depth. Not calibrated inundation."
+}

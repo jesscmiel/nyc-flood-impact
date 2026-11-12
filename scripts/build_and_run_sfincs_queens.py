@@ -29,10 +29,24 @@ from nyc_flash_flood_case_study.extents import EXTENTS
 MODEL_DIR = OUTPUTS_DIR / "sfincs_queens_ida"
 ASSETS = FIGURES_DIR / "product_assets"
 IMAGE = "deltares/sfincs-cpu:sfincs-v2.1.1-Dollerup-Release"
-DEM = PROJECT_ROOT / "data" / "raw" / "terrain" / "dem_usgs_citywide.tif"
-RAIN = PROCESSED_DIR / "earth2_precip" / "mrms_qpe_ida_precip_storm_total.tif"
-if not RAIN.exists():
-    RAIN = PROCESSED_DIR / "mrms_qpe" / "mrms_qpe_storm_total.tif"
+# Prefer hi-res metro DEM; fall back to citywide / Queens 1/3".
+DEM_CANDIDATES = [
+    PROJECT_ROOT / "data" / "raw" / "terrain" / "dem_usgs_metro.tif",
+    PROJECT_ROOT / "data" / "raw" / "terrain" / "dem_usgs_1_3_arcsec.tif",
+    PROJECT_ROOT / "data" / "raw" / "terrain" / "dem_usgs_citywide.tif",
+]
+RAIN_CANDIDATES = [
+    PROCESSED_DIR / "mrms_qpe_metro" / "mrms_qpe_metro_storm_total.tif",
+    PROCESSED_DIR / "earth2_precip" / "mrms_qpe_ida_precip_storm_total.tif",
+    PROCESSED_DIR / "mrms_qpe" / "mrms_qpe_storm_total.tif",
+]
+
+
+def _first_existing(paths: list[Path]) -> Path:
+    for p in paths:
+        if p.exists():
+            return p
+    raise FileNotFoundError(f"None of {paths} exist")
 
 
 def _docker(cmd: list[str]) -> subprocess.CompletedProcess:
@@ -47,14 +61,97 @@ def shlex_quote(s: str) -> str:
     return shlex.quote(s)
 
 
-def mean_precip_mm_hr(rain_tif: Path, hours: float = 12.0) -> float:
+def write_spatial_precip_netcdf(
+    rain_tif: Path,
+    out_nc: Path,
+    hours: float = 12.0,
+    *,
+    apply_drainage_proxy: bool = True,
+) -> dict:
+    """Build HydroMT-ready NetCDF: spatially varying precip rate [mm/hr] over the event.
+
+    Converts storm-total mm → rate = total/hours per cell (spatial field, never domain-mean).
+    Optionally applies open drainage capacity proxy (NLCD + mm/hr sink) — NOT DEP sewer.
+    """
+    import pandas as pd
+    import rioxarray  # noqa: F401 — registers .rio accessor on DataArray
+
+    sys.path.insert(0, str(ROOT))
+    from flood_risk.inundation.drainage_capacity import (
+        apply_capacity_to_rate_mm_hr,
+        capacity_mm_hr,
+        drain_density_norm,
+        load_drain_points,
+        load_impervious_fraction,
+    )
+    from nyc_flash_flood_case_study.config import FIGURES_DIR, RAW_DIR
+
     with rasterio.open(rain_tif) as ds:
         arr = ds.read(1).astype(np.float64)
         if ds.nodata is not None:
             arr = np.where(arr == ds.nodata, np.nan, arr)
-        # storm total mm → mean rate over event window
-        total = float(np.nanmean(arr[np.isfinite(arr) & (arr > 0)])) if np.isfinite(arr).any() else 20.0
-    return max(total / hours, 0.5)
+        transform = ds.transform
+        crs = ds.crs
+        height, width = arr.shape
+        xs = np.array([transform.c + (i + 0.5) * transform.a for i in range(width)])
+        ys = np.array([transform.f + (j + 0.5) * transform.e for j in range(height)])
+        rate_raw = np.clip(np.nan_to_num(arr, nan=0.0), 0, None) / hours  # mm/hr
+
+    drainage_meta: dict = {"applied": False}
+    rate = rate_raw
+    if apply_drainage_proxy:
+        nlcd = RAW_DIR / "landcover" / "nlcd_2021_impervious_citywide.tif"
+        if nlcd.exists():
+            impervious = load_impervious_fraction((height, width), transform, crs, nlcd)
+            from flood_risk.inundation.drainage_capacity import default_drain_candidate_paths
+
+            pts, dpath, dstatus = load_drain_points(
+                default_drain_candidate_paths(
+                    RAW_DIR / "infrastructure",
+                    FIGURES_DIR / "product_assets",
+                    RAW_DIR,
+                )
+            )
+            cap = capacity_mm_hr(impervious, drain_density_norm((height, width), transform, pts))
+            rate, eff = apply_capacity_to_rate_mm_hr(rate_raw, cap)
+            drainage_meta = {
+                "applied": True,
+                "engine": "drainage_capacity_proxy_v1",
+                "drain_points_n": len(pts),
+                "drain_status": dstatus,
+                "drain_path": str(dpath) if dpath else None,
+                "mean_efficiency": float(np.nanmean(eff)) if np.isfinite(eff).any() else None,
+                "mean_rate_raw_mm_hr": float(np.nanmean(rate_raw[rate_raw > 0])) if (rate_raw > 0).any() else None,
+                "not_dep_sewer": True,
+            }
+
+    times = pd.date_range("2021-09-01T12:00:00", periods=2, freq=f"{int(hours)}h")
+    # Two timesteps with the same spatial rate so HydroMT has a time axis covering the run.
+    data = np.stack([rate, rate], axis=0).astype(np.float32)
+    da = xr.DataArray(
+        data,
+        coords={"time": times, "y": ys, "x": xs},
+        dims=("time", "y", "x"),
+        name="precip",
+    )
+    da.attrs["units"] = "mm/hr"
+    da = da.rio.write_crs("EPSG:4326")
+    da = da.rio.write_transform(transform)
+    out_nc.parent.mkdir(parents=True, exist_ok=True)
+    ds_out = da.to_dataset()
+    ds_out.to_netcdf(out_nc)
+    finite = rate[np.isfinite(rate) & (rate > 0)]
+    return {
+        "path": str(out_nc),
+        "source_tif": str(rain_tif),
+        "hours": hours,
+        "mean_rate_mm_hr": float(finite.mean()) if finite.size else None,
+        "max_rate_mm_hr": float(finite.max()) if finite.size else None,
+        "cv": float(finite.std() / finite.mean()) if finite.size else None,
+        "spatial": True,
+        "uniform_mean_forbidden": True,
+        "drainage_capacity_proxy": drainage_meta,
+    }
 
 
 def build_model() -> dict:
@@ -73,9 +170,15 @@ def build_model() -> dict:
 
     from hydromt_sfincs import SfincsModel
 
+    dem = _first_existing(DEM_CANDIDATES)
+    rain = _first_existing(RAIN_CANDIDATES)
+
     if MODEL_DIR.exists():
         shutil.rmtree(MODEL_DIR)
     MODEL_DIR.mkdir(parents=True)
+
+    precip_nc = MODEL_DIR / "forcing" / "mrms_spatial_precip_mmhr.nc"
+    precip_meta = write_spatial_precip_netcdf(rain, precip_nc, hours=12.0)
 
     b = EXTENTS["south_queens"]["bounds"]
     # HydroMT region bbox: [xmin, ymin, xmax, ymax] in WGS84
@@ -97,24 +200,30 @@ def build_model() -> dict:
         huthresh=0.01,
     )
     # Local DEM as elevation source
-    sf.setup_dep(datasets_dep=[{"elevtn": str(DEM), "reproj_method": "bilinear"}])
+    sf.setup_dep(datasets_dep=[{"elevtn": str(dem), "reproj_method": "bilinear"}])
     sf.setup_mask_active(zmin=-5.0)  # keep land/nearshore cells
-    rate = mean_precip_mm_hr(RAIN, hours=12.0)
-    sf.setup_precip_forcing(magnitude=rate)
+    # Spatial MRMS precip — never setup_precip_forcing(magnitude=domain_mean)
+    sf.setup_precip_forcing_from_grid(
+        precip=str(precip_nc),
+        cumulative_input=False,
+        aggregate=False,
+    )
     sf.write()
 
     meta = {
         "model_dir": str(MODEL_DIR),
         "extent": "south_queens",
         "res_m": 50,
-        "precip_mm_hr": rate,
-        "precip_source": str(RAIN),
-        "dem": str(DEM),
+        "precip_forcing": "spatial_mrms_grid",
+        "precip_netcdf": precip_meta,
+        "precip_source": str(rain),
+        "dem": str(dem),
         "tstart": "20210901 120000",
         "tstop": "20210902 000000",
         "enterprise": False,
         "hens": False,
         "official_nws": False,
+        "note": "Dropped uniform setup_precip_forcing(magnitude=mean); using spatial MRMS rate field.",
     }
     (MODEL_DIR / "build_meta.json").write_text(json.dumps(meta, indent=2))
     return meta
@@ -340,7 +449,9 @@ def export_depth_geotiff() -> dict:
         "max_m": float(np.nanmax(dest)) if np.isfinite(dest).any() else None,
         "wet_fraction": float(np.mean(np.isfinite(dest) & (dest > 0.005))),
         "extent": "south_queens",
-        "forcing": "uniform_mrms_derived_mm_hr",
+        "forcing": "spatial_mrms_precip_2d",
+        "role": "alternate_hydro_track",
+        "primary": False,
         "official_nws": False,
         "decision_grade": False,
         "enterprise": False,
@@ -348,8 +459,9 @@ def export_depth_geotiff() -> dict:
         "source_nc": str(map_nc),
         "variable": var,
         "honesty": (
-            "SFINCS depth from Deltares Docker run on HydroMT Queens model with "
-            "uniform precip rate derived from Ida MRMS storm total. Research only."
+            "SFINCS depth from Deltares Docker on HydroMT Queens model with "
+            "spatially varying MRMS Ida precip (not domain-mean). Alternate hydro track — "
+            "NOT peer-authoritative with primary pysheds metro depth until calibrated/comparable."
         ),
     }
     (out_dir / "depth_sfincs_queens_ida_meta.json").write_text(json.dumps(meta, indent=2))
@@ -395,8 +507,10 @@ Logged copy: `outputs/sfincs_queens_docker_commands.txt`
 ## Model
 
 - Built with HydroMT-SFINCS `{__import__('hydromt_sfincs').__version__}` into `outputs/sfincs_queens_ida/`
-- DEM: USGS citywide clipped via HydroMT region (South Queens bbox)
-- Forcing: uniform precip **{meta.get('precip_mm_hr'):.3f} mm/hr** derived from Ida MRMS storm-total mean / 12 h
+- DEM: `{meta.get('dem')}` clipped via HydroMT region (South Queens bbox)
+- Forcing: **spatial** MRMS precip grid (`setup_precip_forcing_from_grid`, aggregate=False) — not domain-mean
+- Precip NetCDF: `{meta.get('precip_netcdf', {}).get('path')}`
+- Rate stats (mm/hr): mean≈{meta.get('precip_netcdf', {}).get('mean_rate_mm_hr')}, max≈{meta.get('precip_netcdf', {}).get('max_rate_mm_hr')}, CV≈{meta.get('precip_netcdf', {}).get('cv')}
 - Window: 2021-09-01 12Z → 2021-09-02 00Z
 
 ## Outputs
@@ -405,12 +519,10 @@ Logged copy: `outputs/sfincs_queens_docker_commands.txt`
 - PNG overlay: `figures/product_assets/depth_sfincs_queens_ida_m.png`
 - Max depth ≈ **{depth.get('max_m')}** m (research)
 
-## vs pysheds
+## vs pysheds (primary)
 
-Product map toggles:
-
-- **Queens nested depth spike** — pysheds HAND/bathtub
-- **SFINCS Queens (Docker)** — this run
+- **Primary depth** = metro pysheds HAND/bathtub × spatial MRMS
+- **SFINCS Queens** = alternate hydro track only (not peer toggle for magnitudes)
 
 Compare visually; do not treat either as calibrated DEP/NWS inundation.
 

@@ -1,0 +1,125 @@
+{
+  "phase": "D",
+  "product": "hand_nest_10m_south_queens",
+  "extent": "south_queens",
+  "bounds": {
+    "xmin": -74.12,
+    "ymin": 40.55,
+    "xmax": -73.72,
+    "ymax": 40.73
+  },
+  "engine": "pysheds_hand_bathtub_v2",
+  "hand_params": {
+    "engine": "pysheds_hand_bathtub_v2",
+    "label": "pysheds HAND/bathtub (unified metro path)",
+    "runoff_coefficient": 0.7,
+    "focal_window_cells": 9,
+    "stream_acc_percentile": 98.0,
+    "stream_acc_min": 50.0,
+    "hand_scale": 1.0,
+    "min_depth_m": 0.005,
+    "formula": "depth_m = max(rain_m \u2212 HAND, min(depression_sink, rain_m), rain_m \u2212 (DEM \u2212 focal_min)); rain_m = runoff_coeff * effective_precip_mm/1000; effective_precip from drainage_capacity_proxy_v1 when enabled",
+    "drainage_proxy": "drainage_capacity_proxy_v1",
+    "official_nws": false,
+    "decision_grade": false
+  },
+  "dem_10m": "/home/jesscmiel/projects/nyc-flood-impact/data/raw/terrain/dem_usgs_metro.tif",
+  "nest_dem": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/dem_south_queens_10m.tif",
+  "nest_depth_tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_hand_nest_10m_south_queens_ida_m.tif",
+  "nest_depth_png": "depth_hand_nest_10m_south_queens_ida_m.png",
+  "hand_tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/hand_south_queens_10m.tif",
+  "shape": [
+    1990,
+    3375
+  ],
+  "res_approx_deg": [
+    0.00011852776044915818,
+    9.046624913013202e-05
+  ],
+  "forcing_kind": "warped_metro_excess_precip_after_drainage_proxy",
+  "stats": {
+    "max_m": 0.12964081764221191,
+    "p95_m": 0.1021551564335823,
+    "wet_fraction": 0.41312890377815004
+  },
+  "vs_floodnet": {
+    "hand_10m_nest": {
+      "n": 5,
+      "obs_mean_m": 0.39659560000000005,
+      "obs_max_m": 0.9039860000000001,
+      "model_mean_m": 0.01701681613922119,
+      "model_max_m": 0.08508408069610596,
+      "peak_bias_m": -0.3795787838607788,
+      "peak_rmse_m": 0.4987281593733407,
+      "n_wet_at_point": 1
+    },
+    "hand_30m_primary": {
+      "n": 5,
+      "obs_mean_m": 0.39659560000000005,
+      "obs_max_m": 0.9039860000000001,
+      "model_mean_m": 0.0,
+      "model_max_m": 0.0,
+      "peak_bias_m": -0.39659560000000005,
+      "peak_rmse_m": 0.5273024216739385,
+      "n_wet_at_point": 0
+    },
+    "sensor_table": [
+      {
+        "sensor_id": "Q-russell-st-2-07zt40",
+        "borough": "Queens",
+        "obs_peak_m": 0.072898,
+        "hand_30m_at_point_m": 0.0,
+        "hand_10m_at_point_m": 0.0,
+        "hand_30m_nearest_wet_m": null,
+        "hand_10m_nearest_wet_m": 0.04155895113945007,
+        "hand_10m_nearest_dist_m": 175.5265926631262
+      },
+      {
+        "sensor_id": "BK-9th-st-smith-st-0etvg0",
+        "borough": "Brooklyn",
+        "obs_peak_m": 0.7051040000000001,
+        "hand_30m_at_point_m": 0.0,
+        "hand_10m_at_point_m": 0.0,
+        "hand_30m_nearest_wet_m": 0.11086361110210419,
+        "hand_10m_nearest_wet_m": 0.11020199954509735,
+        "hand_10m_nearest_dist_m": 167.16730695088094
+      },
+      {
+        "sensor_id": "BK-carroll-st-4th-av-0ery00",
+        "borough": "Brooklyn",
+        "obs_peak_m": 0.9039860000000001,
+        "hand_30m_at_point_m": 0.0,
+        "hand_10m_at_point_m": 0.08508408069610596,
+        "hand_30m_nearest_wet_m": null,
+        "hand_10m_nearest_wet_m": 0.08596332371234894,
+        "hand_10m_nearest_dist_m": 183.9388683610829
+      },
+      {
+        "sensor_id": "Q-russell-st-1-07zqc0",
+        "borough": "Queens",
+        "obs_peak_m": 0.038099999999999995,
+        "hand_30m_at_point_m": 0.0,
+        "hand_10m_at_point_m": 0.0,
+        "hand_30m_nearest_wet_m": null,
+        "hand_10m_nearest_wet_m": 0.04155895113945007,
+        "hand_10m_nearest_dist_m": 166.2461558908309
+      },
+      {
+        "sensor_id": "BK-hoyt-st-5th-st-007sk0",
+        "borough": "Brooklyn",
+        "obs_peak_m": 0.26288999999999996,
+        "hand_30m_at_point_m": 0.0,
+        "hand_10m_at_point_m": 0.0,
+        "hand_30m_nearest_wet_m": 0.11101683974266052,
+        "hand_10m_nearest_wet_m": 0.11020199954509735,
+        "hand_10m_nearest_dist_m": 178.0430534858137
+      }
+    ]
+  },
+  "product_default_unchanged": true,
+  "promote_to_advanced": false,
+  "promote_reason": "Nest remains cm-scale vs FloodNet street peaks; do not auto-promote to product default or peer depth toggle.",
+  "honesty": "10 m HAND nest is a resolution experiment on the same bathtub physics \u2014 still cm-scale screening, not street-truth Ida. Primary metro ~30 m HAND remains the only default depth.",
+  "official_nws": false,
+  "decision_grade": false
+}

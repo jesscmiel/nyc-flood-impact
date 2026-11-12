@@ -1,0 +1,452 @@
+{
+  "product": "flood_risk_research_prototype",
+  "official_nws": false,
+  "decision_grade": false,
+  "ida_precip_truth_preference": "mrms_qpe",
+  "earth2_role": "scenario_only",
+  "primary_depth": {
+    "engine": "pysheds_hand_bathtub_v2",
+    "extent": "metro",
+    "forcing": "spatial_mrms_qpe_ida_minus_drainage_capacity_proxy",
+    "path": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_metro_mrms_qpe_ida_storm_total_m.tif",
+    "role": "primary",
+    "drainage_capacity_proxy": {
+      "engine": "drainage_capacity_proxy_v1",
+      "enabled": true,
+      "event_duration_hr": 12.0,
+      "effective_drainage_hours": 3.0,
+      "drain_points_n": 84,
+      "drain_points_status": "open_points",
+      "drain_points_path": "/home/jesscmiel/projects/nyc-flood-impact/data/raw/infrastructure/osm_drains_south_queens.geojson",
+      "nlcd": "/home/jesscmiel/projects/nyc-flood-impact/data/raw/landcover/nlcd_2021_impervious_citywide.tif",
+      "capacity_mean_mm_hr_land": 9.468585014343262,
+      "excess_mean_mm_land": 111.51988220214844,
+      "undrained_max_m": 0.15981748700141907,
+      "drained_max_m": 0.1560627669095993,
+      "label": "Open drainage capacity proxy (NLCD + optional drain density + mm/hr sink)",
+      "cap_base_mm_hr": 10.0,
+      "cap_max_mm_hr": 22.0,
+      "alpha_impervious": 0.35,
+      "surcharge_k": 0.85,
+      "default_event_duration_hr": 12.0,
+      "drain_buffer_deg": 0.0015,
+      "formula": "capacity_mm_hr = (CAP_BASE + (CAP_MAX-CAP_BASE)*drain_norm) * (1 - \u03b1\u00b7impervious); intensity = precip/event_duration; efficiency = 1/(1 + k\u00b7max(0, intensity/capacity - 1)\u00b2); excess_precip_mm = precip_mm - min(precip, capacity\u00b7effective_drainage_hours\u00b7efficiency)",
+      "not_dep_sewer": true,
+      "not_swmm": true,
+      "official_nws": false,
+      "decision_grade": false,
+      "citations_note": "Order-of-magnitude urban drainage design / pluvial screening sink rates (~5\u201325 mm/hr sustained; short-duration design often higher). Effective drainage hours \u226a full event length so storm-total screening does not over-credit conveyance. Not a calibrated NYC DEP network."
+    }
+  },
+  "alternate_depth": {
+    "engine": "sfincs_docker_queens",
+    "extent": "south_queens",
+    "forcing": "spatial_mrms_grid",
+    "drainage_capacity_proxy": null,
+    "role": "alternate_hydro_track",
+    "comparable_to_primary": false
+  },
+  "drainage_capacity_proxy": {
+    "product": "drainage_capacity_proxy",
+    "engine": "drainage_capacity_proxy_v1",
+    "extent": "metro",
+    "shape": [
+      2395,
+      2672
+    ],
+    "dem": "/home/jesscmiel/projects/nyc-flood-impact/data/raw/terrain/dem_usgs_metro_work30m.tif",
+    "nlcd_impervious": "/home/jesscmiel/projects/nyc-flood-impact/data/raw/landcover/nlcd_2021_impervious_citywide.tif",
+    "mrms_storm_total": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_storm_total.tif",
+    "event_duration_hr": 12.0,
+    "effective_drainage_hours": 3.0,
+    "drain_points": {
+      "n": 84,
+      "status": "open_points",
+      "path": "/home/jesscmiel/projects/nyc-flood-impact/data/raw/infrastructure/osm_drains_south_queens.geojson",
+      "note": "Open OSM/demo drain nodes only where present. nycdep_catch_basins_south_queens.json is a SODA error payload \u2014 unused."
+    },
+    "paths": {
+      "impervious_fraction": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/drainage_capacity/impervious_fraction_metro.tif",
+      "drain_density_norm": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/drainage_capacity/drain_density_norm_metro.tif",
+      "capacity_mm_hr": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/drainage_capacity/drainage_capacity_mm_hr.tif",
+      "sink_mm": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/drainage_capacity/drainage_sink_mm.tif",
+      "excess_precip_mm": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/drainage_capacity/excess_precip_mm.tif",
+      "efficiency": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/drainage_capacity/drainage_efficiency.tif",
+      "excess_rate_mm_hr": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/drainage_capacity/excess_precip_rate_mm_hr.tif",
+      "preview_capacity_png": "drainage_capacity_mm_hr.png",
+      "preview_excess_png": "excess_precip_after_drainage_mm.png"
+    },
+    "stats_on_land": {
+      "impervious_fraction": {
+        "n": 4390390,
+        "mean": 0.15359234809875488,
+        "p50": 0.0,
+        "p90": 0.6990857124328613,
+        "max": 1.0,
+        "min": 0.0
+      },
+      "drain_density_norm": {
+        "n": 4390390,
+        "mean": 0.0006042743334546685,
+        "p50": 0.0,
+        "p90": 0.0,
+        "max": 1.0,
+        "min": 0.0
+      },
+      "capacity_mm_hr": {
+        "n": 4390390,
+        "mean": 9.468585014343262,
+        "p50": 10.0,
+        "p90": 10.0,
+        "max": 22.0,
+        "min": 6.5
+      },
+      "sink_mm": {
+        "n": 4390390,
+        "mean": 2.3333730697631836,
+        "p50": 0.0,
+        "p90": 11.51830768585205,
+        "max": 66.0,
+        "min": 0.0
+      },
+      "excess_precip_mm": {
+        "n": 4390390,
+        "mean": 10.70113754272461,
+        "p50": 0.0,
+        "p90": 28.655010223388672,
+        "max": 193.38319396972656,
+        "min": 0.0
+      },
+      "efficiency": {
+        "n": 4390390,
+        "mean": 0.9854726791381836,
+        "p50": 1.0,
+        "p90": 1.0,
+        "max": 1.0,
+        "min": 0.3369060754776001
+      },
+      "mrms_storm_total_mm": {
+        "n": 1816717,
+        "mean": 31.5,
+        "p50": 0.0,
+        "p90": 138.9237060546875,
+        "max": 203.22288513183594,
+        "min": 0.0
+      },
+      "fraction_precip_removed_mean": 0.17901502549648285,
+      "excess_mean_mm_where_rain_pos": 100.2587661743164
+    },
+    "calibration": {
+      "method": "loose_spatial_311_plus_ida_narrative_bands",
+      "floodnet_citywide_grid": false,
+      "dep_sewer_model": false,
+      "ida_narrative_bands_m": [
+        {
+          "id": "nuisance",
+          "min_m": 0.03,
+          "max_m": 0.08,
+          "note": "curb / nuisance"
+        },
+        {
+          "id": "ankle",
+          "min_m": 0.08,
+          "max_m": 0.2,
+          "note": "ankle-deep street"
+        },
+        {
+          "id": "knee",
+          "min_m": 0.2,
+          "max_m": 0.45,
+          "note": "knee-deep pockets (Ida narratives)"
+        },
+        {
+          "id": "extreme",
+          "min_m": 0.45,
+          "max_m": null,
+          "note": "deep underpasses / basement risk"
+        }
+      ],
+      "limits": "311 hit-rates show spatial concentration only \u2014 no magnitude skill, no ROC, no non-flood controls. Narrative depth bands are qualitative Ida reporting ranges, not FloodNet station calibration (no citywide FloodNet grid on disk). Drain density uses open OSM inlet/manhole points in South Queens only \u2014 synthetic demo drainage_nodes are excluded; citywide DEP catch-basin SODA pull was unavailable \u2014 capacity falls back to NLCD-modulated base rate outside those points. Primary HAND depths remain shallow vs Ida narratives.",
+      "with_drainage_proxy": {
+        "hit_rate_311": 0.9794871794871794,
+        "hit_rate_gauges": 0.0,
+        "confidence": null
+      },
+      "undrained_baseline": {
+        "hit_rate_311": 0.9651741293532339,
+        "hit_rate_gauges": 1.0
+      }
+    },
+    "label": "Open drainage capacity proxy (NLCD + optional drain density + mm/hr sink)",
+    "cap_base_mm_hr": 10.0,
+    "cap_max_mm_hr": 22.0,
+    "alpha_impervious": 0.35,
+    "surcharge_k": 0.85,
+    "default_event_duration_hr": 12.0,
+    "drain_buffer_deg": 0.0015,
+    "formula": "capacity_mm_hr = (CAP_BASE + (CAP_MAX-CAP_BASE)*drain_norm) * (1 - \u03b1\u00b7impervious); intensity = precip/event_duration; efficiency = 1/(1 + k\u00b7max(0, intensity/capacity - 1)\u00b2); excess_precip_mm = precip_mm - min(precip, capacity\u00b7effective_drainage_hours\u00b7efficiency)",
+    "not_dep_sewer": true,
+    "not_swmm": true,
+    "official_nws": false,
+    "decision_grade": false,
+    "citations_note": "Order-of-magnitude urban drainage design / pluvial screening sink rates (~5\u201325 mm/hr sustained; short-duration design often higher). Effective drainage hours \u226a full event length so storm-total screening does not over-credit conveyance. Not a calibrated NYC DEP network.",
+    "disclaimer": "Open drainage capacity proxy only \u2014 NOT DEP sewer, NOT SWMM, NOT official NWS. Reduces effective precip via literature mm/hr sink modulated by NLCD impervious and sparse open drain density, with surcharge efficiency collapse in extreme rates."
+  },
+  "undrained_pysheds_baseline": {
+    "path": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_metro_mrms_undrained_ida_storm_total_m.tif",
+    "shape": [
+      2395,
+      2672
+    ],
+    "bounds": [
+      -74.45,
+      40.4,
+      -73.5,
+      41.05
+    ],
+    "max_m": 0.15981748700141907,
+    "p50_wet_m": 0.09346689656376839,
+    "p90_wet_m": 0.1261452004313469,
+    "wet_fraction_ge_3cm": 0.08434019226682335,
+    "wet_fraction_ge_5cm": 0.07683437925818509
+  },
+  "extents": {
+    "default_map_extent": "metro",
+    "primary_data_extent": "metro",
+    "data_domain_metro": {
+      "xmin": -74.45,
+      "ymin": 40.4,
+      "xmax": -73.5,
+      "ymax": 41.05
+    },
+    "legacy_citywide": {
+      "xmin": -74.28,
+      "ymin": 40.48,
+      "xmax": -73.68,
+      "ymax": 40.93
+    },
+    "sfincs_spike": {
+      "xmin": -74.12,
+      "ymin": 40.55,
+      "xmax": -73.72,
+      "ymax": 40.73
+    }
+  },
+  "validation_lead": {
+    "preferred": "floodnet_peak_rmse_bias_timing",
+    "bury": [
+      "311_hit_rate"
+    ],
+    "note": "Lead with FloodNet magnitude/timing (or random-land baseline). 311 hit\u22481 is spatial concentration only \u2014 never hero copy."
+  },
+  "floodnet_validation": {
+    "n_events": 5,
+    "n_sensors": 5,
+    "boroughs": [
+      "Brooklyn",
+      "Queens"
+    ],
+    "peak_rmse_m": 0.5273024216739385,
+    "peak_bias_mean_m": -0.39659560000000005,
+    "timing_error_mean_h": null,
+    "obs_peak_max_m": 0.9039860000000001,
+    "model_peak_max_m": 0.0,
+    "path": "/home/jesscmiel/projects/nyc-flood-impact/outputs/floodnet_validation.json",
+    "role": "magnitude_timing_primary_reference"
+  },
+  "validation_311_gauges_exploratory": {
+    "product": "flood_risk_research_prototype",
+    "official_nws": false,
+    "decision_grade": false,
+    "enterprise": false,
+    "hens": false,
+    "updated_utc": "2026-11-12T14:20:47Z",
+    "depth_tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_metro_mrms_qpe_ida_storm_total_m.tif",
+    "scores": {
+      "reports_311": {
+        "name": "311_reports",
+        "n_points": 599,
+        "n_sampled": 195,
+        "n_hits_depth_ge": 191,
+        "depth_threshold_m": 0.03,
+        "hit_rate": 0.9794871794871794,
+        "mean_depth_at_points_m": 0.07885234692157843,
+        "max_depth_at_points_m": 0.11415542662143707
+      },
+      "gauges": {
+        "name": "ahps_gauges",
+        "n_points": 21,
+        "n_sampled": 7,
+        "n_hits_depth_ge": 6,
+        "depth_threshold_m": 0.03,
+        "hit_rate": 0.8571428571428571,
+        "mean_depth_at_points_m": 0.08023453024881226,
+        "max_depth_at_points_m": 0.10606933385133743
+      }
+    },
+    "summary": {
+      "hit_rate_311": 0.9794871794871794,
+      "hit_rate_gauges": 0.8571428571428571,
+      "n_311": 195,
+      "n_gauges": 7
+    },
+    "confidence": {
+      "level": "moderate_research",
+      "note": "Higher hit rates on this fixture only \u2014 still not decision-grade validation."
+    },
+    "honesty": "Exploratory collocation of 311/AHPS points on research depth. Not certified verification skill. NOT NWS validation."
+  },
+  "validation": {
+    "product": "flood_risk_research_prototype",
+    "official_nws": false,
+    "decision_grade": false,
+    "enterprise": false,
+    "hens": false,
+    "updated_utc": "2026-11-12T14:20:47Z",
+    "depth_tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_metro_mrms_qpe_ida_storm_total_m.tif",
+    "scores": {
+      "reports_311": {
+        "name": "311_reports",
+        "n_points": 599,
+        "n_sampled": 195,
+        "n_hits_depth_ge": 191,
+        "depth_threshold_m": 0.03,
+        "hit_rate": 0.9794871794871794,
+        "mean_depth_at_points_m": 0.07885234692157843,
+        "max_depth_at_points_m": 0.11415542662143707
+      },
+      "gauges": {
+        "name": "ahps_gauges",
+        "n_points": 21,
+        "n_sampled": 7,
+        "n_hits_depth_ge": 6,
+        "depth_threshold_m": 0.03,
+        "hit_rate": 0.8571428571428571,
+        "mean_depth_at_points_m": 0.08023453024881226,
+        "max_depth_at_points_m": 0.10606933385133743
+      }
+    },
+    "summary": {
+      "hit_rate_311": 0.9794871794871794,
+      "hit_rate_gauges": 0.8571428571428571,
+      "n_311": 195,
+      "n_gauges": 7
+    },
+    "confidence": {
+      "level": "moderate_research",
+      "note": "Higher hit rates on this fixture only \u2014 still not decision-grade validation."
+    },
+    "honesty": "Exploratory collocation of 311/AHPS points on research depth. Not certified verification skill. NOT NWS validation."
+  },
+  "random_land_hit_rate_ge_3cm": 0.1095,
+  "pysheds_metro_mrms": {
+    "path": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_metro_mrms_qpe_ida_storm_total_m.tif",
+    "shape": [
+      2395,
+      2672
+    ],
+    "bounds": [
+      -74.45,
+      40.4,
+      -73.5,
+      41.05
+    ],
+    "max_m": 0.1560627669095993,
+    "p50_wet_m": 0.07579012960195541,
+    "p90_wet_m": 0.11303984820842744,
+    "wet_fraction_ge_3cm": 0.07848280474541522,
+    "wet_fraction_ge_5cm": 0.06538447114122485
+  },
+  "sfincs_queens_spatial": {
+    "path": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_sfincs_queens_ida_m.tif",
+    "shape": [
+      217,
+      481
+    ],
+    "bounds": [
+      -74.12083333333334,
+      40.549166666666665,
+      -73.72,
+      40.73
+    ],
+    "max_m": 3.469573736190796,
+    "p50_wet_m": 0.02853485196828842,
+    "p90_wet_m": 0.7731442451477051,
+    "wet_fraction_ge_3cm": 0.40075878785556207,
+    "wet_fraction_ge_5cm": 0.31760828535022084
+  },
+  "overlap_queens": {
+    "n_cells": 6832,
+    "mean_sfincs_m": 0.15439729249940212,
+    "mean_pysheds_m": 0.06550267930938396,
+    "ratio_mean_sfincs_over_pysheds": 2.3571141536081113,
+    "max_sfincs_m": 3.2420284748077393,
+    "max_pysheds_m": 0.1270965756049217
+  },
+  "mrms_storm_total": {
+    "path": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_storm_total.tif",
+    "shape": [
+      2395,
+      2672
+    ],
+    "bounds": [
+      -74.45,
+      40.4,
+      -73.5,
+      41.05
+    ],
+    "mean_pos_mm": 124.60712720234922,
+    "min_mm": 32.65814208984375,
+    "max_mm": 228.3676300048828,
+    "p10_mm": 48.47240371704102,
+    "p90_mm": 180.6755752563477,
+    "cv": 0.38483080371060646,
+    "forcing_note": "SFINCS Queens uses spatial MRMS rate field (setup_precip_forcing_from_grid); uniform domain-mean forcing removed from primary path."
+  },
+  "dem": {
+    "path": "/home/jesscmiel/projects/nyc-flood-impact/data/raw/terrain/dem_usgs_metro.tif",
+    "shape": [
+      7185,
+      8015
+    ],
+    "res_deg": [
+      0.00011852776044915818,
+      9.046624913013202e-05
+    ],
+    "approx_cell_m": [
+      9.999456095283621,
+      10.000139178844794
+    ],
+    "bounds": [
+      -74.45,
+      40.4,
+      -73.5,
+      41.05
+    ]
+  },
+  "sfincs_build_meta": {
+    "model_dir": "/home/jesscmiel/projects/nyc-flood-impact/outputs/sfincs_queens_ida",
+    "extent": "south_queens",
+    "res_m": 50,
+    "precip_forcing": "spatial_mrms_grid",
+    "precip_netcdf": {
+      "path": "/home/jesscmiel/projects/nyc-flood-impact/outputs/sfincs_queens_ida/forcing/mrms_spatial_precip_mmhr.nc",
+      "source_tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_storm_total.tif",
+      "hours": 12.0,
+      "mean_rate_mm_hr": 10.161332538607123,
+      "max_rate_mm_hr": 16.935240427652996,
+      "cv": 0.29974688352111356,
+      "spatial": true,
+      "uniform_mean_forbidden": true
+    },
+    "precip_source": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_storm_total.tif",
+    "dem": "/home/jesscmiel/projects/nyc-flood-impact/data/raw/terrain/dem_usgs_metro.tif",
+    "tstart": "20210901 120000",
+    "tstop": "20210902 000000",
+    "enterprise": false,
+    "hens": false,
+    "official_nws": false,
+    "note": "Dropped uniform setup_precip_forcing(magnitude=mean); using spatial MRMS rate field."
+  },
+  "honesty": "Primary depth = metro pysheds \u00d7 spatial MRMS after open drainage capacity proxy (NLCD + optional drain density + literature mm/hr sink; NOT DEP sewer). SFINCS Queens is alternate hydro only. FloodNet (when present) is the magnitude + timing reference; 311 hit rates show spatial concentration only \u2014 never lead with hit\u22481."
+}

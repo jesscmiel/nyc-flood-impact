@@ -1,0 +1,485 @@
+{
+  "product": "flood_risk_research_prototype",
+  "official_nws": false,
+  "decision_grade": false,
+  "certified_skill": false,
+  "updated_utc": "2026-11-12T14:20:47Z",
+  "reference": "floodnet_street_sensors",
+  "compare_to": "primary_metro_hand_depth",
+  "init_time_utc": "2021-09-01T12:00:00Z",
+  "depth_storm_total_tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_metro_mrms_qpe_ida_storm_total_m.tif",
+  "cum_leads_h": [
+    0,
+    3,
+    6,
+    9,
+    12,
+    15,
+    18,
+    21,
+    24,
+    27,
+    30,
+    33,
+    36
+  ],
+  "lead_with": [
+    "FloodNet peak RMSE / mean bias (m)",
+    "FloodNet peak timing error (h, model cum peak lead \u2212 sensor peak lead)",
+    "series bias at FloodNet samples vs nearest cum HAND frame"
+  ],
+  "do_not_lead_with": [
+    "311_hit_rate"
+  ],
+  "summary": {
+    "n_events": 5,
+    "n_sensors": 5,
+    "boroughs": [
+      "Brooklyn",
+      "Queens"
+    ],
+    "n_model_dry_at_sensor": 5,
+    "obs_peak_mean_m": 0.39659560000000005,
+    "obs_peak_max_m": 0.9039860000000001,
+    "model_peak_mean_m": 0.0,
+    "model_peak_max_m": 0.0,
+    "peak_bias_m": {
+      "n": 5,
+      "mean": -0.39659560000000005,
+      "rmse": 0.5273024216739385,
+      "mae": 0.39659560000000005,
+      "min": -0.9039860000000001,
+      "max": -0.038099999999999995
+    },
+    "peak_rmse_m": 0.5273024216739385,
+    "peak_bias_nearest_wet_250m": {
+      "n": 2,
+      "mean": -0.37305677457761766,
+      "rmse": 0.4336975308922533,
+      "mae": 0.37305677457761766,
+      "min": -0.5942403888978959,
+      "max": -0.15187316025733943
+    },
+    "timing_error_h": {
+      "n": 0,
+      "mean": null,
+      "rmse": null,
+      "mae": null,
+      "min": null,
+      "max": null
+    },
+    "timing_note": "Timing only scored when the HAND cum timeline is wet (\u22655 mm) at the sensor. Dry/flat model timelines leave timing undefined.",
+    "series_bias_m": {
+      "n": 139,
+      "mean": -0.24535851798561148,
+      "rmse": 0.3735565878753375,
+      "mae": 0.24535851798561148,
+      "min": -0.9039860000000001,
+      "max": 0.0
+    },
+    "magnitude_gap_note": "Primary HAND peaks are cm-scale; FloodNet Ida street peaks reach tens of cm to ~0.9 m. Large negative bias is expected and is the magnitude-honesty signal \u2014 do not rescale HAND with ad-hoc multipliers to match sensors."
+  },
+  "stations": [
+    {
+      "sensor_id": "Q-russell-st-2-07zt40",
+      "sensor_name": "Q - Russell St 2",
+      "borough": "Queens",
+      "lon": -73.831736,
+      "lat": 40.654254,
+      "obs_peak_m": 0.072898,
+      "obs_peak_in": 2.87,
+      "obs_peak_lead_h": 14.184666666666667,
+      "model_storm_total_m": 0.0,
+      "model_peak_cum_m": 0.0,
+      "model_peak_lead_h": null,
+      "model_dry_at_sensor": true,
+      "nearest_wet_250m": {
+        "depth_m": null,
+        "dist_m": null,
+        "lon": null,
+        "lat": null,
+        "search_m": 250.0
+      },
+      "peak_bias_m": -0.072898,
+      "peak_bias_nearest_wet_m": null,
+      "timing_error_h": null,
+      "timing_undefined_reason": "model_dry_or_flat_at_sensor",
+      "nearest_cum_lead_at_obs_peak": 15,
+      "timeline": [
+        {
+          "lead_h": 0,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 3,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 6,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 9,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 12,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 15,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 18,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 21,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 24,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 27,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 30,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 33,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 36,
+          "model_depth_m": 0.0
+        }
+      ]
+    },
+    {
+      "sensor_id": "BK-9th-st-smith-st-0etvg0",
+      "sensor_name": "BK - 9th St/Smith St",
+      "borough": "Brooklyn",
+      "lon": -73.995396,
+      "lat": 40.673654,
+      "obs_peak_m": 0.7051040000000001,
+      "obs_peak_in": 27.760000000000005,
+      "obs_peak_lead_h": 14.449277777777779,
+      "model_storm_total_m": 0.0,
+      "model_peak_cum_m": 0.0,
+      "model_peak_lead_h": null,
+      "model_dry_at_sensor": true,
+      "nearest_wet_250m": {
+        "depth_m": 0.11086361110210419,
+        "dist_m": 128.37187779582277,
+        "lon": -73.9950879491018,
+        "lat": 40.674791231732776,
+        "search_m": 250.0
+      },
+      "peak_bias_m": -0.7051040000000001,
+      "peak_bias_nearest_wet_m": -0.5942403888978959,
+      "timing_error_h": null,
+      "timing_undefined_reason": "model_dry_or_flat_at_sensor",
+      "nearest_cum_lead_at_obs_peak": 15,
+      "timeline": [
+        {
+          "lead_h": 0,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 3,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 6,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 9,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 12,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 15,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 18,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 21,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 24,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 27,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 30,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 33,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 36,
+          "model_depth_m": 0.0
+        }
+      ]
+    },
+    {
+      "sensor_id": "BK-carroll-st-4th-av-0ery00",
+      "sensor_name": "BK - Carroll St/4th Av",
+      "borough": "Brooklyn",
+      "lon": -73.984089,
+      "lat": 40.676281,
+      "obs_peak_m": 0.9039860000000001,
+      "obs_peak_in": 35.59,
+      "obs_peak_lead_h": 13.801111111111112,
+      "model_storm_total_m": 0.0,
+      "model_peak_cum_m": 0.0,
+      "model_peak_lead_h": null,
+      "model_dry_at_sensor": true,
+      "nearest_wet_250m": {
+        "depth_m": null,
+        "dist_m": null,
+        "lon": null,
+        "lat": null,
+        "search_m": 250.0
+      },
+      "peak_bias_m": -0.9039860000000001,
+      "peak_bias_nearest_wet_m": null,
+      "timing_error_h": null,
+      "timing_undefined_reason": "model_dry_or_flat_at_sensor",
+      "nearest_cum_lead_at_obs_peak": 15,
+      "timeline": [
+        {
+          "lead_h": 0,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 3,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 6,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 9,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 12,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 15,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 18,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 21,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 24,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 27,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 30,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 33,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 36,
+          "model_depth_m": 0.0
+        }
+      ]
+    },
+    {
+      "sensor_id": "Q-russell-st-1-07zqc0",
+      "sensor_name": "Q - Russell St 1",
+      "borough": "Queens",
+      "lon": -73.831566,
+      "lat": 40.654312,
+      "obs_peak_m": 0.038099999999999995,
+      "obs_peak_in": 1.4999999999999998,
+      "obs_peak_lead_h": 14.644944444444445,
+      "model_storm_total_m": 0.0,
+      "model_peak_cum_m": 0.0,
+      "model_peak_lead_h": null,
+      "model_dry_at_sensor": true,
+      "nearest_wet_250m": {
+        "depth_m": null,
+        "dist_m": null,
+        "lon": null,
+        "lat": null,
+        "search_m": 250.0
+      },
+      "peak_bias_m": -0.038099999999999995,
+      "peak_bias_nearest_wet_m": null,
+      "timing_error_h": null,
+      "timing_undefined_reason": "model_dry_or_flat_at_sensor",
+      "nearest_cum_lead_at_obs_peak": 15,
+      "timeline": [
+        {
+          "lead_h": 0,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 3,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 6,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 9,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 12,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 15,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 18,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 21,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 24,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 27,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 30,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 33,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 36,
+          "model_depth_m": 0.0
+        }
+      ]
+    },
+    {
+      "sensor_id": "BK-hoyt-st-5th-st-007sk0",
+      "sensor_name": "BK - Hoyt St/5th St",
+      "borough": "Brooklyn",
+      "lon": -73.994591,
+      "lat": 40.676672,
+      "obs_peak_m": 0.26288999999999996,
+      "obs_peak_in": 10.349999999999998,
+      "obs_peak_lead_h": 13.687888888888889,
+      "model_storm_total_m": 0.0,
+      "model_peak_cum_m": 0.0,
+      "model_peak_lead_h": null,
+      "model_dry_at_sensor": true,
+      "nearest_wet_250m": {
+        "depth_m": 0.11101683974266052,
+        "dist_m": 89.73820962231726,
+        "lon": -73.99437687125749,
+        "lat": 40.67587682672234,
+        "search_m": 250.0
+      },
+      "peak_bias_m": -0.26288999999999996,
+      "peak_bias_nearest_wet_m": -0.15187316025733943,
+      "timing_error_h": null,
+      "timing_undefined_reason": "model_dry_or_flat_at_sensor",
+      "nearest_cum_lead_at_obs_peak": 15,
+      "timeline": [
+        {
+          "lead_h": 0,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 3,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 6,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 9,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 12,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 15,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 18,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 21,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 24,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 27,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 30,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 33,
+          "model_depth_m": 0.0
+        },
+        {
+          "lead_h": 36,
+          "model_depth_m": 0.0
+        }
+      ]
+    }
+  ],
+  "honesty": "FloodNet magnitude + timing vs research HAND screening depth. Pilot sensor coverage for Ida (few stations active in 2021). NOT certified verification skill. NOT NWS. NOT decision-grade. 311 hit-rates are spatial-only and must not lead product copy."
+}

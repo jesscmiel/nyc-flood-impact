@@ -1,0 +1,136 @@
+{
+  "status": "success",
+  "infer": {
+    "mode": "single_tile_bf16_docker",
+    "initial_time": "2020-10-13T00:00:00",
+    "tile": {
+      "face": 3,
+      "x0": 1357,
+      "y0": 1944,
+      "tile_size": 64
+    },
+    "n_steps": 2,
+    "precip_steps": [
+      {
+        "step": 1,
+        "lead_min": 10,
+        "mean_m_s": 8.269222639967211e-09,
+        "max_m_s": 1.9870592495863093e-06,
+        "mean_mm_hr": 0.02976920150388196,
+        "max_mm_hr": 7.1534132985107135
+      },
+      {
+        "step": 2,
+        "lead_min": 20,
+        "mean_m_s": 8.08052469380982e-09,
+        "max_m_s": 1.9662775230244733e-06,
+        "mean_mm_hr": 0.029089888897715355,
+        "max_mm_hr": 7.078599082888104
+      }
+    ],
+    "mean_mm_hr": 0.029429545200798657,
+    "max_mm_hr": 7.1534132985107135,
+    "peak_vram_alloc_mb": 4054.92529296875,
+    "cuda_mem_free_after_mb": 18432.5625,
+    "vram_free_before_mb": 23328.875,
+    "wall_s": 838.1665372848511,
+    "checkpoint": "/aux/checkpoints/strata_v1.pth",
+    "honesty": "STRATA v1 single-tile BF16 rollout from SCREAM sdecadal IC 2020-10-13T00:00:00. Not Ida; not FCN-initialized; research only."
+  },
+  "precip_forcing": {
+    "tile_mean_mm_hr": 0.02908989042043686,
+    "tile_max_mm_hr": 7.078599452972412,
+    "wet_frac_gt_0p01": 0.034912109375,
+    "wet_mean_mm_hr": 0.8330874443054199,
+    "p95_mm_hr": 0.0,
+    "sfincs_forcing_mm_hr": 0.8330874443054199,
+    "sfincs_forcing_rule": "mean over cells with rate > 0.01 mm/hr from last STRATA step tile"
+  },
+  "sfincs": {
+    "model_dir": "/home/jesscmiel/projects/nyc-flood-impact/outputs/strata_sfincs_spike/sfincs_model",
+    "extent": "south_queens",
+    "res_m": 50,
+    "precip_mm_hr": 0.8330874443054199,
+    "precip_source": "strata_v1_scream_ic_tile_mean",
+    "tstart": "20201013 000000",
+    "tstop": "20201013 030000",
+    "hours": 3.0,
+    "enterprise": false,
+    "hens": false,
+    "official_nws": false,
+    "honesty": "Uniform precip from STRATA tile-mean liquid precip flux. SCREAM sdecadal weather, not Ida observations."
+  },
+  "depth": {
+    "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_sfincs_strata_queens_m.tif",
+    "max_m": 2.80017352104187,
+    "p50_m": 1.2504208087921143,
+    "p90_m": 1.6220018863677979,
+    "wet_fraction_gt_5cm": 0.0990927119959378,
+    "variable": "hmax",
+    "source_nc": "outputs/strata_sfincs_spike/sfincs_model/sfincs_map.nc",
+    "extent": "south_queens",
+    "official_nws": false,
+    "enterprise": false,
+    "hens": false
+  },
+  "exposure": {
+    "gpkg": "/home/jesscmiel/projects/nyc-flood-impact/figures/product_assets/exposure_citywide.gpkg",
+    "depth_tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_sfincs_strata_queens_m.tif",
+    "layers": {
+      "roads": {
+        "n": 2200,
+        "wet": 13,
+        "max_depth_m": 1.6220018863677979,
+        "mean_wet_m": 0.8481851586928735,
+        "band_counts": {
+          "ponding": 0,
+          "deep_ponding": 0,
+          "hazard": 13
+        }
+      },
+      "stations": {
+        "n": 309,
+        "wet": 0,
+        "max_depth_m": null,
+        "mean_wet_m": 0.0,
+        "band_counts": {
+          "ponding": 0,
+          "deep_ponding": 0,
+          "hazard": 0
+        }
+      },
+      "facilities": {
+        "n": 26,
+        "wet": 0,
+        "max_depth_m": null,
+        "mean_wet_m": 0.0,
+        "band_counts": {
+          "ponding": 0,
+          "deep_ponding": 0,
+          "hazard": 0
+        }
+      }
+    },
+    "bands": [
+      {
+        "id": "ponding",
+        "label": "Ponding \u22653 cm",
+        "min_m": 0.03,
+        "max_m": 0.08
+      },
+      {
+        "id": "deep_ponding",
+        "label": "Deep ponding \u22658 cm",
+        "min_m": 0.08,
+        "max_m": 0.15
+      },
+      {
+        "id": "hazard",
+        "label": "Hazard ponding \u226515 cm",
+        "min_m": 0.15,
+        "max_m": null
+      }
+    ],
+    "honesty": "Asset intersects on STRATA\u2192SFINCS research depth. Not calibrated inundation."
+  }
+}

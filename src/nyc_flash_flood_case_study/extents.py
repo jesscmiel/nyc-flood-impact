@@ -26,17 +26,31 @@ EVENTS = {
 }
 
 EXTENTS = {
+    # Legacy five-borough rectangle (pre-rebuild ~90 m DEM / MRMS clips).
     "citywide": {
         "id": "citywide",
-        "label": "NYC metro / citywide",
+        "label": "NYC five-borough (legacy data domain)",
         "bounds": {"xmin": -74.28, "ymin": 40.48, "xmax": -73.68, "ymax": 40.93},
+        "role": "legacy_data_domain",
+    },
+    # Primary data + map domain after metro DEM / MRMS / HAND rebuild.
+    "metro": {
+        "id": "metro",
+        "label": "NYC metro continuous",
+        "bounds": {"xmin": -74.45, "ymin": 40.40, "xmax": -73.50, "ymax": 41.05},
+        "role": "data_domain_and_map_frame",
     },
     "south_queens": {
         "id": "south_queens",
-        "label": "South Queens / Jamaica Bay",
+        "label": "South Queens / Jamaica Bay (SFINCS spike)",
         "bounds": {"xmin": -74.12, "ymin": 40.55, "xmax": -73.72, "ymax": 40.73},
+        "role": "sfincs_spike",
     },
 }
+
+# Default map framing + primary inundation data domain.
+DEFAULT_MAP_EXTENT = "metro"
+PRIMARY_DATA_EXTENT = "metro"
 
 
 def bounds_list(extent_id: str) -> list[list[float]]:

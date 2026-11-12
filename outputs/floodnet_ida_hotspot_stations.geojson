@@ -1,0 +1,161 @@
+{
+  "type": "FeatureCollection",
+  "name": "floodnet_ida_hotspot_stations",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "EPSG:4326"
+    }
+  },
+  "properties": {
+    "engine": "floodnet_ida_hotspot_hydro_v1",
+    "calibration": {
+      "scale": 8.80875241064781,
+      "bias_m": -0.14016554702414308,
+      "n_fit": 5,
+      "fit_ok": true,
+      "method": "ols_scale_bias_clip0",
+      "formula": "depth_m = max(0, scale * runoff_coeff * excess_precip_mm/1000 + bias_m)",
+      "runoff_coeff": 0.7,
+      "in_sample_rmse_m": 0.21163356305041328,
+      "in_sample_bias_m": 1.9984014443252818e-16,
+      "in_sample_mae_m": 0.15152091525980177,
+      "lstsq_rank": 2
+    },
+    "official_nws": false,
+    "decision_grade": false,
+    "role": "ida_event_reproduction_overlay"
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.831736,
+          40.654254
+        ]
+      },
+      "properties": {
+        "sensor_id": "Q-russell-st-2-07zt40",
+        "sensor_name": "Q - Russell St 2",
+        "borough": "Queens",
+        "obs_peak_m": 0.072898,
+        "hotspot_cal_m": 0.06489297775547356,
+        "residual_m": -0.008005022244526441,
+        "abs_error_m": 0.008005022244526441,
+        "ratio_cal_obs": 0.8901887261032341,
+        "oom_ok": true,
+        "primary_hand_m": 0.0,
+        "hand_nest_10m_m": 0.0,
+        "sfincs_queens_m": 0.04266050457954407,
+        "excess_precip_mm": 33.255645751953125,
+        "ponding_predictor_m": 0.023278952026367185
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.995396,
+          40.673654
+        ]
+      },
+      "properties": {
+        "sensor_id": "BK-9th-st-smith-st-0etvg0",
+        "sensor_name": "BK - 9th St/Smith St",
+        "borough": "Brooklyn",
+        "obs_peak_m": 0.7051040000000001,
+        "hotspot_cal_m": 0.6262848658324861,
+        "residual_m": -0.07881913416751396,
+        "abs_error_m": 0.07881913416751396,
+        "ratio_cal_obs": 0.8882162997692341,
+        "oom_ok": true,
+        "primary_hand_m": 0.0,
+        "hand_nest_10m_m": 0.0,
+        "sfincs_queens_m": 0.01209461409598589,
+        "excess_precip_mm": 124.30014038085938,
+        "ponding_predictor_m": 0.08701009826660155
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.984089,
+          40.676281
+        ]
+      },
+      "properties": {
+        "sensor_id": "BK-carroll-st-4th-av-0ery00",
+        "sensor_name": "BK - Carroll St/4th Av",
+        "borough": "Brooklyn",
+        "obs_peak_m": 0.9039860000000001,
+        "hotspot_cal_m": 0.6120078682625365,
+        "residual_m": -0.29197813173746356,
+        "abs_error_m": 0.29197813173746356,
+        "ratio_cal_obs": 0.6770103389461081,
+        "oom_ok": true,
+        "primary_hand_m": 0.0,
+        "hand_nest_10m_m": 0.08508408069610596,
+        "sfincs_queens_m": 0.049878958612680435,
+        "excess_precip_mm": 121.98474884033203,
+        "ponding_predictor_m": 0.08538932418823242
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.831566,
+          40.654312
+        ]
+      },
+      "properties": {
+        "sensor_id": "Q-russell-st-1-07zqc0",
+        "sensor_name": "Q - Russell St 1",
+        "borough": "Queens",
+        "obs_peak_m": 0.038099999999999995,
+        "hotspot_cal_m": 0.05333100801741275,
+        "residual_m": 0.015231008017412756,
+        "abs_error_m": 0.015231008017412756,
+        "ratio_cal_obs": 1.39976398995834,
+        "oom_ok": true,
+        "primary_hand_m": 0.0,
+        "hand_nest_10m_m": 0.0,
+        "sfincs_queens_m": 0.054587170481681824,
+        "excess_precip_mm": 31.38056755065918,
+        "ponding_predictor_m": 0.021966397285461427
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.994591,
+          40.676672
+        ]
+      },
+      "properties": {
+        "sensor_id": "BK-hoyt-st-5th-st-007sk0",
+        "sensor_name": "BK - Hoyt St/5th St",
+        "borough": "Brooklyn",
+        "obs_peak_m": 0.26288999999999996,
+        "hotspot_cal_m": 0.6264612801320921,
+        "residual_m": 0.36357128013209217,
+        "abs_error_m": 0.36357128013209217,
+        "ratio_cal_obs": 2.38297873685607,
+        "oom_ok": true,
+        "primary_hand_m": 0.0,
+        "hand_nest_10m_m": 0.0,
+        "sfincs_queens_m": 0.012507621198892593,
+        "excess_precip_mm": 124.32875061035156,
+        "ponding_predictor_m": 0.08703012542724609
+      }
+    }
+  ]
+}
