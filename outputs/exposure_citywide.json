@@ -7,13 +7,13 @@
       ]
     },
     "stations": {
-      "n": 309,
+      "n": 496,
       "geom_types": [
         "Point"
       ]
     },
     "facilities": {
-      "n": 47,
+      "n": 1893,
       "geom_types": [
         "Point"
       ]
@@ -21,5 +21,10 @@
   },
   "path": "/home/jesscmiel/projects/nyc-flood-impact/figures/product_assets/exposure_citywide.gpkg",
   "crs": "EPSG:4326",
-  "official": false
+  "official": false,
+  "inventory": {
+    "facilities": "ji82-xba5",
+    "stations": "39hk-dx4f",
+    "roads": "osm"
+  }
 }

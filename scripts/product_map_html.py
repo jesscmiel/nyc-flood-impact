@@ -15,10 +15,10 @@ from nyc_flash_flood_case_study.extents import DEFAULT_MAP_EXTENT, EVENTS, EXTEN
 
 # Curated named NYC click targets — all ≥8 cm deep ponding on current desk.
 DEMO_SHORTLIST_IDS = (
-    "stations:194:Smith–9th Streets",  # 11.1 cm — iconic Ida station
-    "road:25430129",  # Van Wyck Expressway 9.4 cm
-    "facilities:40:Staten Island University Hospital",  # 8.7 cm
-    "road:37394898",  # Myrtle Avenue 8.2 cm
+    "stations:gtfs:F22",  # Smith-9 Sts — iconic Ida station (MTA 39hk-dx4f)
+    "road:25430129",  # Van Wyck Expressway
+    "facilities:uid:a464e8e63eb8b2c92ab1995735cfd284",  # Brooklyn Hospital Downtown (Facilities DB + BES)
+    "road:37394898",  # Myrtle Avenue
 )
 
 
@@ -537,6 +537,14 @@ details.drawer[open] > summary::after {{ content:"–"; }}
         <div id="accessFeedStatus" class="drawer-note" style="margin-top:4px">Fixture default · Ida replay</div>
       </details>
       <details class="drawer">
+        <summary>Official inventory overlays</summary>
+        <p class="drawer-note">Open city inventory / planning layers — off by default. Stormwater ≠ Ida HAND depth.</p>
+        <label class="layer-btn"><input id="lyStormwater" type="checkbox">Stormwater deep (moderate)</label>
+        <label class="layer-btn"><input id="lyLionTun" type="checkbox">LION tunnels</label>
+        <label class="layer-btn"><input id="lyBes" type="checkbox">BES elev / subgrade (sample)</label>
+        <div id="inventoryLayersStatus" class="drawer-note" style="margin-top:4px">Load on toggle…</div>
+      </details>
+      <details class="drawer">
         <summary>Archived open layers</summary>
         <p class="drawer-note">Optional Open Data samples — off by default. Not sewer performance / not official closures.</p>
         <label class="layer-btn"><input id="lyArchive511" type="checkbox">Archived 511-style</label>
@@ -546,10 +554,11 @@ details.drawer[open] > summary::after {{ content:"–"; }}
       </details>
       <details class="drawer">
         <summary>Exposure inventory</summary>
+        <p class="drawer-note">Facilities DB + MTA stations replace demo stubs / OSM stops.</p>
         <div class="layer-grid">
-          <label class="layer-btn"><input id="lySta" type="checkbox">Stations</label>
+          <label class="layer-btn"><input id="lySta" type="checkbox">Stations (MTA)</label>
           <label class="layer-btn"><input id="lyRoads" type="checkbox">Roads</label>
-          <label class="layer-btn"><input id="lyFac" type="checkbox">Facilities</label>
+          <label class="layer-btn"><input id="lyFac" type="checkbox">Facilities (city DB)</label>
           <label class="layer-btn"><input id="ly311" type="checkbox">311</label>
         </div>
       </details>
@@ -725,6 +734,7 @@ let floodnetLayer = null, floodnetStations = [], selectedFloodnetId = null;
 let floodnetLaterLayer = null;
 let accessFixture = null, accessLayer = null, accessFeedMode = "fixture";
 let archive511Layer = null, depBasinsLayer = null, buildingsLayer = null;
+let stormwaterLayer = null, lionTunLayer = null, besLayer = null;
 let typeFilter = "all";
 let listMode = "shortlist";
 let activeEventId = "ida-2021";
@@ -1104,9 +1114,15 @@ function selectAsset(id) {{
   document.getElementById("selName").textContent = a.name;
   document.getElementById("selBody").innerHTML =
     "<b>" + a.max_depth_cm.toFixed(1) + " cm</b> · " + a.band_label + " · " + leadLabel(a);
+  const extraChips = [];
+  if (a.structure) extraChips.push(`<span class="sel-chip">Structure · ${{a.structure}}</span>`);
+  if (a.stormwater_chip) extraChips.push(`<span class="sel-chip">${{a.stormwater_chip}}</span>`);
+  if (a.lion_chip) extraChips.push(`<span class="sel-chip">${{a.lion_chip}}</span>`);
+  if (a.bes_chip) extraChips.push(`<span class="sel-chip">${{a.bes_chip}}</span>`);
   document.getElementById("selChips").innerHTML =
     `<span class="sel-chip access-${{acc}}">${{accessChipLabel(acc)}}</span>` +
-    `<span class="sel-chip">${{a.band_label}}</span>`;
+    `<span class="sel-chip">${{a.band_label}}</span>` +
+    extraChips.join("");
   document.getElementById("selHint").textContent = a.action_hint ||
     "Research depth only — not an SOP trigger.";
   const sigs = (a.access_signals || []).map(s => s.label || s.source).filter(Boolean);
@@ -1707,6 +1723,69 @@ function setArchiveStatus(msg) {{
   const el = document.getElementById("archiveLayersStatus");
   if (el) el.textContent = msg;
 }}
+function setInventoryStatus(msg) {{
+  const el = document.getElementById("inventoryLayersStatus");
+  if (el) el.textContent = msg;
+}}
+function loadOfficialInventoryOverlays() {{
+  const bits = [];
+  const inv = (manifest.official_inventory_layers) || {{}};
+  fetchGeoJSON(inv.stormwater_geojson || "stormwater_deep_moderate_current.geojson").then(geo => {{
+    stormwaterLayer = L.geoJSON(geo, {{
+      pane: "vectorPane",
+      style: {{ color:"#0e7490", weight:1, fillColor:"#22d3ee", fillOpacity:0.22 }},
+      onEachFeature: (f, layer) => {{
+        const p = f.properties || {{}};
+        layer.bindPopup(
+          `<b>City stormwater deep zone</b><br>${{p.scenario || "moderate / current SLR"}}` +
+          `<br><span style="opacity:.75">Planning polygon · NOT Ida HAND depth</span>`
+        );
+      }},
+    }});
+    bindToggle("lyStormwater", stormwaterLayer);
+    bits.push("SW×" + ((geo.features || []).length));
+    setInventoryStatus(bits.join(" · ") + " ready");
+  }}).catch(() => {{ bits.push("SW missing"); setInventoryStatus(bits.join(" · ")); }});
+
+  fetchGeoJSON(inv.lion_tunnels_geojson || "lion_tunnels.geojson").then(geo => {{
+    lionTunLayer = L.geoJSON(geo, {{
+      pane: "vectorPane",
+      style: {{ color:"#7c3aed", weight:3.5, opacity:0.85 }},
+      onEachFeature: (f, layer) => {{
+        const p = f.properties || {{}};
+        layer.bindTooltip((p.name || "LION tunnel") + " · inventory");
+      }},
+    }});
+    bindToggle("lyLionTun", lionTunLayer);
+    bits.push("LION×" + ((geo.features || []).length));
+    setInventoryStatus(bits.join(" · ") + " ready");
+  }}).catch(() => {{ bits.push("LION missing"); setInventoryStatus(bits.join(" · ")); }});
+
+  fetchGeoJSON(inv.bes_geojson || "bes_near_wet_facilities.geojson").then(geo => {{
+    besLayer = L.geoJSON(geo, {{
+      pointToLayer: (f, ll) => {{
+        const sub = f.properties && String(f.properties.subgrade || "").toUpperCase() === "Y";
+        return L.circleMarker(ll, {{
+          radius: 4,
+          fillColor: sub ? "#b45309" : "#a8a29e",
+          color: "#1c1917",
+          weight: 1,
+          fillOpacity: 0.85,
+          pane: "pointPane",
+        }});
+      }},
+      onEachFeature: (f, layer) => {{
+        const p = f.properties || {{}};
+        const floor = p.z_floor_ft_navd88 != null ? Number(p.z_floor_ft_navd88).toFixed(1) + " ft floor" : "BES";
+        const sub = p.subgrade_present ? " · subgrade Y" : "";
+        layer.bindTooltip((p.address || "BES") + " · " + floor + sub);
+      }},
+    }});
+    bindToggle("lyBes", besLayer);
+    bits.push("BES×" + ((geo.features || []).length));
+    setInventoryStatus(bits.join(" · ") + " ready");
+  }}).catch(() => {{ bits.push("BES missing"); setInventoryStatus(bits.join(" · ")); }});
+}}
 function loadArchiveOpenLayers() {{
   const statusBits = [];
   fetchGeoJSON("archived_511_events.geojson").then(geo => {{
@@ -1919,6 +1998,7 @@ loadDecisionDesk();
 loadAccessSignals();
 loadFloodNetProduct();
 loadOptionalLayers();
+loadOfficialInventoryOverlays();
 loadArchiveOpenLayers();
 setPlaying(true);
 </script>

@@ -74,6 +74,14 @@ def _asset_id(row: Any, layer: str, idx: int) -> str:
         osm = row.get("osm_id") if hasattr(row, "get") else getattr(row, "osm_id", None)
         if osm is not None and str(osm) not in ("", "nan", "None"):
             return f"road:{osm}"
+    if layer == LAYER_STATIONS:
+        gtfs = row.get("gtfs_stop_id") if hasattr(row, "get") else getattr(row, "gtfs_stop_id", None)
+        if gtfs is not None and str(gtfs).strip() not in ("", "nan", "None"):
+            return f"stations:gtfs:{str(gtfs).strip()}"
+    if layer == LAYER_FACILITIES:
+        uid = row.get("uid") if hasattr(row, "get") else getattr(row, "uid", None)
+        if uid is not None and str(uid).strip() not in ("", "nan", "None"):
+            return f"facilities:uid:{str(uid).strip()}"
     name = _asset_name(row, layer, idx)
     return f"{layer}:{idx}:{name}"
 
@@ -207,6 +215,14 @@ def build_ranked_assets(
                         "lat": lat,
                         "highway": str(row.get("highway") or "") if layer == LAYER_ROADS else None,
                         "facility_type": str(row.get("facility_type") or "") if layer == LAYER_FACILITIES else None,
+                        "structure": (
+                            str(row.get("structure") or "") if layer == LAYER_STATIONS else None
+                        ),
+                        "gtfs_stop_id": (
+                            str(row.get("gtfs_stop_id") or "") if layer == LAYER_STATIONS else None
+                        ),
+                        "uid": str(row.get("uid") or "") if layer == LAYER_FACILITIES else None,
+                        "inventory_source": str(row.get("source") or "") or None,
                         "sample_offset_m": (
                             None
                             if sample_offset_m is None

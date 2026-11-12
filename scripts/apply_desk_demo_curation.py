@@ -103,9 +103,9 @@ def main() -> None:
         for a in payload.get("assets") or []
         if a["id"]
         in {
-            "stations:194:Smith–9th Streets",
+            "stations:gtfs:F22",
             "road:25430129",
-            "facilities:40:Staten Island University Hospital",
+            "facilities:uid:a464e8e63eb8b2c92ab1995735cfd284",
             "road:37394898",
         }
     ]
