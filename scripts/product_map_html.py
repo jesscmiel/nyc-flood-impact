@@ -147,6 +147,8 @@ select:focus, input[type=search]:focus {{ outline:none; border-color:var(--accen
 }}
 .asset-row:hover {{ background:rgba(13,143,156,.07); transform:translateX(2px); }}
 .asset-row:hover::before {{ background:#9db4c2; }}
+.asset-row.top-hit {{ background:rgba(13,143,156,.09); }}
+.asset-row.top-hit::before {{ background:var(--accent); }}
 .asset-row.selected {{ background:linear-gradient(90deg, rgba(13,143,156,.16), rgba(13,143,156,.04)); }}
 .asset-row.selected::before {{ background:var(--accent); transform:scaleY(1.15); }}
 .asset-row .top {{ display:flex; justify-content:space-between; gap:8px; align-items:baseline; }}
@@ -377,6 +379,8 @@ details.drawer[open] > summary::after {{ content:"–"; }}
         <label class="layer-btn"><input id="lyE2Tot" type="checkbox">Storm-total</label>
         <div class="group-label">Access (research)</div>
         <label class="layer-btn"><input id="lyAccess" type="checkbox">Access signals (open data / research)</label>
+        <label class="layer-btn"><input id="lyAccessLive" type="checkbox">Prefer live DOT / 511 / MTA feeds</label>
+        <div id="accessFeedStatus" class="drawer-note" style="margin-top:4px">Fixture default · Ida replay</div>
         <div class="group-label">Exposure</div>
         <label class="layer-btn"><input id="lySta" type="checkbox">Stations</label>
         <label class="layer-btn"><input id="lyRoads" type="checkbox">Roads</label>
@@ -455,9 +459,12 @@ L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_M
 }}).addTo(mapLeft);
 
 const DEMO_SHORTLIST = {demo_ids_json};
+const AUTO_HIGHLIGHT_N = (manifest.asset_decision_desk && manifest.asset_decision_desk.auto_highlight_top_n) || 3;
+const secondStorm = manifest.second_storm || {{}};
+if (secondStorm.available && EVENTS["henri-2021"]) EVENTS["henri-2021"].available = true;
 const eventSel = document.getElementById("eventSelect");
 Object.values(EVENTS).forEach(ev => {{
-  if (!ev.available) return; // hide placeholder-future during demos
+  if (!ev.available) return; // hide placeholders during demos
   const opt = document.createElement("option");
   opt.value = ev.id; opt.textContent = ev.label;
   eventSel.appendChild(opt);
@@ -510,10 +517,12 @@ let activeE2 = null, activeSusc = null, activeDepth = null, e2Total = null, dept
 let fadeE2 = null, fadeDepth = null, fadeSusc = null, fadeTimer = null;
 let playing = false, playTimer = null, leadIndex = 0;
 let desk = null, wetLayer = null, selectedLayer = null, selectedId = null;
+let highlightLayer = null, highlightIds = [];
 let floodnetLayer = null, floodnetStations = [], selectedFloodnetId = null;
-let accessFixture = null, accessLayer = null;
+let accessFixture = null, accessLayer = null, accessFeedMode = "fixture";
 let typeFilter = "all";
 let listMode = "shortlist";
+let activeEventId = "ida-2021";
 const PLAY_MS = 520;
 const FADE_MS = 300;
 
@@ -762,8 +771,9 @@ function renderAssetList() {{
     const acc = accessStatus(a);
     const accPill = (acc === "limited" || acc === "watch")
       ? `<span class="access-pill ${{acc}}">${{acc}}</span>` : "";
+    const topHit = highlightIds.includes(a.id) ? " top-hit" : "";
     return `
-    <button type="button" class="asset-row${{selectedId === a.id ? " selected" : ""}}" data-id="${{a.id}}">
+    <button type="button" class="asset-row${{selectedId === a.id ? " selected" : ""}}${{topHit}}" data-id="${{a.id}}">
       <div class="top">
         <span class="name">#${{a.rank}} · ${{a.name}}</span>
         <span class="depth">${{a.max_depth_cm.toFixed(1)}} cm</span>
@@ -833,21 +843,79 @@ function clearSelection() {{
   renderAssetList();
 }}
 
+function deskPathsForEvent(eventId) {{
+  const deskCfg = manifest.asset_decision_desk || {{}};
+  const events = deskCfg.events || {{}};
+  if (eventId && events[eventId]) return events[eventId];
+  if (eventId === "henri-2021" && secondStorm && secondStorm.desk) {{
+    return {{
+      assets_json: secondStorm.desk.assets_json || "decision_desk_assets_henri.json",
+      assets_geojson: secondStorm.desk.assets_geojson || "decision_desk_assets_henri.geojson",
+    }};
+  }}
+  return {{
+    assets_json: deskCfg.assets_json || "decision_desk_assets.json",
+    assets_geojson: deskCfg.assets_geojson || "decision_desk_assets.geojson",
+  }};
+}}
+
+function topHighlightTargets() {{
+  const byId = Object.fromEntries((desk.assets || []).map(a => [a.id, a]));
+  const curated = DEMO_SHORTLIST.map(id => byId[id]).filter(Boolean);
+  if (curated.length) return curated.slice(0, AUTO_HIGHLIGHT_N);
+  // Henri / non-Ida: deepest NYC-preferred wet assets
+  return (desk.assets || []).filter(a => a.nyc_demo_geography !== false).slice(0, AUTO_HIGHLIGHT_N);
+}}
+
+function applyAutoHighlight(selectFirst) {{
+  if (highlightLayer) {{ mapLeft.removeLayer(highlightLayer); highlightLayer = null; }}
+  const tops = topHighlightTargets();
+  highlightIds = tops.map(a => a.id);
+  if (!tops.length) return;
+  const feats = tops.map(a => ({{
+    type: "Feature",
+    properties: {{ id: a.id, name: a.name, band: a.band }},
+    geometry: {{ type: "Point", coordinates: [a.lon, a.lat] }}
+  }}));
+  highlightLayer = L.geoJSON({{ type: "FeatureCollection", features: feats }}, {{
+    pane: "selectPane",
+    pointToLayer: (f, ll) => L.circleMarker(ll, {{
+      radius: 14, color: "#0d8f9c", weight: 2, dashArray: "5 4",
+      fillColor: "#1bc0cd", fillOpacity: 0.12, pane: "selectPane"
+    }}),
+    onEachFeature: (f, layer) => {{
+      layer.bindTooltip("Top hit · " + (f.properties.name || ""));
+      layer.on("click", () => selectAsset(f.properties.id));
+    }}
+  }}).addTo(mapLeft);
+  renderAssetList();
+  if (selectFirst) selectAsset(tops[0].id);
+}}
+
 function loadDecisionDesk() {{
-  const name = (manifest.asset_decision_desk && manifest.asset_decision_desk.assets_json) || "decision_desk_assets.json";
-  const geoName = (manifest.asset_decision_desk && manifest.asset_decision_desk.assets_geojson) || "decision_desk_assets.geojson";
+  const paths = deskPathsForEvent(activeEventId);
+  const name = paths.assets_json;
+  const geoName = paths.assets_geojson;
+  if (wetLayer) {{ mapLeft.removeLayer(wetLayer); wetLayer = null; }}
+  if (highlightLayer) {{ mapLeft.removeLayer(highlightLayer); highlightLayer = null; }}
+  highlightIds = [];
+  clearSelection();
   Promise.all([
     fetch(assets + name, {{ cache:"no-cache" }}).then(r => r.ok ? r.json() : null),
     fetch(assets + geoName, {{ cache:"no-cache" }}).then(r => r.ok ? r.json() : null),
   ]).then(([json, geo]) => {{
     if (!json) {{
-      document.getElementById("assetList").innerHTML = '<div class="empty">decision_desk_assets.json missing — run scripts/build_decision_desk_assets.py</div>';
+      document.getElementById("assetList").innerHTML = '<div class="empty">Desk assets missing for ' + activeEventId + ' — run build scripts.</div>';
       return;
     }}
     desk = json;
     const c = json.counts || {{}};
+    const label = activeEventId === "henri-2021" ? "Wet · Henri HAND" : "Wet · metro HAND";
     document.getElementById("deskSummary").innerHTML =
-      `<span>Wet · metro HAND</span><b>${{c.wet_total||0}} · R${{c.roads||0}} S${{c.stations||0}} F${{c.facilities||0}}</b>`;
+      `<span>${{label}}</span><b>${{c.wet_total||0}} · R${{c.roads||0}} S${{c.stations||0}} F${{c.facilities||0}}</b>`;
+    const leftLabel = document.getElementById("leftLabel");
+    if (leftLabel) leftLabel.textContent = activeEventId === "henri-2021"
+      ? "Decision Desk · Henri" : "Decision Desk · Ida";
     renderAssetList();
     if (geo && geo.features) {{
       wetLayer = L.geoJSON(geo, {{
@@ -868,6 +936,8 @@ function loadDecisionDesk() {{
         }}
       }}).addTo(mapLeft);
     }}
+    applyAutoHighlight(true);
+    rebuildAccessOverlay();
   }}).catch(err => {{
     document.getElementById("assetList").innerHTML = '<div class="empty">Failed to load desk assets.</div>';
     const b = document.getElementById("assetBanner");
@@ -934,13 +1004,52 @@ function rebuildAccessOverlay() {{
     }}
   }}).addTo(mapLeft);
 }}
+function setAccessFeedStatus(text) {{
+  const el = document.getElementById("accessFeedStatus");
+  if (el) el.textContent = text;
+}}
 function loadAccessSignals() {{
-  const name = (manifest.asset_decision_desk && manifest.asset_decision_desk.access_signals_fixture)
-    || "access_signals_ida_fixture.json";
-  fetch(assets + name, {{ cache: "no-cache" }}).then(r => r.ok ? r.json() : null).then(fx => {{
-    accessFixture = fx;
-    rebuildAccessOverlay();
-  }}).catch(() => {{ accessFixture = null; }});
+  const deskCfg = manifest.asset_decision_desk || {{}};
+  const fixtureName = deskCfg.access_signals_fixture || "access_signals_ida_fixture.json";
+  const liveName = deskCfg.access_signals_live || "access_signals_live.json";
+  const preferLive = document.getElementById("lyAccessLive") && document.getElementById("lyAccessLive").checked;
+  const primary = preferLive ? liveName : fixtureName;
+  const fallback = preferLive ? fixtureName : null;
+  fetch(assets + primary, {{ cache: "no-cache" }}).then(r => r.ok ? r.json() : null).then(fx => {{
+    if (fx) {{
+      accessFixture = fx;
+      accessFeedMode = preferLive ? ((fx.live_status && fx.live_status.mode) || fx.mode || "live") : "fixture";
+      const nDot = (fx.dot_speeds || []).length;
+      const n511 = (fx.events_511 || []).length;
+      const nMta = (fx.mta_alerts || []).length;
+      if (preferLive) {{
+        setAccessFeedStatus(
+          accessFeedMode === "fixture_fallback"
+            ? "Live failed · fixture fallback"
+            : ("Live · " + nDot + " speeds · " + n511 + " closures · " + nMta + " alerts")
+        );
+      }} else {{
+        setAccessFeedStatus("Fixture · Ida research replay");
+      }}
+      rebuildAccessOverlay();
+      return;
+    }}
+    if (!fallback) {{ accessFixture = null; setAccessFeedStatus("No access fixture"); return; }}
+    return fetch(assets + fallback, {{ cache: "no-cache" }}).then(r => r.ok ? r.json() : null).then(fb => {{
+      accessFixture = fb;
+      accessFeedMode = "fixture_fallback";
+      setAccessFeedStatus("Live missing · fixture fallback");
+      rebuildAccessOverlay();
+    }});
+  }}).catch(() => {{
+    if (!fallback) {{ accessFixture = null; return; }}
+    fetch(assets + fallback, {{ cache: "no-cache" }}).then(r => r.ok ? r.json() : null).then(fb => {{
+      accessFixture = fb;
+      accessFeedMode = "fixture_fallback";
+      setAccessFeedStatus("Live error · fixture fallback");
+      rebuildAccessOverlay();
+    }});
+  }});
 }}
 function bindToggle(id, layer) {{
   const el = document.getElementById(id);
@@ -1205,7 +1314,26 @@ document.addEventListener("keydown", (e) => {{
   }}
 }});
 document.getElementById("extentSelect").onchange = () => fitMapFrame();
-document.getElementById("eventSelect").onchange = () => {{ if (!EVENTS[eventSel.value].available) alert("Only Ida is loaded."); }};
+document.getElementById("eventSelect").onchange = () => {{
+  const ev = EVENTS[eventSel.value];
+  if (!ev || !ev.available) {{
+    alert("That event is not loaded yet.");
+    eventSel.value = activeEventId;
+    return;
+  }}
+  activeEventId = ev.id;
+  // Henri desk swaps asset JSON; Ida keeps MRMS awareness loop (Henri radar frames not wired yet).
+  if (activeEventId === "henri-2021") {{
+    listMode = "all";
+    document.querySelectorAll("#listModeChips .chip").forEach(c => c.classList.toggle("active", c.dataset.mode === "all"));
+    const band = document.getElementById("bandFilter");
+    if (band) band.value = "all";
+  }} else {{
+    listMode = "shortlist";
+    document.querySelectorAll("#listModeChips .chip").forEach(c => c.classList.toggle("active", c.dataset.mode === "shortlist"));
+  }}
+  loadDecisionDesk();
+}};
 document.getElementById("stormPathSelect").onchange = () => {{
   activePath = stormPaths.find(p => p.id === pathSel.value) || stormPaths[0];
   rebuildPathLayers();
@@ -1255,6 +1383,10 @@ document.getElementById("lyE2Tot").onchange = () => {{
   else mapLeft.removeLayer(e2Total);
 }};
 document.getElementById("lyAccess").onchange = () => rebuildAccessOverlay();
+document.getElementById("lyAccessLive").onchange = () => {{
+  loadAccessSignals();
+  // Live overlay does not rebuild desk ranks in-browser; run fetch_live_access_feeds.py --apply-desk for joined chips.
+}};
 
 rebuildPathLayers();
 fitMapFrame();

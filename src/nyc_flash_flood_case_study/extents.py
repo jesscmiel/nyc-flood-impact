@@ -9,9 +9,24 @@ EVENTS = {
         "init_time": "2021-09-01T12:00:00",
         "start": "2021-09-01T00:00:00",
         "end": "2021-09-02T23:00:00",
-        "default_extent": "citywide",
-        "notes": "Primary v0 case study. Flash Flood Emergency for NYC. Earth2 shown as ~0.25° cells over metro NYC.",
+        "default_extent": "metro",
+        "notes": "Primary case study. Flash Flood Emergency for NYC. Decision Desk + MRMS awareness.",
         "available": True,
+        "desk_key": "ida-2021",
+    },
+    "henri-2021": {
+        "id": "henri-2021",
+        "label": "Tropical Storm Henri remnants (2021-08-21)",
+        "init_time": "2021-08-21T18:00:00",
+        "start": "2021-08-21T18:00:00",
+        "end": "2021-08-22T18:00:00",
+        "default_extent": "metro",
+        "notes": (
+            "Second-storm Decision Desk when MRMS×HAND assets are built "
+            "(scripts/build_second_storm_desk.py). Research only."
+        ),
+        "available": False,  # flipped True when second_storm_henri_meta.json says available
+        "desk_key": "henri-2021",
     },
     "placeholder-future": {
         "id": "placeholder-future",
@@ -19,7 +34,7 @@ EVENTS = {
         "init_time": None,
         "start": None,
         "end": None,
-        "default_extent": "citywide",
+        "default_extent": "metro",
         "notes": "Hook for additional storms — not loaded yet.",
         "available": False,
     },

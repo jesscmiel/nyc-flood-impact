@@ -62,6 +62,10 @@ def main() -> None:
         manifest = json.loads(mp.read_text())
         desk = manifest.setdefault("asset_decision_desk", {})
         desk["access_signals_fixture"] = FIXTURE.name
+        desk["access_signals_live"] = "access_signals_live.json"
+        desk["access_signals_default"] = "fixture"
+        desk["auto_highlight_top_n"] = 3
+        desk["lead_frames"] = desk.get("lead_frames") or "metro_cum_3h_0_36"
         desk["demo_geography"] = "prefer_nyc_demote_nj_turnpike"
         mp.write_text(json.dumps(manifest, indent=2))
 

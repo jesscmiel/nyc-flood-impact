@@ -28,12 +28,25 @@ def main() -> None:
     if not depth.exists():
         raise SystemExit(f"missing depth tif: {depth}")
 
-    lead_tifs = [
-        (6.0, PROCESSED_DIR / "inundation" / "depth_mrms_cum_lead_06h_m.tif"),
-        (12.0, PROCESSED_DIR / "inundation" / "depth_mrms_cum_lead_12h_m.tif"),
-        (18.0, PROCESSED_DIR / "inundation" / "depth_mrms_cum_lead_18h_m.tif"),
-        (24.0, PROCESSED_DIR / "inundation" / "depth_mrms_cum_lead_24h_m.tif"),
-    ]
+    # Prefer metro 3-hourly cum depth stack (0…36) so first-exceedance chips are finer
+    # than the legacy 6/12/18/24 sparse set that clustered almost everything at +18h.
+    lead_tifs: list[tuple[float, Path]] = []
+    for lead in range(0, 37, 3):
+        for stem in (
+            f"depth_metro_mrms_cum_lead_{lead:02d}h_m.tif",
+            f"depth_mrms_cum_lead_{lead:02d}h_m.tif",
+        ):
+            path = PROCESSED_DIR / "inundation" / stem
+            if path.exists():
+                lead_tifs.append((float(lead), path))
+                break
+    if not lead_tifs:
+        lead_tifs = [
+            (6.0, PROCESSED_DIR / "inundation" / "depth_mrms_cum_lead_06h_m.tif"),
+            (12.0, PROCESSED_DIR / "inundation" / "depth_mrms_cum_lead_12h_m.tif"),
+            (18.0, PROCESSED_DIR / "inundation" / "depth_mrms_cum_lead_18h_m.tif"),
+            (24.0, PROCESSED_DIR / "inundation" / "depth_mrms_cum_lead_24h_m.tif"),
+        ]
 
     access_fixture = ASSETS / "access_signals_ida_fixture.json"
     print("Building ranked wet assets (pysheds citywide × GPKG)…")
@@ -59,6 +72,10 @@ def main() -> None:
             "assets_json": "decision_desk_assets.json",
             "assets_geojson": "decision_desk_assets.geojson",
             "access_signals_fixture": "access_signals_ida_fixture.json",
+            "access_signals_live": "access_signals_live.json",
+            "access_signals_default": "fixture",
+            "lead_frames": "metro_cum_3h_0_36",
+            "auto_highlight_top_n": 3,
             "demo_geography": "prefer_nyc_demote_nj_turnpike",
             "primary_depth_engine": "pysheds_hand_bathtub_v2",
             "primary_depth_extent": "metro",
