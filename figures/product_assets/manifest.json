@@ -3513,10 +3513,9 @@
     "png": "depth_sfincs_queens_ida_m.png",
     "meta": "depth_sfincs_queens_ida_meta.json",
     "engine": "sfincs_docker_v2.1.1_Dollerup",
-    "extent": "south_queens",
     "role": "alternate_hydro_track",
-    "primary": false,
-    "honesty": "SFINCS Queens with shared open drainage-capacity sink (same proxy language as HAND). Alternate hydro track \u2014 NOT peer-authoritative with primary metro HAND."
+    "honesty": "NOT peer-authoritative with pysheds citywide.",
+    "extent": "south_queens"
   },
   "asset_decision_desk": {
     "assets_json": "decision_desk_assets.json",
@@ -3818,5 +3817,22 @@
       ]
     },
     "honesty": "Tropical Storm Henri research desk via MRMS\u00d7HAND \u2014 NOT NWS / NOT decision-grade. Lead chips use 6/12/18/24h cum frames for this event."
+  },
+  "ui_data_expansion": {
+    "floodnet_later_events": "floodnet_later_events.geojson",
+    "floodnet_later_meta": "floodnet_later_events_meta.json",
+    "dep_catch_basins_sample": "dep_catch_basins_sample.geojson",
+    "building_footprints_sample": "building_footprints_sample.geojson",
+    "archived_511_events": "archived_511_events.geojson",
+    "access_signals_511_archive": "access_signals_511_archive.json",
+    "features": [
+      "denser_radar_feel",
+      "selected_asset_depth_sparkline",
+      "advanced_nested_collapse",
+      "shortlist_print_share_snapshot",
+      "floodnet_ida_all_5_posts",
+      "floodnet_later_events",
+      "optional_archived_open_layers"
+    ]
   }
 }

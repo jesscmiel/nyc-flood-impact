@@ -265,14 +265,60 @@ details.drawer[open] > summary::after {{ content:"–"; }}
 .leaflet-image-layer.precip-radar,
 .leaflet-image-layer.depth-radar,
 .leaflet-image-layer.susc-radar {{
-  -webkit-mask-image: radial-gradient(ellipse 92% 88% at 50% 50%, #000 58%, transparent 100%);
-  mask-image: radial-gradient(ellipse 92% 88% at 50% 50%, #000 58%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 96% 92% at 50% 50%, #000 62%, transparent 100%);
+  mask-image: radial-gradient(ellipse 96% 92% at 50% 50%, #000 62%, transparent 100%);
   image-rendering: auto;
-  filter: saturate(1.1) contrast(1.05);
-  transition:opacity .32s ease;
+  filter: saturate(1.28) contrast(1.14) brightness(1.04);
+  transition:opacity .22s ease;
 }}
-.leaflet-image-layer.precip-radar {{ mix-blend-mode: screen; }}
-.leaflet-image-layer.susc-radar {{ mix-blend-mode: multiply; filter: saturate(1.25) contrast(1.12); }}
+.leaflet-image-layer.precip-radar {{
+  mix-blend-mode: screen;
+  filter: saturate(1.45) contrast(1.22) brightness(1.08);
+}}
+.leaflet-image-layer.depth-radar {{
+  mix-blend-mode: soft-light;
+  filter: saturate(1.2) contrast(1.18);
+}}
+.leaflet-image-layer.susc-radar {{ mix-blend-mode: multiply; filter: saturate(1.35) contrast(1.18); }}
+.sparkline-wrap {{
+  margin-top:8px; padding-top:8px; border-top:1px solid rgba(255,255,255,.12);
+}}
+.sparkline-wrap .spark-cap {{
+  font:700 .58rem Syne,sans-serif; letter-spacing:.1em; text-transform:uppercase;
+  color:#9fd7de; margin-bottom:4px;
+}}
+.sparkline-wrap svg {{ display:block; width:100%; height:44px; }}
+.sparkline-wrap .spark-readout {{
+  margin-top:2px; font:600 .66rem "IBM Plex Mono",monospace; color:#cfe8ec;
+}}
+.shortlist-actions {{
+  display:flex; flex-wrap:wrap; gap:6px; margin:8px 0 0;
+}}
+.shortlist-actions button {{
+  border:1px solid var(--line); background:#fff; color:var(--ink-soft);
+  border-radius:8px; padding:6px 9px; font:600 .68rem Figtree,sans-serif; cursor:pointer;
+}}
+.shortlist-actions button:hover {{ border-color:var(--accent); color:var(--accent-deep); }}
+.shortlist-actions .status {{
+  flex:1 1 100%; font-size:.64rem; color:var(--muted); min-height:1em;
+}}
+.drawer .drawer {{
+  margin:8px 0 0; border:1px solid var(--line-soft); border-radius:10px; padding:0 8px 6px;
+  background:rgba(8,40,52,.03);
+}}
+.drawer .drawer > summary {{
+  font:700 .62rem Syne,sans-serif; letter-spacing:.08em; text-transform:uppercase;
+  color:#7d91a1; padding:8px 2px;
+}}
+@media print {{
+  body {{ display:block; background:#fff; }}
+  aside {{ max-height:none !important; border:0 !important; }}
+  .map-stage, .radar-hud, .map-key-float, .honesty-line, .brand::before, .brand::after {{ display:none !important; }}
+  .print-snapshot {{ display:block !important; }}
+}}
+.print-snapshot {{ display:none; padding:16px; font:500 .85rem Figtree,sans-serif; }}
+.print-snapshot h1 {{ font:800 1.2rem Syne,sans-serif; margin:0 0 8px; }}
+.print-snapshot pre {{ white-space:pre-wrap; background:#f4f8fa; padding:12px; border-radius:8px; }}
 .leaflet-control-zoom a {{ border-radius:8px !important; }}
 .marker-key {{
   margin:8px 0 0; padding:10px 11px; border-radius:12px; font-size:.68rem; line-height:1.35;
@@ -373,6 +419,11 @@ details.drawer[open] > summary::after {{ content:"–"; }}
       </div>
     </div>
     <div class="asset-list" id="assetList" aria-label="Ranked wet assets"><div class="empty">Loading ranked assets…</div></div>
+    <div class="shortlist-actions" role="group" aria-label="Shortlist snapshot">
+      <button type="button" id="btnShareSnapshot">Copy snapshot</button>
+      <button type="button" id="btnPrintSnapshot">Print / share</button>
+      <div class="status" id="snapshotStatus" aria-live="polite"></div>
+    </div>
     <div class="marker-key" id="markerKey">
       <b>Map layers</b>
       <div class="map-dot-toggles" role="group" aria-label="Map dot toggles">
@@ -415,13 +466,19 @@ details.drawer[open] > summary::after {{ content:"–"; }}
   </section>
 
   <section class="section" id="floodnetPeaksPanel">
-    <details class="drawer">
-      <summary>FloodNet peaks</summary>
-      <p class="drawer-note">Post-level Ida OOM check — does not rescale citywide HAND.</p>
+    <details class="drawer" open>
+      <summary>FloodNet peaks · all 5 Ida posts</summary>
+      <p class="drawer-note">Post-level Ida OOM check — does not rescale citywide HAND. All five 2021 posts listed.</p>
       <div id="floodnetSummary" class="metric"><span>Loading…</span><b>—</b></div>
       <div id="floodnetMeta" class="metric" style="display:none"><span>Primary HAND @ posts</span><b>—</b></div>
       <p class="drawer-note">Map toggle lives under <b>Map layers</b> above (FloodNet).</p>
       <div class="floodnet-list" id="floodnetList" aria-label="FloodNet Ida peak comparison"><div class="empty">Loading sensor peaks…</div></div>
+      <details class="drawer" id="floodnetLaterDrawer">
+        <summary>Later FloodNet events</summary>
+        <p class="drawer-note">Post-Ida Open Data archive (optional map layer). Research only.</p>
+        <div id="floodnetLaterSummary" class="metric"><span>Loading…</span><b>—</b></div>
+        <label class="layer-btn"><input id="lyFloodNetLater" type="checkbox">Show later FloodNet peaks</label>
+      </details>
     </details>
   </section>
 
@@ -434,8 +491,8 @@ details.drawer[open] > summary::after {{ content:"–"; }}
         <label class="layer-btn"><input id="lyDepthTot" type="checkbox" checked>Depth</label>
         <label class="layer-btn"><input id="lyE2" type="checkbox" checked>Precip</label>
       </div>
-      <div class="opacity-row"><span>Precip</span><input id="opPrecip" type="range" min="10" max="85" value="34"><span id="opPrecipVal">34%</span></div>
-      <div class="opacity-row"><span>Depth</span><input id="opDepth" type="range" min="15" max="90" value="68"><span id="opDepthVal">68%</span></div>
+      <div class="opacity-row"><span>Precip</span><input id="opPrecip" type="range" min="10" max="92" value="52"><span id="opPrecipVal">52%</span></div>
+      <div class="opacity-row"><span>Depth</span><input id="opDepth" type="range" min="15" max="92" value="74"><span id="opDepthVal">74%</span></div>
       <div class="legend-swatch precip" title="Precip"></div>
       <div class="legend-swatch depth" title="Depth"></div>
       <span id="depthTimelineNote" hidden></span>
@@ -455,35 +512,63 @@ details.drawer[open] > summary::after {{ content:"–"; }}
 
   <section class="section">
     <details class="drawer">
-      <summary>Advanced</summary>
-      <div class="filters" style="grid-template-columns:1fr 1fr">
-        <div><label class="caption" for="extentSelect">Extent</label><select id="extentSelect"></select></div>
-        <div><label class="caption" for="eventSelect">Event</label><select id="eventSelect"></select></div>
-      </div>
-      <label class="caption" for="stormPathSelect" style="margin-top:6px">Scenario path</label>
-      <select id="stormPathSelect" aria-label="Scenario path"></select>
-      <div class="layer-grid" style="margin-top:8px">
-        <div class="group-label">Alternate</div>
-        <label class="layer-btn"><input id="lySfincs" type="checkbox">SFINCS Queens</label>
-        <label class="layer-btn"><input id="lyE2Tot" type="checkbox">Storm-total</label>
-        <div class="group-label">Access (research)</div>
-        <p class="drawer-note">DOT / 511 / MTA overlay defaults <b>on</b> — use <b>Map layers → DOT / access</b> to hide. Distinct shapes: square=DOT · triangle=511 · circle=MTA.</p>
+      <summary>Advanced · research only</summary>
+      <p class="drawer-note">Collapsed by design — demo stays shortlist + FloodNet + scrubber.</p>
+      <details class="drawer">
+        <summary>Event / path</summary>
+        <div class="filters" style="grid-template-columns:1fr 1fr">
+          <div><label class="caption" for="extentSelect">Extent</label><select id="extentSelect"></select></div>
+          <div><label class="caption" for="eventSelect">Event</label><select id="eventSelect"></select></div>
+        </div>
+        <label class="caption" for="stormPathSelect" style="margin-top:6px">Scenario path</label>
+        <select id="stormPathSelect" aria-label="Scenario path"></select>
+      </details>
+      <details class="drawer">
+        <summary>Alternate hydro</summary>
+        <div class="layer-grid">
+          <label class="layer-btn"><input id="lySfincs" type="checkbox">SFINCS Queens</label>
+          <label class="layer-btn"><input id="lyE2Tot" type="checkbox">Storm-total</label>
+        </div>
+      </details>
+      <details class="drawer">
+        <summary>Access feeds</summary>
+        <p class="drawer-note">DOT / 511 / MTA overlay defaults <b>on</b> — use <b>Map layers → DOT / access</b> to hide.</p>
         <label class="layer-btn"><input id="lyAccessLive" type="checkbox">Prefer live DOT / 511 / MTA feeds</label>
         <div id="accessFeedStatus" class="drawer-note" style="margin-top:4px">Fixture default · Ida replay</div>
-        <div class="group-label">Exposure</div>
-        <label class="layer-btn"><input id="lySta" type="checkbox">Stations</label>
-        <label class="layer-btn"><input id="lyRoads" type="checkbox">Roads</label>
-        <label class="layer-btn"><input id="lyFac" type="checkbox">Facilities</label>
-        <label class="layer-btn"><input id="ly311" type="checkbox">311</label>
-        <div class="group-label">Context</div>
-        <label class="layer-btn"><input id="lyFema" type="checkbox">FEMA NFHL</label>
-        <label class="layer-btn"><input id="lyNwm" type="checkbox">NWM</label>
-        <label class="layer-btn"><input id="lyGauges" type="checkbox">AHPS</label>
-        <label class="layer-btn"><input id="lyBuilt" type="checkbox">Built</label>
-      </div>
+      </details>
+      <details class="drawer">
+        <summary>Archived open layers</summary>
+        <p class="drawer-note">Optional Open Data samples — off by default. Not sewer performance / not official closures.</p>
+        <label class="layer-btn"><input id="lyArchive511" type="checkbox">Archived 511-style</label>
+        <label class="layer-btn"><input id="lyDepBasins" type="checkbox">DEP catch basins (sample)</label>
+        <label class="layer-btn"><input id="lyBuildings" type="checkbox">Building footprints (sample)</label>
+        <div id="archiveLayersStatus" class="drawer-note" style="margin-top:4px">Load on toggle…</div>
+      </details>
+      <details class="drawer">
+        <summary>Exposure inventory</summary>
+        <div class="layer-grid">
+          <label class="layer-btn"><input id="lySta" type="checkbox">Stations</label>
+          <label class="layer-btn"><input id="lyRoads" type="checkbox">Roads</label>
+          <label class="layer-btn"><input id="lyFac" type="checkbox">Facilities</label>
+          <label class="layer-btn"><input id="ly311" type="checkbox">311</label>
+        </div>
+      </details>
+      <details class="drawer">
+        <summary>Context GIS</summary>
+        <div class="layer-grid">
+          <label class="layer-btn"><input id="lyFema" type="checkbox">FEMA NFHL</label>
+          <label class="layer-btn"><input id="lyNwm" type="checkbox">NWM</label>
+          <label class="layer-btn"><input id="lyGauges" type="checkbox">AHPS</label>
+          <label class="layer-btn"><input id="lyBuilt" type="checkbox">Built</label>
+        </div>
+      </details>
       <div id="validationPanel" class="drawer-note" style="margin-top:8px">Limitations-first · exploratory only.</div>
     </details>
   </section>
+  <div class="print-snapshot" id="printSnapshot" aria-hidden="true">
+    <h1>Asset Decision Desk · shortlist snapshot</h1>
+    <pre id="printSnapshotBody"></pre>
+  </div>
 </aside>
 
 <div class="map-stage" id="mapStage">
@@ -495,6 +580,11 @@ details.drawer[open] > summary::after {{ content:"–"; }}
     <h3 id="selName">—</h3>
     <p id="selBody">—</p>
     <div class="sel-chips" id="selChips"></div>
+    <div class="sparkline-wrap" id="selSparkWrap" hidden>
+      <div class="spark-cap">Depth vs lead (HAND cm)</div>
+      <svg id="selSpark" viewBox="0 0 220 44" role="img" aria-label="Asset depth sparkline synced to scrubber"></svg>
+      <div class="spark-readout" id="selSparkReadout">—</div>
+    </div>
     <div class="sel-hint" id="selHint"></div>
     <div class="sel-access-note" id="selAccessNote"></div>
   </div>
@@ -632,12 +722,14 @@ let playing = false, playTimer = null, leadIndex = 0;
 let desk = null, wetLayer = null, selectedLayer = null, selectedId = null;
 let highlightLayer = null, highlightIds = [];
 let floodnetLayer = null, floodnetStations = [], selectedFloodnetId = null;
+let floodnetLaterLayer = null;
 let accessFixture = null, accessLayer = null, accessFeedMode = "fixture";
+let archive511Layer = null, depBasinsLayer = null, buildingsLayer = null;
 let typeFilter = "all";
 let listMode = "shortlist";
 let activeEventId = "ida-2021";
-const PLAY_MS = 520;
-const FADE_MS = 300;
+const PLAY_MS = 380;
+const FADE_MS = 220;
 
 function depthSetForPath(pathId) {{
   const inundation = manifest.inundation || null;
@@ -818,8 +910,9 @@ function setLead(i) {{
   const depthBit = depthLead != null ? (" · depth +" + depthLead + "h") : "";
   const suscBit = wantSusc ? " · screening on" : "";
   document.getElementById("hudSub").textContent =
-    "+" + f.lead_hours + "h · " + (f.temporal_blend ? "blend" : "native") + depthBit + suscBit + " · awareness";
+    "+" + f.lead_hours + "h · " + (f.temporal_blend ? "blend" : "native") + depthBit + suscBit + " · dense awareness";
   document.getElementById("leftLabel").textContent = "Decision Desk · " + (activePath.label || "Ida");
+  syncSparklineToScrubber();
 }}
 
 function setPlaying(on) {{
@@ -903,6 +996,75 @@ function renderAssetList() {{
     btn.addEventListener("click", () => selectAsset(btn.dataset.id));
   }});
 }}
+function depthSeriesForAsset(a) {{
+  if (!a) return {{ leads: [], vals: [] }};
+  const leads = (a.depth_series_leads_h && a.depth_series_leads_h.length)
+    ? a.depth_series_leads_h.slice()
+    : ((desk && desk.lead_frames_h) || []).slice();
+  const vals = (a.depth_series_cm && a.depth_series_cm.length)
+    ? a.depth_series_cm.slice()
+    : [];
+  return {{ leads, vals }};
+}}
+function nearestSeriesIndex(leads, leadHours) {{
+  if (!leads.length) return -1;
+  let best = 0, bestAbs = Infinity;
+  leads.forEach((h, idx) => {{
+    const d = Math.abs((h || 0) - leadHours);
+    if (d < bestAbs) {{ bestAbs = d; best = idx; }}
+  }});
+  return best;
+}}
+function renderSparkline(a) {{
+  const wrap = document.getElementById("selSparkWrap");
+  const svg = document.getElementById("selSpark");
+  const readout = document.getElementById("selSparkReadout");
+  if (!wrap || !svg || !readout) return;
+  const {{ leads, vals }} = depthSeriesForAsset(a);
+  if (!leads.length || vals.length !== leads.length) {{
+    wrap.hidden = true;
+    svg.innerHTML = "";
+    readout.textContent = "—";
+    return;
+  }}
+  wrap.hidden = false;
+  const w = 220, h = 44, pad = 4;
+  const maxV = Math.max(1, ...vals, a.max_depth_cm || 0);
+  const xs = leads.map((_, i) => pad + (i / Math.max(leads.length - 1, 1)) * (w - pad * 2));
+  const ys = vals.map(v => h - pad - (v / maxV) * (h - pad * 2));
+  const poly = xs.map((x, i) => x.toFixed(1) + "," + ys[i].toFixed(1)).join(" ");
+  // Band thresholds as faint guides (3 / 8 / 15 cm)
+  const guides = [3, 8, 15].filter(t => t < maxV).map(t => {{
+    const y = h - pad - (t / maxV) * (h - pad * 2);
+    return `<line x1="${{pad}}" y1="${{y.toFixed(1)}}" x2="${{w - pad}}" y2="${{y.toFixed(1)}}" stroke="rgba(255,255,255,.14)" stroke-width="1"/>`;
+  }}).join("");
+  svg.innerHTML = guides +
+    `<polyline fill="none" stroke="#1ae4b6" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" points="${{poly}}"/>` +
+    `<circle id="sparkCursor" cx="${{xs[0]}}" cy="${{ys[0]}}" r="3.6" fill="#f9ba38" stroke="#042227" stroke-width="1.4"/>`;
+  syncSparklineToScrubber();
+}}
+function syncSparklineToScrubber() {{
+  const a = selectedId && desk ? (desk.assets || []).find(x => x.id === selectedId) : null;
+  const svg = document.getElementById("selSpark");
+  const readout = document.getElementById("selSparkReadout");
+  const cursor = document.getElementById("sparkCursor");
+  if (!a || !svg || !readout || !cursor) return;
+  const {{ leads, vals }} = depthSeriesForAsset(a);
+  if (!leads.length || vals.length !== leads.length) return;
+  const leadHours = (frames[leadIndex] && frames[leadIndex].lead_hours != null)
+    ? frames[leadIndex].lead_hours
+    : 0;
+  const idx = nearestSeriesIndex(leads, leadHours);
+  if (idx < 0) return;
+  const w = 220, h = 44, pad = 4;
+  const maxV = Math.max(1, ...vals, a.max_depth_cm || 0);
+  const x = pad + (idx / Math.max(leads.length - 1, 1)) * (w - pad * 2);
+  const y = h - pad - (vals[idx] / maxV) * (h - pad * 2);
+  cursor.setAttribute("cx", x.toFixed(1));
+  cursor.setAttribute("cy", y.toFixed(1));
+  readout.textContent = "+" + leads[idx] + "h · " + Number(vals[idx]).toFixed(1) + " cm (scrubber)";
+}}
+
 function selectAsset(id) {{
   selectedId = id;
   const a = (desk.assets || []).find(x => x.id === id);
@@ -951,6 +1113,7 @@ function selectAsset(id) {{
   document.getElementById("selAccessNote").textContent = sigs.length
     ? ("Signals: " + sigs.slice(0, 2).join(" · ") + " — not official closures.")
     : "Open DOT/MTA signals + research depth — not official closures.";
+  renderSparkline(a);
   card.classList.remove("on");
   void card.offsetWidth;
   card.classList.add("on");
@@ -960,7 +1123,62 @@ function clearSelection() {{
   selectedId = null;
   if (selectedLayer) {{ mapLeft.removeLayer(selectedLayer); selectedLayer = null; }}
   document.getElementById("selectedCard").classList.remove("on");
+  const wrap = document.getElementById("selSparkWrap");
+  if (wrap) wrap.hidden = true;
   renderAssetList();
+}}
+
+function buildShortlistSnapshotText() {{
+  const rows = filteredAssets().slice(0, listMode === "shortlist" ? 12 : 12);
+  const f = frames[leadIndex] || {{}};
+  const lead = f.lead_hours != null ? f.lead_hours : "—";
+  const clock = (f.valid_time || "").replace("T", " ") || "—";
+  const sel = selectedId && desk ? (desk.assets || []).find(x => x.id === selectedId) : null;
+  const lines = [
+    "Asset Decision Desk · shortlist snapshot",
+    "Research only · NOT NWS · NOT decision-grade",
+    "Event: " + activeEventId + " · scrubber +" + lead + "h · " + clock + " UTC",
+    "",
+    "Shortlist (" + rows.length + "):",
+  ];
+  rows.forEach(a => {{
+    lines.push(
+      "#" + a.rank + " · " + a.name + " · " + a.max_depth_cm.toFixed(1) + " cm · " +
+      a.band_label + " · " + leadLabel(a) + " · access " + accessStatus(a)
+    );
+  }});
+  if (sel) {{
+    const {{ leads, vals }} = depthSeriesForAsset(sel);
+    const idx = nearestSeriesIndex(leads, Number(lead) || 0);
+    const at = (idx >= 0 && vals[idx] != null) ? (Number(vals[idx]).toFixed(1) + " cm @" + leads[idx] + "h") : "n/a";
+    lines.push("");
+    lines.push("Selected: " + sel.name + " · storm-total " + sel.max_depth_cm.toFixed(1) + " cm · at scrubber " + at);
+    lines.push("Hint: " + (sel.action_hint || "research only"));
+  }}
+  lines.push("");
+  lines.push("FloodNet Ida posts: " + (floodnetStations.length || 0) + " surfaced in panel.");
+  return lines.join("\\n");
+}}
+function setSnapshotStatus(msg) {{
+  const el = document.getElementById("snapshotStatus");
+  if (el) el.textContent = msg || "";
+}}
+async function copyShortlistSnapshot() {{
+  const text = buildShortlistSnapshotText();
+  try {{
+    await navigator.clipboard.writeText(text);
+    setSnapshotStatus("Snapshot copied.");
+  }} catch (err) {{
+    setSnapshotStatus("Copy blocked — use Print / share.");
+  }}
+  const body = document.getElementById("printSnapshotBody");
+  if (body) body.textContent = text;
+}}
+function printShortlistSnapshot() {{
+  const text = buildShortlistSnapshotText();
+  const body = document.getElementById("printSnapshotBody");
+  if (body) body.textContent = text;
+  window.print();
 }}
 
 function deskPathsForEvent(eventId) {{
@@ -1337,6 +1555,41 @@ function renderFloodnetList(stations) {{
   }});
 }}
 
+function loadFloodNetLaterEvents() {{
+  const laterSummary = document.getElementById("floodnetLaterSummary");
+  fetchGeoJSON("floodnet_later_events.geojson").then(geo => {{
+    const nSens = (geo.properties && geo.properties.n_sensors) || (geo.features || []).length;
+    const nEv = (geo.properties && geo.properties.n_events) || 0;
+    if (laterSummary) {{
+      laterSummary.innerHTML = `<span>Post-Ida archive</span><b>${{nSens}} sensors · ${{nEv}} events</b>`;
+    }}
+    if (!geo.features || !geo.features.length) return;
+    floodnetLaterLayer = L.geoJSON(geo, {{
+      pointToLayer: (f, ll) => L.circleMarker(ll, {{
+        radius: 5,
+        fillColor: "#5b8def",
+        color: "#0b1d2a",
+        weight: 1.5,
+        fillOpacity: 0.75,
+        pane: "pointPane",
+      }}),
+      onEachFeature: (f, layer) => {{
+        const p = f.properties || {{}};
+        const cm = p.max_depth_m != null ? (Number(p.max_depth_m) * 100).toFixed(1) : "—";
+        layer.bindPopup(
+          `<b>${{p.sensor_name || p.sensor_id || "FloodNet"}}</b><br>` +
+          `later peak ~${{cm}} cm · n=${{p.n_events_post_ida || "—"}}<br>` +
+          `<span style="opacity:.75">Post-Ida archive · research only</span>`
+        );
+        layer.bindTooltip((p.sensor_name || "FloodNet") + " · later " + cm + " cm");
+      }},
+    }});
+    bindToggle("lyFloodNetLater", floodnetLaterLayer);
+  }}).catch(() => {{
+    if (laterSummary) laterSummary.innerHTML = `<span>Later FloodNet</span><b>unavailable</b>`;
+  }});
+}}
+
 function loadFloodNetProduct() {{
   const fnName = (manifest.validation_dashboard && manifest.validation_dashboard.floodnet)
     || (manifest.validation_floodnet && manifest.validation_floodnet.scores)
@@ -1383,18 +1636,24 @@ function loadFloodNetProduct() {{
       }});
       bindToggle("lyFloodNet", floodnetLayer);
       renderFloodnetList(floodnetStations);
+      if (summaryEl && floodnetStations.length) {{
+        // Keep a posts count visible even before repro summary lands.
+        if (!summaryEl.dataset.locked) {{
+          summaryEl.innerHTML = `<span>Ida posts surfaced</span><b>${{floodnetStations.length}}/5</b>`;
+        }}
+      }}
     }} else {{
       document.getElementById("floodnetList").innerHTML = '<div class="empty">floodnet_ida_hotspot_stations.geojson missing — run scripts/calibrate_ida_floodnet_hotspot.py</div>';
     }}
 
     if (repro && repro.summary && repro.summary.hotspot_calibrated) {{
       const h = repro.summary.hotspot_calibrated;
-      const hand = repro.summary.primary_hand || {{}};
       const cal = repro.calibration || {{}};
       const loo = repro.leave_one_out || {{}};
       if (summaryEl) {{
+        summaryEl.dataset.locked = "1";
         summaryEl.innerHTML =
-          `<span>Hotspot cal @ posts</span>` +
+          `<span>Hotspot cal · ${{floodnetStations.length || h.n || 0}}/5 posts</span>` +
           `<b>RMSE ${{fmtM(h.rmse_m)}} m · OOM ${{h.oom_ok_n || 0}}/${{h.n || 0}}</b>`;
       }}
       if (metaEl) {{
@@ -1412,6 +1671,7 @@ function loadFloodNetProduct() {{
         floodnetStations = repro.stations;
         renderFloodnetList(floodnetStations);
       }}
+      loadFloodNetLaterEvents();
       return;
     }}
 
@@ -1420,23 +1680,84 @@ function loadFloodNetProduct() {{
       const bias = fn.summary.peak_bias_m && fn.summary.peak_bias_m.mean;
       const n = fn.summary.n_sensors;
       if (summaryEl) {{
+        summaryEl.dataset.locked = "1";
         summaryEl.innerHTML = `<span>FloodNet vs primary HAND</span><b>RMSE ${{fmtM(rmse)}} m · n=${{n}}</b>`;
       }}
       if (advEl) {{
         advEl.dataset.floodnetWired = "1";
         advEl.innerHTML = `FloodNet vs HAND · n=${{n}} · RMSE ${{fmtM(rmse)}} m · bias ${{fmtM(bias)}} m.`;
       }}
+      loadFloodNetLaterEvents();
       return;
     }}
 
     if (summaryEl) {{
       summaryEl.innerHTML = `<span>FloodNet reproduction</span><b>unavailable</b>`;
     }}
+    loadFloodNetLaterEvents();
   }}).catch(err => {{
     const summaryEl = document.getElementById("floodnetSummary");
     if (summaryEl) summaryEl.innerHTML = `<span>FloodNet load failed</span><b>—</b>`;
     document.getElementById("floodnetList").innerHTML = '<div class="empty">Failed to load FloodNet reproduction assets.</div>';
     console.warn(err);
+  }});
+}}
+
+function setArchiveStatus(msg) {{
+  const el = document.getElementById("archiveLayersStatus");
+  if (el) el.textContent = msg;
+}}
+function loadArchiveOpenLayers() {{
+  const statusBits = [];
+  fetchGeoJSON("archived_511_events.geojson").then(geo => {{
+    archive511Layer = L.geoJSON(geo, {{
+      pointToLayer: (f, ll) => {{
+        const kind = f.properties && (f.properties.closure || f.properties.kind === "limited") ? "limited" : "watch";
+        return L.marker(ll, {{ icon: accessDivIcon("nysdot_511_events", kind), pane: "pointPane" }});
+      }},
+      onEachFeature: (f, layer) => {{
+        const p = f.properties || {{}};
+        layer.bindPopup(`<b>${{p.label || "Archived 511-style"}}</b><br>Research archive · not official closures`);
+      }},
+    }});
+    bindToggle("lyArchive511", archive511Layer);
+    statusBits.push("511×" + ((geo.features || []).length));
+    setArchiveStatus(statusBits.join(" · ") + " ready");
+  }}).catch(() => statusBits.push("511 missing"));
+
+  fetchGeoJSON("dep_catch_basins_sample.geojson").then(geo => {{
+    depBasinsLayer = L.geoJSON(geo, {{
+      pointToLayer: (f, ll) => L.circleMarker(ll, {{
+        radius: 2.5, fillColor: "#6b7280", color: "#111827", weight: 0.8, fillOpacity: 0.7, pane: "pointPane"
+      }}),
+      onEachFeature: (f, layer) => {{
+        const p = f.properties || {{}};
+        layer.bindTooltip((p.unitid || p.node_id || "DEP basin") + " · open inventory");
+      }},
+    }});
+    bindToggle("lyDepBasins", depBasinsLayer);
+    statusBits.push("DEP×" + ((geo.features || []).length));
+    setArchiveStatus(statusBits.join(" · ") + " ready");
+  }}).catch(() => {{
+    statusBits.push("DEP missing");
+    setArchiveStatus(statusBits.join(" · "));
+  }});
+
+  fetchGeoJSON("building_footprints_sample.geojson").then(geo => {{
+    buildingsLayer = L.geoJSON(geo, {{
+      style: {{ color: "#334155", weight: 1, fillColor: "#94a3b8", fillOpacity: 0.25 }},
+      onEachFeature: (f, layer) => {{
+        const p = f.properties || {{}};
+        const h = p.height_roof != null ? (Number(p.height_roof).toFixed(0) + " ft roof") : "footprint";
+        layer.bindTooltip(h + " · open sample");
+      }},
+    }});
+    bindToggle("lyBuildings", buildingsLayer);
+    statusBits.push("bldgs×" + ((geo.features || []).length));
+    setArchiveStatus(statusBits.join(" · ") + " ready");
+  }}).catch(() => {{
+    statusBits.push("buildings missing");
+    setArchiveStatus(statusBits.join(" · "));
   }});
 }}
 
@@ -1575,6 +1896,10 @@ document.getElementById("lyAccessLive").onchange = () => {{
   loadAccessSignals();
   // Live overlay does not rebuild desk ranks in-browser; run fetch_live_access_feeds.py --apply-desk for joined chips.
 }};
+const btnShare = document.getElementById("btnShareSnapshot");
+const btnPrint = document.getElementById("btnPrintSnapshot");
+if (btnShare) btnShare.onclick = () => copyShortlistSnapshot();
+if (btnPrint) btnPrint.onclick = () => printShortlistSnapshot();
 (function wireMapKeyFloat() {{
   const box = document.getElementById("mapKeyFloat");
   const btn = document.getElementById("mapKeyFloatToggle");
@@ -1594,6 +1919,7 @@ loadDecisionDesk();
 loadAccessSignals();
 loadFloodNetProduct();
 loadOptionalLayers();
+loadArchiveOpenLayers();
 setPlaying(true);
 </script>
 </body>

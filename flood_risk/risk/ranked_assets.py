@@ -175,6 +175,14 @@ def build_ranked_assets(
                     lead_h, lead_note = _first_exceedance_lead(
                         geom, layer, band, lead_handles, float(depth)
                     )
+                    depth_series_cm: list[float] = []
+                    depth_series_leads_h: list[float] = []
+                    for lead_i, lead_ds in lead_handles:
+                        d_i, _off_i = _sample_depth(lead_ds, geom, layer)
+                        depth_series_leads_h.append(float(lead_i))
+                        depth_series_cm.append(
+                            round(float(d_i) * 100.0, 2) if np.isfinite(d_i) else 0.0
+                        )
                     asset_type = {
                         LAYER_ROADS: "road",
                         LAYER_STATIONS: "station",
@@ -192,6 +200,8 @@ def build_ranked_assets(
                         "band_full_label": next((b["label"] for b in DEPTH_BANDS if b["id"] == band), band),
                         "first_exceedance_lead_h": lead_h,
                         "first_exceedance_note": lead_note,
+                        "depth_series_cm": depth_series_cm,
+                        "depth_series_leads_h": depth_series_leads_h,
                         "action_hint": BAND_ACTION_HINTS.get(band, ""),
                         "lon": lon,
                         "lat": lat,
@@ -299,6 +309,10 @@ def build_ranked_assets(
             "depth_bands_m": DEPTH_BANDS,
             "band_action_hints": BAND_ACTION_HINTS,
             "lead_frames_h": [h for h, _ in lead_tifs if Path(_).exists()],
+            "depth_series_note": (
+                "Per-asset HAND depth (cm) on cum lead frames for selected-card sparkline. "
+                "Research only — not street-truth."
+            ),
             "counts": counts,
             "assets": assets,
             "all_wet_summary": {
