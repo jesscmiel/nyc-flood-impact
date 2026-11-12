@@ -19,6 +19,8 @@ from rasterio.sample import sample_gen
 INCH_TO_M = 0.0254
 IDA_INIT_UTC = datetime(2021, 9, 1, 12, 0, 0, tzinfo=timezone.utc)
 IDA_END_UTC = datetime(2021, 9, 3, 0, 0, 0, tzinfo=timezone.utc)
+HENRI_INIT_UTC = datetime(2021, 8, 21, 18, 0, 0, tzinfo=timezone.utc)
+HENRI_END_UTC = datetime(2021, 8, 23, 0, 0, 0, tzinfo=timezone.utc)
 DEFAULT_CUM_LEADS_H = (0, 3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36)
 
 
@@ -227,9 +229,12 @@ def build_ida_events(
                 }
             )
 
+    name = "floodnet_ida_events"
+    if window_start == HENRI_INIT_UTC and window_end == HENRI_END_UTC:
+        name = "floodnet_henri_events"
     return {
         "type": "FeatureCollection",
-        "name": "floodnet_ida_events",
+        "name": name,
         "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
         "properties": {
             "source_events": str(events_csv),
@@ -247,6 +252,48 @@ def build_ida_events(
         },
         "features": features,
     }
+
+
+def collapse_max_peak_per_sensor(fc: dict[str, Any]) -> dict[str, Any]:
+    """Keep one feature per sensor_id — the event with the largest max_depth_m."""
+    best: dict[str, dict[str, Any]] = {}
+    for feat in fc.get("features") or []:
+        props = feat.get("properties") or {}
+        sid = props.get("sensor_id")
+        if not sid:
+            continue
+        depth = props.get("max_depth_m")
+        if depth is None or not np.isfinite(float(depth)):
+            continue
+        prev = best.get(sid)
+        if prev is None or float(depth) > float(prev["properties"]["max_depth_m"]):
+            best[sid] = feat
+    out = dict(fc)
+    out["features"] = list(best.values())
+    props = dict(fc.get("properties") or {})
+    props["n_events"] = len(out["features"])
+    props["n_sensors"] = len(out["features"])
+    props["collapse"] = "max_peak_per_sensor"
+    out["properties"] = props
+    return out
+
+
+def build_henri_events(
+    *,
+    events_csv: Path,
+    metadata_csv: Path,
+    window_start: datetime = HENRI_INIT_UTC,
+    window_end: datetime = HENRI_END_UTC,
+    collapse: bool = True,
+) -> dict[str, Any]:
+    """FloodNet events overlapping the Henri remnant window (holdout beyond Ida)."""
+    fc = build_ida_events(
+        events_csv=events_csv,
+        metadata_csv=metadata_csv,
+        window_start=window_start,
+        window_end=window_end,
+    )
+    return collapse_max_peak_per_sensor(fc) if collapse else fc
 
 
 def _nearest_cum_lead(lead_h: float, cum_leads: tuple[int, ...] | list[int]) -> int:

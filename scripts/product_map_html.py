@@ -1666,22 +1666,37 @@ function loadFloodNetProduct() {{
       const h = repro.summary.hotspot_calibrated;
       const cal = repro.calibration || {{}};
       const loo = repro.leave_one_out || {{}};
+      const deep = (repro.summary && repro.summary.magnitude_deepen) || {{}};
+      const henriN = deep.henri_holdout_n;
+      const henriRmse = deep.henri_holdout_rmse_m;
+      const pooledN = deep.pooled_n;
+      const pooledBeyond = !!deep.pooled_beyond_ida_5;
       if (summaryEl) {{
         summaryEl.dataset.locked = "1";
         summaryEl.innerHTML =
-          `<span>Hotspot cal · ${{floodnetStations.length || h.n || 0}}/5 posts</span>` +
+          `<span>Hotspot cal · ${{floodnetStations.length || h.n || 0}}/5 Ida</span>` +
           `<b>RMSE ${{fmtM(h.rmse_m)}} m · OOM ${{h.oom_ok_n || 0}}/${{h.n || 0}}</b>`;
       }}
       if (metaEl) {{
         metaEl.style.display = "flex";
-        metaEl.innerHTML =
-          `<span>HAND dry/cm · LOO ${{fmtM(loo.rmse_m)}} m</span>` +
-          `<b>bias ${{fmtM(h.bias_m)}} · scale ${{fmtM(cal.scale)}}</b>`;
+        if (henriN != null && henriRmse != null) {{
+          metaEl.innerHTML =
+            `<span>Henri holdout n=${{henriN}} · RMSE ${{fmtM(henriRmse)}} m</span>` +
+            `<b>${{pooledBeyond ? ("pooled n=" + pooledN) : ("LOO " + fmtM(loo.rmse_m) + " m")}}</b>`;
+        }} else {{
+          metaEl.innerHTML =
+            `<span>HAND dry/cm · LOO ${{fmtM(loo.rmse_m)}} m</span>` +
+            `<b>bias ${{fmtM(h.bias_m)}} · scale ${{fmtM(cal.scale)}}</b>`;
+        }}
       }}
       if (advEl) {{
         advEl.dataset.floodnetWired = "1";
-        advEl.innerHTML =
-          `FloodNet hotspot RMSE ${{fmtM(h.rmse_m)}} m · OOM ${{h.oom_ok_n || 0}}/${{h.n || 0}} · LOO ${{fmtM(loo.rmse_m)}} m · HAND unchanged.`;
+        let adv = `FloodNet hotspot RMSE ${{fmtM(h.rmse_m)}} m · OOM ${{h.oom_ok_n || 0}}/${{h.n || 0}} · LOO ${{fmtM(loo.rmse_m)}} m · HAND unchanged.`;
+        if (henriN != null && henriRmse != null) {{
+          adv += ` Henri holdout transfer RMSE ${{fmtM(henriRmse)}} m (n=${{henriN}}).`;
+          if (pooledBeyond) adv += ` Pooled unique sensors n=${{pooledN}}.`;
+        }}
+        advEl.innerHTML = adv;
       }}
       if ((!geo || !geo.features) && Array.isArray(repro.stations)) {{
         floodnetStations = repro.stations;

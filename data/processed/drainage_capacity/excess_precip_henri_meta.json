@@ -1,0 +1,9 @@
+{
+  "path": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/drainage_capacity/excess_precip_henri_mm.tif",
+  "source_rain": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro_henri/mrms_qpe_metro_henri_storm_total.tif",
+  "capacity": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/drainage_capacity/drainage_capacity_mm_hr.tif",
+  "duration_hr": 30.0,
+  "drainage_hours": 3.0,
+  "engine": "drainage_capacity_proxy_v1",
+  "event_id": "henri-2021"
+}

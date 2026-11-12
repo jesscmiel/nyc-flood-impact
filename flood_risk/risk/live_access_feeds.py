@@ -6,6 +6,11 @@ the same shape as ``access_signals_ida_fixture.json`` so join logic is shared.
 
 Ida fixtures remain the demo default; live feeds are opt-in / Advanced.
 Research only — NOT official closures / NOT decision-grade.
+
+Bus Time (skipped): MTA Bus Time ``vehiclePositions`` needs
+``MTA_BUS_TIME_API_KEY``. This environment has no key, so live bus vehicles
+are intentionally not fetched. Subway GTFS-RT VehiclePositions are keyless but
+also deferred — alerts + DOT speeds already carry the access story.
 """
 
 from __future__ import annotations
@@ -20,6 +25,18 @@ from typing import Any
 import requests
 
 from flood_risk.risk.access_signals import NYC_BBOX, haversine_m
+
+# Documented skip — do not call Bus Time without an explicit key.
+BUS_TIME_SKIPPED = {
+    "status": "skipped",
+    "source": "mta_bus_time_vehicle_positions",
+    "env_var": "MTA_BUS_TIME_API_KEY",
+    "reason": "API key not configured; Bus Time vehicle map deferred",
+    "docs": (
+        "https://bustime.mta.info/wiki/Developers/Index — requires developer key. "
+        "Product uses DOT speeds + 511-style closures + MTA service alerts instead."
+    ),
+}
 
 DOT_SPEEDS_URL = "https://data.cityofnewyork.us/resource/i4gi-tjb9.json"
 STREET_CLOSURES_URL = "https://data.cityofnewyork.us/resource/i6b5-j7bu.json"
@@ -396,6 +413,7 @@ def build_live_access_fixture(
             "live_status": {**status, "mode": "empty", "errors": errors},
         }
 
+    status["sources"]["mta_bus_time_vehicles"] = dict(BUS_TIME_SKIPPED)
     return {
         "id": "access_signals_live_v1",
         "replay": None,
@@ -403,9 +421,11 @@ def build_live_access_fixture(
         "fetched_at_utc": status["fetched_at_utc"],
         "honesty": (
             "Live/fresher open DOT speeds + 511-style closures + MTA alerts joined to "
-            "research HAND depth — NOT official closures. Free-flow priors are heuristic."
+            "research HAND depth — NOT official closures. Free-flow priors are heuristic. "
+            "Bus Time vehicles skipped (no MTA_BUS_TIME_API_KEY)."
         ),
         "sources": ["nyc_dot_speeds", "nysdot_511_events", "nyc_street_closures", "mta_alerts"],
+        "sources_skipped": [BUS_TIME_SKIPPED],
         "buffer_m": 120,
         "dot_speeds": dot,
         "events_511": events,

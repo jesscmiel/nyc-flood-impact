@@ -21,10 +21,20 @@ from rasterio.sample import sample_gen
 from rasterio.warp import transform as warp_transform
 
 from flood_risk.inundation.hand_bathtub import RUNOFF_COEFF
-from flood_risk.validate.floodnet import IDA_INIT_UTC, _nearest_wet, _sample_xy
+from flood_risk.validate.floodnet import (
+    HENRI_INIT_UTC,
+    IDA_INIT_UTC,
+    _nearest_wet,
+    _sample_xy,
+    collapse_max_peak_per_sensor,
+)
 
 ENGINE_ID = "floodnet_ida_hotspot_hydro_v1"
 ENGINE_LABEL = "FloodNet Ida hotspot hydro (excess-precip ponding × linear calib)"
+ENGINE_ID_DEEPEN = "floodnet_magnitude_deepen_v1"
+ENGINE_LABEL_DEEPEN = (
+    "FloodNet magnitude deepen (Ida fit + Henri holdout transfer; pooled when data allows)"
+)
 
 
 def _sample_any(ds: rasterio.io.DatasetReader, lon: float, lat: float) -> float:
@@ -401,3 +411,257 @@ def stations_geojson(report: dict[str, Any]) -> dict[str, Any]:
         },
         "features": feats,
     }
+
+
+def _load_peak_rows(
+    events_geojson: Path | dict[str, Any],
+    excess_precip_tif: Path,
+    *,
+    event_id: str,
+    collapse: bool = True,
+) -> list[dict[str, Any]]:
+    """Sample ponding predictors at FloodNet peaks for one storm window."""
+    if isinstance(events_geojson, Path):
+        fc = json.loads(Path(events_geojson).read_text())
+    else:
+        fc = events_geojson
+    if collapse:
+        fc = collapse_max_peak_per_sensor(fc)
+
+    rows: list[dict[str, Any]] = []
+    with rasterio.open(excess_precip_tif) as excess_ds:
+        for feat in fc.get("features") or []:
+            props = feat.get("properties") or {}
+            lon = float(props.get("lon", feat["geometry"]["coordinates"][0]))
+            lat = float(props.get("lat", feat["geometry"]["coordinates"][1]))
+            obs = props.get("max_depth_m")
+            if obs is None and props.get("max_depth_in") is not None:
+                obs = float(props["max_depth_in"]) * 0.0254
+            if obs is None or not np.isfinite(float(obs)):
+                continue
+            excess_mm = _sample_any(excess_ds, lon, lat)
+            if not np.isfinite(excess_mm):
+                excess_mm = 0.0
+            x = ponding_predictor_m(excess_mm)
+            rows.append(
+                {
+                    "event_id": event_id,
+                    "sensor_id": props.get("sensor_id"),
+                    "sensor_name": props.get("sensor_name"),
+                    "borough": props.get("borough"),
+                    "lon": lon,
+                    "lat": lat,
+                    "obs_peak_m": float(obs),
+                    "obs_peak_lead_h": props.get("peak_lead_h"),
+                    "excess_precip_mm": float(excess_mm),
+                    "ponding_predictor_m": float(x),
+                }
+            )
+    return rows
+
+
+def apply_scale_bias(
+    rows: list[dict[str, Any]],
+    *,
+    scale: float,
+    bias_m: float,
+) -> list[dict[str, Any]]:
+    """Attach calibrated depths / residuals / OOM flags using fixed coeffs."""
+    out: list[dict[str, Any]] = []
+    for row in rows:
+        x = float(row["ponding_predictor_m"])
+        obs = float(row["obs_peak_m"])
+        cal = max(0.0, scale * x + bias_m)
+        updated = dict(row)
+        updated.update(
+            {
+                "hotspot_cal_m": cal,
+                "residual_m": cal - obs,
+                "abs_error_m": abs(cal - obs),
+                "ratio_cal_obs": (cal / obs) if obs > 1e-9 else None,
+                "oom_ok": _oom_ok(obs, cal),
+            }
+        )
+        out.append(updated)
+    return out
+
+
+def _peak_stats_rows(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    if not rows:
+        return {"n": 0, "rmse_m": None, "bias_m": None, "mae_m": None, "oom_ok_n": 0}
+    obs = np.asarray([r["obs_peak_m"] for r in rows], dtype=np.float64)
+    cal = np.asarray([r["hotspot_cal_m"] for r in rows], dtype=np.float64)
+    resid = cal - obs
+    oom = sum(1 for r in rows if r.get("oom_ok"))
+    return {
+        "n": len(rows),
+        "rmse_m": float(np.sqrt(np.mean(resid**2))),
+        "bias_m": float(np.mean(resid)),
+        "mae_m": float(np.mean(np.abs(resid))),
+        "model_mean_m": float(np.mean(cal)),
+        "model_max_m": float(np.max(cal)),
+        "oom_ok_n": int(oom),
+        "oom_ok_fraction": float(oom / len(rows)),
+    }
+
+
+def deepen_magnitude_calibration(
+    *,
+    ida_events_geojson: Path | dict[str, Any],
+    ida_excess_precip_tif: Path,
+    henri_events_geojson: Path | dict[str, Any] | None = None,
+    henri_excess_precip_tif: Path | None = None,
+    ida_report: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Deepen beyond Ida's 5-post fit when a second storm (Henri) has FloodNet + excess precip.
+
+    - Keeps Ida in-sample hotspot as the Decision Desk residual table.
+    - Transfers Ida scale/bias to Henri max-per-sensor peaks (holdout).
+    - Fits a pooled scale/bias on unique sensor peaks across Ida+Henri when n>5.
+    - Later FloodNet archive without storm-matched excess precip is documented as unavailable.
+    """
+    if ida_report is None:
+        ida_report = calibrate_ida_hotspot(
+            events_geojson=ida_events_geojson,
+            excess_precip_tif=ida_excess_precip_tif,
+        )
+
+    ida_fit = ida_report["calibration"]
+    ida_rows = _load_peak_rows(ida_events_geojson, ida_excess_precip_tif, event_id="ida-2021")
+    ida_scored = apply_scale_bias(
+        ida_rows, scale=float(ida_fit["scale"]), bias_m=float(ida_fit["bias_m"])
+    )
+
+    henri_available = bool(
+        henri_events_geojson is not None
+        and henri_excess_precip_tif is not None
+        and Path(henri_excess_precip_tif).exists()
+    )
+    henri_rows: list[dict[str, Any]] = []
+    henri_transfer: list[dict[str, Any]] = []
+    henri_transfer_stats: dict[str, Any] = {
+        "n": 0,
+        "rmse_m": None,
+        "bias_m": None,
+        "mae_m": None,
+        "oom_ok_n": 0,
+    }
+    if henri_available:
+        henri_rows = _load_peak_rows(
+            henri_events_geojson,  # type: ignore[arg-type]
+            Path(henri_excess_precip_tif),  # type: ignore[arg-type]
+            event_id="henri-2021",
+        )
+        henri_transfer = apply_scale_bias(
+            henri_rows, scale=float(ida_fit["scale"]), bias_m=float(ida_fit["bias_m"])
+        )
+        henri_transfer_stats = _peak_stats_rows(henri_transfer)
+
+    # Pooled unique sensors: prefer Ida peak when a sensor appears in both storms.
+    by_sensor: dict[str, dict[str, Any]] = {}
+    for row in henri_rows:
+        sid = str(row.get("sensor_id") or "")
+        if sid:
+            by_sensor[sid] = dict(row)
+    for row in ida_rows:
+        sid = str(row.get("sensor_id") or "")
+        if sid:
+            by_sensor[sid] = dict(row)
+    pooled_rows = list(by_sensor.values())
+    pooled_x = np.asarray([r["ponding_predictor_m"] for r in pooled_rows], dtype=np.float64)
+    pooled_y = np.asarray([r["obs_peak_m"] for r in pooled_rows], dtype=np.float64)
+    pooled_fit = fit_scale_bias(pooled_x, pooled_y) if len(pooled_rows) >= 2 else {
+        "scale": ida_fit["scale"],
+        "bias_m": ida_fit["bias_m"],
+        "n_fit": len(pooled_rows),
+        "fit_ok": False,
+        "method": "ida_fallback",
+    }
+    pooled_loo = leave_one_out_residuals(pooled_x, pooled_y) if len(pooled_rows) >= 3 else {
+        "n": 0,
+        "rmse_m": None,
+        "bias_m": None,
+        "mae_m": None,
+    }
+    pooled_scored = apply_scale_bias(
+        pooled_rows,
+        scale=float(pooled_fit["scale"]),
+        bias_m=float(pooled_fit["bias_m"]),
+    )
+    new_henri_only = [
+        r for r in henri_rows if str(r.get("sensor_id")) not in {str(x.get("sensor_id")) for x in ida_rows}
+    ]
+
+    deepen = {
+        "engine": ENGINE_ID_DEEPEN,
+        "engine_label": ENGINE_LABEL_DEEPEN,
+        "updated_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "official_nws": False,
+        "decision_grade": False,
+        "certified_skill": False,
+        "primary_depth_unchanged": True,
+        "ida_fit_n": int(ida_fit.get("n_fit") or 0),
+        "ida_in_sample": ida_report.get("summary", {}).get("hotspot_calibrated"),
+        "ida_leave_one_out": ida_report.get("leave_one_out"),
+        "henri_holdout": {
+            "available": henri_available,
+            "init_time_utc": HENRI_INIT_UTC.isoformat().replace("+00:00", "Z"),
+            "transfer_from": "ida_scale_bias",
+            "scale": ida_fit.get("scale"),
+            "bias_m": ida_fit.get("bias_m"),
+            "n_events_raw_note": "Henri window collapsed to max peak per sensor before scoring",
+            "n_sensors": len(henri_rows),
+            "n_new_vs_ida": len(new_henri_only),
+            "new_sensor_ids": [r.get("sensor_id") for r in new_henri_only],
+            "stats": henri_transfer_stats,
+            "stations": henri_transfer,
+        },
+        "pooled_unique_sensors": {
+            "n_fit": int(pooled_fit.get("n_fit") or 0),
+            "beyond_ida_5": int(pooled_fit.get("n_fit") or 0) > 5,
+            "calibration": pooled_fit,
+            "leave_one_out": pooled_loo,
+            "in_sample": _peak_stats_rows(pooled_scored),
+            "stations": pooled_scored,
+            "note": (
+                "Pooled unique FloodNet posts across Ida+Henri (Ida peak preferred on overlap). "
+                "Still sparse — not citywide / not decision-grade."
+            ),
+        },
+        "later_floodnet_archive": {
+            "usable_for_magnitude_calib": False,
+            "reason": (
+                "Post-Ida archive (hundreds of sensors) lacks storm-matched MRMS excess-precip "
+                "rasters in this product — peaks alone cannot deepen the ponding scale/bias."
+            ),
+        },
+        "lead_with": [
+            "Ida hotspot RMSE (desk residual table, n=5)",
+            "Henri holdout transfer RMSE when available",
+            "Pooled unique-sensor n when >5",
+        ],
+        "do_not_lead_with": ["311_hit_rate", "later_floodnet_peak_counts_as_skill"],
+        "demo_honesty": (
+            "Ida Decision Desk peaks stay the n=5 hotspot fit. Henri is a transparent holdout "
+            "transfer of the same scale/bias; pooled n>5 only when Henri adds posts. "
+            "Primary HAND unchanged. NOT NWS / NOT decision-grade."
+        ),
+    }
+
+    # Attach deepen block onto a copy of the Ida report for a single skill card.
+    out = dict(ida_report)
+    out["magnitude_deepen"] = deepen
+    out["engine_deepen"] = ENGINE_ID_DEEPEN
+    summary = dict(out.get("summary") or {})
+    summary["magnitude_deepen"] = {
+        "henri_holdout_n": henri_transfer_stats.get("n"),
+        "henri_holdout_rmse_m": henri_transfer_stats.get("rmse_m"),
+        "henri_holdout_bias_m": henri_transfer_stats.get("bias_m"),
+        "henri_holdout_oom_ok_n": henri_transfer_stats.get("oom_ok_n"),
+        "pooled_n": pooled_fit.get("n_fit"),
+        "pooled_beyond_ida_5": int(pooled_fit.get("n_fit") or 0) > 5,
+        "pooled_rmse_m": (_peak_stats_rows(pooled_scored) or {}).get("rmse_m"),
+        "pooled_loo_rmse_m": pooled_loo.get("rmse_m"),
+    }
+    out["summary"] = summary
+    return out
