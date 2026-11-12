@@ -35,171 +35,240 @@ def write_product_html(manifest: dict, pluvial: dict, validation: dict) -> Path:
 <meta name="description" content="Research Asset Decision Desk for Hurricane Ida. Ranked wet assets from metro pysheds × MRMS. NOT official NWS. NOT decision-grade.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=IBM+Plex+Mono:wght@500&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
 :root {{
-  --ink:#071018; --ink-soft:#152433; --muted:#6a7f90; --paper:#f3f7f9;
-  --panel:rgba(255,255,255,.94); --line:#c5d3de; --line-soft:#dde6ed;
-  --accent:#0a8a96; --accent-deep:#056068; --accent-soft:#d4eef1;
-  --sea:#083b48; --sea-2:#0c6170; --warn:#8d3d14; --warn-bg:#fff3e6; --warn-line:#efc49a;
+  --ink:#06131a; --ink-soft:#17303c; --muted:#5f7584; --paper:#e8f0f3;
+  --rail:#f4f8fa; --line:rgba(8,40,52,.12); --line-soft:rgba(8,40,52,.07);
+  --accent:#0d8f9c; --accent-deep:#066470; --accent-glow:rgba(13,143,156,.22);
+  --sea:#052833; --sea-2:#0a5460; --sea-3:#117988;
+  --warn:#9a4a12; --warn-bg:rgba(154,74,18,.08); --warn-line:rgba(154,74,18,.28);
   --band-3:#a16207; --band-8:#c2410c; --band-15:#b91c1c;
-  --shadow:0 18px 50px rgba(7,16,24,.16); --radius:14px;
+  --hud:#071820ee; --ease:cubic-bezier(.22,.8,.28,1);
 }}
 * {{ box-sizing:border-box; }}
-html,body {{ margin:0; height:100%; font-family:"Source Sans 3",sans-serif; color:var(--ink);
+html,body {{ margin:0; height:100%; font-family:Figtree,system-ui,sans-serif; color:var(--ink);
   background:
-    radial-gradient(900px 520px at 8% -10%, rgba(12,97,112,.18), transparent 55%),
-    radial-gradient(800px 480px at 100% 0%, rgba(8,59,72,.10), transparent 45%),
-    linear-gradient(165deg, #eef4f7 0%, #d9e5ec 100%); }}
-body {{ display:grid; grid-template-columns:minmax(340px,420px) 1fr; min-height:100%; }}
-@media (max-width:980px) {{ body {{ grid-template-columns:1fr; grid-template-rows:auto 1fr; }} aside {{ max-height:55vh; border-right:0; border-bottom:1px solid var(--line); }} }}
+    radial-gradient(1100px 640px at -8% -20%, rgba(17,121,136,.22), transparent 58%),
+    radial-gradient(900px 520px at 108% 8%, rgba(5,40,51,.16), transparent 50%),
+    linear-gradient(160deg, #edf4f7 0%, #d5e4ea 48%, #c9dbe3 100%);
+}}
+body {{ display:grid; grid-template-columns:minmax(300px,360px) 1fr; min-height:100%; }}
+@media (max-width:980px) {{
+  body {{ grid-template-columns:1fr; grid-template-rows:auto minmax(52vh,1fr); }}
+  aside {{ max-height:48vh; border-right:0 !important; border-bottom:1px solid var(--line); }}
+}}
 aside {{
-  position:relative; overflow:auto; padding:16px 14px 28px;
-  background: linear-gradient(180deg, rgba(255,255,255,.86), rgba(243,247,249,.94));
-  border-right:1px solid var(--line); backdrop-filter: blur(10px);
+  position:relative; overflow:auto; padding:0 0 20px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.72), rgba(244,248,250,.92)),
+    repeating-linear-gradient(-18deg, transparent, transparent 11px, rgba(8,59,72,.015) 11px, rgba(8,59,72,.015) 12px);
+  border-right:1px solid var(--line); backdrop-filter:blur(14px);
 }}
 .brand {{
-  position:relative; overflow:hidden; margin:0 0 12px; padding:16px 14px 14px; border-radius:18px;
-  background: linear-gradient(145deg, var(--sea) 0%, var(--sea-2) 55%, #12818f 100%);
-  color:#eef9fb; box-shadow:var(--shadow);
+  position:relative; overflow:hidden; margin:0; padding:22px 18px 18px;
+  background:
+    radial-gradient(520px 220px at 88% 120%, rgba(255,255,255,.14), transparent 55%),
+    linear-gradient(145deg, var(--sea) 0%, var(--sea-2) 52%, var(--sea-3) 100%);
+  color:#e8f7f9;
+}}
+.brand::before {{
+  content:""; position:absolute; inset:0;
+  background:linear-gradient(105deg, transparent 40%, rgba(255,255,255,.05) 50%, transparent 60%);
+  animation: sweep 7.5s var(--ease) infinite; pointer-events:none;
 }}
 .brand::after {{
-  content:""; position:absolute; inset:auto -20% -40% 30%; height:120%;
-  background:radial-gradient(circle, rgba(255,255,255,.16), transparent 60%); pointer-events:none;
-  animation: drift 10s ease-in-out infinite alternate;
+  content:""; position:absolute; width:180px; height:180px; right:-36px; bottom:-70px;
+  border-radius:50%; border:1px solid rgba(255,255,255,.12);
+  box-shadow:0 0 0 18px rgba(255,255,255,.04); pointer-events:none;
+  animation: pulseRing 5.5s ease-in-out infinite;
 }}
-@keyframes drift {{ from {{ transform:translateX(0); }} to {{ transform:translateX(-18px); }} }}
-.brand-kicker {{ font:600 .68rem Sora,sans-serif; letter-spacing:.14em; text-transform:uppercase; opacity:.72; margin-bottom:6px; }}
-.brand-mark {{ font-family:Sora,sans-serif; font-weight:700; font-size:1.4rem; letter-spacing:-.04em; line-height:1.05; }}
-.brand-tag {{ margin-top:8px; font-size:.78rem; line-height:1.4; max-width:34ch; opacity:.9; }}
-.disclaimer-bar {{
-  position:sticky; top:0; z-index:4; margin:0 0 12px; padding:10px 11px; border-radius:var(--radius);
-  background:var(--warn-bg); border:1px solid var(--warn-line); color:var(--warn); font-size:.74rem; line-height:1.4;
+@keyframes sweep {{ 0%,100% {{ transform:translateX(-12%); opacity:.35; }} 50% {{ transform:translateX(8%); opacity:.7; }} }}
+@keyframes pulseRing {{ 0%,100% {{ transform:scale(1); opacity:.55; }} 50% {{ transform:scale(1.08); opacity:.9; }} }}
+@keyframes riseIn {{ from {{ opacity:0; transform:translateY(8px); }} to {{ opacity:1; transform:none; }} }}
+@keyframes selectPulse {{ 0% {{ box-shadow:0 0 0 0 var(--accent-glow); }} 100% {{ box-shadow:0 0 0 14px transparent; }} }}
+@keyframes playGlow {{ 0%,100% {{ box-shadow:0 0 0 0 rgba(27,192,205,.35); }} 50% {{ box-shadow:0 0 0 10px transparent; }} }}
+.brand-kicker {{ position:relative; font:700 .62rem Syne,sans-serif; letter-spacing:.16em; text-transform:uppercase; opacity:.7; margin-bottom:8px; }}
+.brand-mark {{ position:relative; font:800 clamp(1.55rem,3.4vw,1.9rem)/1.02 Syne,sans-serif; letter-spacing:-.045em; }}
+.brand-tag {{ position:relative; margin-top:8px; font-size:.8rem; line-height:1.35; max-width:28ch; opacity:.88; font-weight:500; }}
+.honesty-line {{
+  position:sticky; top:0; z-index:5; margin:0; padding:9px 16px;
+  background:linear-gradient(180deg, rgba(255,246,236,.96), rgba(255,243,230,.9));
+  border-bottom:1px solid var(--warn-line); color:var(--warn);
+  font:600 .72rem/1.35 Figtree,sans-serif; backdrop-filter:blur(8px);
 }}
-.panel {{
-  background:var(--panel); border:1px solid var(--line-soft); border-radius:16px; padding:12px;
-  margin:0 0 10px; box-shadow:0 1px 0 rgba(255,255,255,.85) inset, 0 8px 24px rgba(7,16,24,.03);
+#assetBanner {{
+  margin:8px 14px 0; padding:9px 11px; border-radius:10px; display:none;
+  background:#3b0d0d; border:1px solid #7f1d1d; color:#fecaca; font-size:.74rem;
 }}
-.panel h2 {{
-  font-family:Sora,sans-serif; font-size:.68rem; font-weight:600; margin:0 0 8px;
-  text-transform:uppercase; letter-spacing:.1em; color:var(--muted);
+.section {{ padding:14px 16px 6px; animation:riseIn .45s var(--ease) both; }}
+.section + .section {{ border-top:1px solid var(--line-soft); }}
+.section h2 {{
+  display:flex; align-items:baseline; justify-content:space-between; gap:8px;
+  font:700 .66rem Syne,sans-serif; margin:0 0 10px;
+  text-transform:uppercase; letter-spacing:.12em; color:var(--muted);
 }}
-.panel.core {{ border-color:#9ec9d0; box-shadow:0 0 0 1px rgba(10,138,150,.12), 0 10px 28px rgba(7,16,24,.05); }}
-.honesty {{ margin-top:8px; padding:8px 9px; border-radius:11px; font-size:.72rem; line-height:1.4; color:#3d5563; background:#f2f6f8; border:1px dashed #b7c7d2; }}
-.metric {{ display:flex; justify-content:space-between; gap:8px; font-size:.78rem; padding:7px 9px; border-radius:10px; background:linear-gradient(180deg,#f7fafc,#eef3f6); margin-bottom:5px; }}
-.metric b, .readout {{ font:600 .8rem "IBM Plex Mono",monospace; color:#045963; }}
-label.caption {{ display:block; font-size:.72rem; color:var(--muted); font-weight:600; margin-bottom:4px; }}
-select, input[type=search] {{ width:100%; appearance:none; padding:9px 11px; border-radius:11px; border:1px solid var(--line); background:#fff; font:500 .88rem "Source Sans 3",sans-serif; color:var(--ink); }}
-.filters {{ display:grid; grid-template-columns:1fr 1fr; gap:6px; margin:8px 0; }}
-.chip-row {{ display:flex; flex-wrap:wrap; gap:5px; margin:6px 0 8px; }}
-.chip {{ border:1px solid var(--line); background:#fff; border-radius:999px; padding:5px 10px; font:600 .7rem Sora,sans-serif; color:var(--muted); cursor:pointer; }}
-.chip.active {{ background:#d4eef1; border-color:var(--accent); color:#045963; }}
-.asset-list {{ display:flex; flex-direction:column; gap:6px; max-height:min(52vh,520px); overflow:auto; padding-right:2px; }}
+.section h2 .hint {{ font:600 .66rem Figtree,sans-serif; letter-spacing:0; text-transform:none; color:#8aa0ad; }}
+.metric {{
+  display:flex; justify-content:space-between; align-items:baseline; gap:10px;
+  font-size:.78rem; padding:0 0 10px; margin:0 0 8px; border-bottom:1px solid var(--line-soft);
+}}
+.metric b, .readout {{ font:600 .8rem "IBM Plex Mono",monospace; color:var(--accent-deep); }}
+label.caption {{ display:block; font-size:.68rem; color:var(--muted); font-weight:600; margin-bottom:4px; letter-spacing:.02em; }}
+select, input[type=search] {{
+  width:100%; appearance:none; padding:8px 10px; border-radius:8px;
+  border:1px solid var(--line); background:rgba(255,255,255,.78);
+  font:500 .84rem Figtree,sans-serif; color:var(--ink);
+  transition:border-color .15s, box-shadow .15s, background .15s;
+}}
+select:focus, input[type=search]:focus {{ outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-glow); background:#fff; }}
+.filters {{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:0 0 10px; }}
+.chip-row {{ display:flex; flex-wrap:wrap; gap:5px; margin:0 0 8px; }}
+.chip {{
+  border:1px solid var(--line); background:rgba(255,255,255,.55); border-radius:8px;
+  padding:5px 9px; font:650 .68rem Syne,sans-serif; color:var(--muted); cursor:pointer;
+  transition:transform .14s var(--ease), background .14s, border-color .14s, color .14s;
+}}
+.chip:hover {{ transform:translateY(-1px); color:var(--ink-soft); border-color:#9db4c2; }}
+.chip.active {{ background:rgba(13,143,156,.14); border-color:var(--accent); color:var(--accent-deep); }}
+.asset-list, .floodnet-list {{ display:flex; flex-direction:column; gap:4px; overflow:auto; padding-right:2px; }}
+.asset-list {{ max-height:min(46vh,460px); }}
+.floodnet-list {{ max-height:min(28vh,240px); margin-top:8px; }}
 .asset-row {{
-  text-align:left; width:100%; border:1px solid var(--line-soft); background:#fff; border-radius:12px;
-  padding:9px 10px; cursor:pointer; transition:border-color .12s, transform .12s, background .12s;
+  position:relative; text-align:left; width:100%; border:0; border-radius:10px;
+  background:transparent; padding:9px 10px 9px 12px; cursor:pointer;
+  transition:background .16s var(--ease), transform .16s var(--ease);
 }}
-.asset-row:hover {{ transform:translateY(-1px); border-color:#9db4c2; }}
-.asset-row.selected {{ border-color:var(--accent); background:linear-gradient(180deg,#f5fcfd,#d9eef1); }}
+.asset-row::before {{
+  content:""; position:absolute; left:0; top:10px; bottom:10px; width:2px; border-radius:2px;
+  background:transparent; transition:background .16s, transform .16s var(--ease);
+}}
+.asset-row:hover {{ background:rgba(13,143,156,.07); transform:translateX(2px); }}
+.asset-row:hover::before {{ background:#9db4c2; }}
+.asset-row.selected {{ background:linear-gradient(90deg, rgba(13,143,156,.16), rgba(13,143,156,.04)); }}
+.asset-row.selected::before {{ background:var(--accent); transform:scaleY(1.15); }}
 .asset-row .top {{ display:flex; justify-content:space-between; gap:8px; align-items:baseline; }}
-.asset-row .name {{ font:600 .84rem Sora,sans-serif; letter-spacing:-.02em; }}
-.asset-row .depth {{ font:600 .78rem "IBM Plex Mono",monospace; color:#045963; white-space:nowrap; }}
-.asset-row .meta {{ margin-top:4px; display:flex; flex-wrap:wrap; gap:5px; font-size:.7rem; color:var(--muted); }}
-.band {{ display:inline-flex; align-items:center; padding:2px 7px; border-radius:999px; font:600 .66rem Sora,sans-serif; }}
+.asset-row .name {{ font:700 .84rem Syne,sans-serif; letter-spacing:-.02em; }}
+.asset-row .depth {{ font:600 .78rem "IBM Plex Mono",monospace; color:var(--accent-deep); white-space:nowrap; }}
+.asset-row .meta {{ margin-top:3px; display:flex; flex-wrap:wrap; gap:5px; font-size:.68rem; color:var(--muted); }}
+.band {{ display:inline-flex; align-items:center; padding:1px 6px; border-radius:5px; font:700 .62rem Syne,sans-serif; }}
 .band.ponding {{ background:#fef3c7; color:var(--band-3); }}
 .band.deep_ponding {{ background:#ffedd5; color:var(--band-8); }}
 .band.hazard {{ background:#fee2e2; color:var(--band-15); }}
-.band.oom-ok {{ background:#d4eef1; color:#045963; }}
+.band.oom-ok {{ background:rgba(13,143,156,.16); color:var(--accent-deep); }}
 .band.oom-miss {{ background:#ffedd5; color:var(--band-8); }}
-.type-pill {{ display:inline-flex; padding:2px 7px; border-radius:999px; background:#eef3f6; font-weight:600; }}
-.floodnet-list {{ display:flex; flex-direction:column; gap:6px; max-height:min(32vh,300px); overflow:auto; padding-right:2px; margin-top:8px; }}
-.legend-swatch {{ height:8px; border-radius:999px; margin:4px 0 8px; }}
-.legend-swatch.precip {{ background:linear-gradient(90deg,#30123b,#4662d8,#1ae4b6,#a2fc3c,#f9ba38,#e8332b); }}
+.type-pill {{ display:inline-flex; padding:1px 6px; border-radius:5px; background:rgba(8,40,52,.06); font-weight:650; }}
+.legend-swatch {{ height:6px; border-radius:999px; margin:2px 0 8px; opacity:.9; }}
+.legend-swatch.precip {{ background:linear-gradient(90deg,#0b1d2a,#1a6f7a,#1ae4b6,#a2fc3c,#f9ba38,#e8332b); }}
 .legend-swatch.susc {{ background:linear-gradient(90deg,#fff7bc,#fec44f,#d95f0e,#7f2704); }}
-.legend-swatch.depth {{ background:linear-gradient(90deg,#f7fbff,#c6dbef,#6baed6,#2171b5,#08306b); }}
-.opacity-row {{ display:grid; grid-template-columns:92px 1fr 40px; gap:8px; align-items:center; font-size:.76rem; margin:6px 0; }}
+.legend-swatch.depth {{ background:linear-gradient(90deg,#f7fbff,#9ecae1,#4292c6,#08519c,#08306b); }}
+.opacity-row {{ display:grid; grid-template-columns:72px 1fr 36px; gap:8px; align-items:center; font-size:.72rem; margin:4px 0; color:var(--muted); }}
+.opacity-row input[type=range] {{ width:100%; accent-color:var(--accent); }}
 .layer-grid {{ display:grid; grid-template-columns:1fr 1fr; gap:6px; }}
-.group-label {{ grid-column:1 / -1; margin:4px 0 0; font-size:.66rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#7d91a1; }}
-.layer-btn {{ position:relative; display:flex; align-items:center; gap:7px; min-height:38px; padding:7px 9px 7px 30px; border-radius:11px; border:1px solid var(--line); background:#fff; cursor:pointer; font-size:.74rem; font-weight:600; }}
-.layer-btn input {{ position:absolute; left:9px; top:50%; transform:translateY(-50%); margin:0; accent-color:var(--accent); }}
-.layer-btn:has(input:checked) {{ background:linear-gradient(180deg,#f5fcfd,#d9eef1); border-color:var(--accent); color:#045963; }}
-details.advanced {{ font-size:.76rem; color:var(--muted); }}
-details.advanced > summary {{ cursor:pointer; font:700 .72rem Sora,sans-serif; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:8px; list-style:none; }}
-details.advanced > summary::-webkit-details-marker {{ display:none; }}
-details.about {{ font-size:.74rem; color:var(--muted); line-height:1.45; }}
-details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft); margin-bottom:6px; }}
-.map-stage {{ position:relative; min-height:0; height:100%; }}
+.group-label {{ grid-column:1 / -1; margin:6px 0 0; font:700 .62rem Syne,sans-serif; letter-spacing:.1em; text-transform:uppercase; color:#7d91a1; }}
+.layer-btn {{
+  position:relative; display:flex; align-items:center; gap:7px; min-height:34px;
+  padding:6px 8px 6px 28px; border-radius:8px; border:1px solid transparent;
+  background:rgba(255,255,255,.35); cursor:pointer; font-size:.72rem; font-weight:600;
+  transition:background .14s, border-color .14s, color .14s;
+}}
+.layer-btn input {{ position:absolute; left:8px; top:50%; transform:translateY(-50%); margin:0; accent-color:var(--accent); }}
+.layer-btn:hover {{ background:rgba(255,255,255,.7); }}
+.layer-btn:has(input:checked) {{ background:rgba(13,143,156,.12); border-color:rgba(13,143,156,.35); color:var(--accent-deep); }}
+.storm-toggles {{ display:grid; grid-template-columns:1fr 1fr; gap:6px; margin:0 0 6px; }}
+details.drawer {{ font-size:.76rem; color:var(--muted); }}
+details.drawer > summary {{
+  cursor:pointer; list-style:none; font:700 .66rem Syne,sans-serif; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--ink-soft); padding:2px 0 8px;
+  display:flex; align-items:center; justify-content:space-between;
+}}
+details.drawer > summary::-webkit-details-marker {{ display:none; }}
+details.drawer > summary::after {{ content:"+"; font:700 .9rem "IBM Plex Mono",monospace; color:var(--accent); transition:transform .2s var(--ease); }}
+details.drawer[open] > summary::after {{ content:"–"; }}
+.drawer-note {{ margin:0 0 8px; font-size:.72rem; line-height:1.35; color:var(--muted); }}
+.map-stage {{
+  position:relative; min-height:0; height:100%;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 40%, rgba(8,59,72,.08), transparent 70%),
+    #0a1a22;
+}}
 .map-el {{ position:absolute; inset:0; }}
 .pane-label {{
-  position:absolute; z-index:1000; top:14px; left:54px; padding:6px 12px; border-radius:999px;
-  background:rgba(7,20,28,.82); color:#e8f4f6; border:1px solid rgba(255,255,255,.1);
-  font:600 .72rem Sora,sans-serif; backdrop-filter:blur(8px);
-}}
-.footer-note {{
-  position:absolute; z-index:1000; left:14px; bottom:98px; max-width:min(420px,88%);
-  background:rgba(255,255,255,.92); border:1px solid var(--line); padding:8px 10px;
-  font-size:.7rem; color:var(--muted); border-radius:11px;
+  position:absolute; z-index:1000; top:14px; left:54px; padding:7px 12px; border-radius:8px;
+  background:rgba(7,20,28,.78); color:#dff2f4; border:1px solid rgba(255,255,255,.08);
+  font:700 .7rem Syne,sans-serif; letter-spacing:.02em; backdrop-filter:blur(10px);
+  animation:riseIn .5s var(--ease) .1s both;
 }}
 .radar-hud {{
-  position:absolute; z-index:1100; left:50%; bottom:16px; transform:translateX(-50%);
-  width:min(760px, calc(100% - 24px));
-  display:grid; grid-template-columns:auto 1fr auto; gap:14px; align-items:center;
-  padding:12px 16px; border-radius:18px;
-  background:linear-gradient(180deg, rgba(10,28,36,.94), rgba(7,16,24,.92));
-  color:#e7f3f5; border:1px solid rgba(255,255,255,.08); box-shadow:0 20px 50px rgba(0,0,0,.28);
-  backdrop-filter: blur(14px);
+  position:absolute; z-index:1100; left:50%; bottom:14px; transform:translateX(-50%);
+  width:min(820px, calc(100% - 20px));
+  display:grid; grid-template-columns:auto 1fr auto; gap:12px 16px; align-items:center;
+  padding:12px 14px 10px; border-radius:16px;
+  background:linear-gradient(180deg, rgba(8,28,36,.94), rgba(5,16,22,.92));
+  color:#e7f3f5; border:1px solid rgba(255,255,255,.08); box-shadow:0 22px 56px rgba(0,0,0,.35);
+  backdrop-filter:blur(16px); animation:riseIn .55s var(--ease) .15s both;
 }}
 .radar-hud .play {{
-  width:48px; height:48px; border-radius:14px; border:0; cursor:pointer;
-  background:linear-gradient(180deg,#1bc0cd,#0e8f9c); color:#042227; font:700 1rem Sora,sans-serif;
+  width:46px; height:46px; border-radius:12px; border:0; cursor:pointer;
+  background:linear-gradient(180deg,#22c9d4,#0e8f9c); color:#042227; font:700 .95rem Syne,sans-serif;
+  transition:transform .15s var(--ease), filter .15s;
 }}
-.radar-hud .clock {{ font:700 1rem Sora,sans-serif; letter-spacing:-.02em; }}
-.radar-hud .sub {{ font-size:.72rem; opacity:.78; margin-top:2px; }}
-.radar-hud .legend {{ display:flex; flex-direction:column; gap:5px; align-items:flex-end; font-size:.68rem; opacity:.92; }}
-.radar-hud .bar {{ width:128px; height:8px; border-radius:999px; background:linear-gradient(90deg,#30123b,#4662d8,#1ae4b6,#a2fc3c,#f9ba38,#e8332b); }}
+.radar-hud .play:hover {{ transform:scale(1.04); filter:brightness(1.05); }}
+.radar-hud.playing .play {{ animation:playGlow 1.6s ease-out infinite; }}
+.radar-hud .clock {{ font:750 .98rem Syne,sans-serif; letter-spacing:-.02em; }}
+.radar-hud .sub {{ font-size:.7rem; opacity:.72; margin-top:2px; font-weight:500; }}
+.radar-hud .legend {{ display:flex; flex-direction:column; gap:4px; align-items:flex-end; font-size:.66rem; opacity:.9; }}
+.radar-hud .bar {{ width:120px; height:7px; border-radius:999px; background:linear-gradient(90deg,#0b1d2a,#1a6f7a,#1ae4b6,#a2fc3c,#f9ba38,#e8332b); }}
 .radar-hud .bar.susc {{ background:linear-gradient(90deg,#fff7bc,#fec44f,#d95f0e,#7f2704); }}
-.selected-card {{
-  position:absolute; z-index:1050; top:56px; right:14px; width:min(320px,calc(100% - 28px));
-  background:rgba(255,255,255,.95); border:1px solid var(--line); border-radius:14px; padding:12px;
-  box-shadow:var(--shadow); display:none;
+.radar-hud .scrub {{
+  grid-column:1 / -1; width:100%; accent-color:#1bc0cd; height:18px; cursor:pointer; margin:0;
 }}
-.selected-card.on {{ display:block; }}
-.selected-card h3 {{ margin:0 0 6px; font:700 .95rem Sora,sans-serif; }}
-.selected-card p {{ margin:0; font-size:.78rem; color:var(--muted); line-height:1.4; }}
-.empty {{ padding:14px; text-align:center; color:var(--muted); font-size:.8rem; }}
-/* Soft radar-style overlays — continuous metro, no hard crop box */
+.selected-card {{
+  position:absolute; z-index:1050; top:54px; right:14px; width:min(300px,calc(100% - 28px));
+  background:rgba(255,255,255,.94); border:1px solid rgba(8,40,52,.1); border-radius:12px;
+  padding:12px 14px; box-shadow:0 16px 40px rgba(5,20,28,.22); display:none;
+  backdrop-filter:blur(12px); transform-origin:top right;
+}}
+.selected-card.on {{ display:block; animation:riseIn .28s var(--ease), selectPulse .7s ease-out; }}
+.selected-card .sel-kicker {{ font:700 .6rem Syne,sans-serif; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin-bottom:4px; }}
+.selected-card h3 {{ margin:0 0 4px; font:750 .95rem Syne,sans-serif; letter-spacing:-.02em; }}
+.selected-card p {{ margin:0; font-size:.76rem; color:var(--muted); line-height:1.4; }}
+.selected-card .sel-close {{
+  position:absolute; top:8px; right:8px; width:26px; height:26px; border:0; border-radius:7px;
+  background:rgba(8,40,52,.06); color:var(--ink-soft); cursor:pointer; font:700 .8rem Figtree,sans-serif;
+}}
+.selected-card .sel-close:hover {{ background:rgba(8,40,52,.12); }}
+.empty {{ padding:16px 8px; text-align:center; color:var(--muted); font-size:.78rem; }}
 .leaflet-image-layer.precip-radar,
 .leaflet-image-layer.depth-radar,
 .leaflet-image-layer.susc-radar {{
   -webkit-mask-image: radial-gradient(ellipse 92% 88% at 50% 50%, #000 58%, transparent 100%);
   mask-image: radial-gradient(ellipse 92% 88% at 50% 50%, #000 58%, transparent 100%);
   image-rendering: auto;
-  filter: saturate(1.08) contrast(1.04);
+  filter: saturate(1.1) contrast(1.05);
+  transition:opacity .25s ease;
 }}
 .leaflet-image-layer.precip-radar {{ mix-blend-mode: screen; }}
+.leaflet-control-zoom a {{ border-radius:8px !important; }}
 </style>
 </head>
 <body>
 <aside>
   <div class="brand">
-    <div class="brand-kicker">Flood risk · research prototype</div>
+    <div class="brand-kicker">Ida research replay</div>
     <div class="brand-mark">Asset Decision Desk</div>
-    <div class="brand-tag">Which roads / stations get wet under Ida — ranked assets first. Research case study only.</div>
+    <div class="brand-tag">Ranked wet roads &amp; stations — click to inspect.</div>
   </div>
-  <div class="disclaimer-bar">
-    <b>NOT decision-grade. NOT an official NWS flood warning. NOT emergency guidance.</b>
-    Desk ranking uses cm-scale HAND heuristics — not Ida street depths. FloodNet peaks below are a separate post-level reproduction, not citywide depth.
-  </div>
-  <div id="assetBanner" class="disclaimer-bar" style="display:none;background:#3b0d0d;border-color:#7f1d1d;color:#fecaca"></div>
+  <p class="honesty-line">Research only · NOT NWS · cm-scale HAND ranking, not street-truth depths.</p>
+  <div id="assetBanner"></div>
 
-  <div class="panel core">
-    <h2>Affected assets</h2>
-    <div class="honesty" style="margin-top:0">Ranked wet assets from <b>metro pysheds × spatial MRMS QPE</b>. Demo shortlist first — click a row to fly to it.</div>
+  <section class="section">
+    <h2>Affected assets <span class="hint">click → fly</span></h2>
     <div id="deskSummary" class="metric"><span>Loading…</span><b>—</b></div>
-    <div class="chip-row" id="listModeChips" role="group" aria-label="List mode" style="margin-bottom:2px">
-      <button type="button" class="chip active" data-mode="shortlist">Demo shortlist</button>
-      <button type="button" class="chip" data-mode="all">Show all</button>
+    <div class="chip-row" id="listModeChips" role="group" aria-label="List mode">
+      <button type="button" class="chip active" data-mode="shortlist">Shortlist</button>
+      <button type="button" class="chip" data-mode="all">All</button>
     </div>
     <div class="chip-row" id="typeChips" role="group" aria-label="Asset type">
       <button type="button" class="chip active" data-type="all">All</button>
@@ -209,12 +278,12 @@ details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft);
     </div>
     <div class="filters">
       <div>
-        <label class="caption" for="bandFilter">Research depth band</label>
+        <label class="caption" for="bandFilter">Depth band</label>
         <select id="bandFilter">
           <option value="all">All wet (≥3 cm)</option>
-          <option value="ponding">≥3 cm ponding</option>
-          <option value="deep_ponding" selected>≥8 cm deep ponding</option>
-          <option value="hazard">≥15 cm hazard</option>
+          <option value="ponding">≥3 cm</option>
+          <option value="deep_ponding" selected>≥8 cm</option>
+          <option value="hazard">≥15 cm</option>
         </select>
       </div>
       <div>
@@ -223,108 +292,96 @@ details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft);
       </div>
     </div>
     <div class="asset-list" id="assetList" aria-label="Ranked wet assets"><div class="empty">Loading ranked assets…</div></div>
-  </div>
+  </section>
 
-  <div class="panel core" id="floodnetPeaksPanel">
-    <h2>Ida FloodNet peaks</h2>
-    <div class="honesty" style="margin-top:0">
-      Working product check — reproduce Ida <b>peaks at FloodNet posts</b> (order-of-magnitude).
-      Transparent hotspot hydro on local excess precip — <b>does not</b> rescale citywide HAND. In-sample fit on n=5; LOO is the honesty check. Not DEP / not SWMM / not decision-grade.
-    </div>
-    <div id="floodnetSummary" class="metric"><span>Loading FloodNet reproduction…</span><b>—</b></div>
-    <div id="floodnetMeta" class="metric" style="display:none"><span>Primary HAND @ posts</span><b>—</b></div>
-    <label class="layer-btn" style="margin-top:6px"><input id="lyFloodNet" type="checkbox" checked>Show FloodNet posts on map (default on)</label>
-    <div class="floodnet-list" id="floodnetList" aria-label="FloodNet Ida peak comparison"><div class="empty">Loading sensor peaks…</div></div>
-  </div>
-
-  <div class="panel">
-    <h2>Storm + primary depth</h2>
-    <div class="honesty" style="margin-top:0">Primary: <b>pysheds metro</b> · Alt: SFINCS (Advanced). Storm path locked to <b>MRMS QPE Ida</b>. FloodNet peaks panel is separate post-level reproduction.</div>
-    <div class="metric"><span>Storm path</span><b style="font-size:.68rem">MRMS QPE Ida (~1 km)</b></div>
-    <div class="metric" id="timeWindowMetric"><span>Time window</span><b style="font-size:.62rem" id="timeWindowVal">+6…+24h</b></div>
-    <label class="layer-btn"><input id="lyDepthTot" type="checkbox" checked>Primary research depth (evolves w/ loop)</label>
-    <label class="layer-btn"><input id="lyE2" type="checkbox" checked>MRMS precip loop (soft metro)</label>
-    <div class="opacity-row"><span>Precip</span><input id="opPrecip" type="range" min="10" max="85" value="34"><span id="opPrecipVal">34%</span></div>
-    <div class="opacity-row"><span>Est. depth</span><input id="opDepth" type="range" min="15" max="90" value="68"><span id="opDepthVal">68%</span></div>
-    <div class="legend-swatch precip"></div>
-    <div class="legend-swatch depth"></div>
-    <div class="honesty" id="depthTimelineNote">Depth follows nearest cum lead (0…36h / 3h steps) — buildup then post-peak recession. HAND puddles are heuristic, not street-truth.</div>
-    <div class="honesty" id="pathHonesty" style="display:none">Primary Ida awareness: MRMS QPE (~1 km).</div>
-  </div>
-
-  <div class="panel">
-    <details class="advanced" id="screeningDetails">
-      <summary>Screening (optional)</summary>
-      <div class="honesty" style="margin-top:0">Uncalibrated screening — weather factor evolves with precip; landscape/infra are mostly static. Not flood probability / not depth.</div>
-      <div class="opacity-row"><span>Susceptibility</span><input id="opSusc" type="range" min="10" max="90" value="48"><span id="opSuscVal">48%</span></div>
-      <div class="legend-swatch susc"></div>
-      <label class="layer-btn" style="margin-top:4px"><input id="lySusc" type="checkbox">Show susceptibility screening</label>
+  <section class="section" id="floodnetPeaksPanel">
+    <details class="drawer">
+      <summary>FloodNet peaks</summary>
+      <p class="drawer-note">Post-level Ida OOM check — does not rescale citywide HAND.</p>
+      <div id="floodnetSummary" class="metric"><span>Loading…</span><b>—</b></div>
+      <div id="floodnetMeta" class="metric" style="display:none"><span>Primary HAND @ posts</span><b>—</b></div>
+      <label class="layer-btn"><input id="lyFloodNet" type="checkbox" checked>FloodNet posts on map</label>
+      <div class="floodnet-list" id="floodnetList" aria-label="FloodNet Ida peak comparison"><div class="empty">Loading sensor peaks…</div></div>
     </details>
-  </div>
+  </section>
 
-  <div class="panel">
-    <details class="advanced">
-      <summary>Advanced / context layers</summary>
-      <div class="honesty" style="margin-top:0;margin-bottom:8px">Research chrome only — Earth2 scenarios, SFINCS, FEMA/NWM/gauges. FloodNet Ida peaks live in the desk panel above (default on). Keep this closed for demos.</div>
+  <section class="section">
+    <details class="drawer">
+      <summary>Storm layers</summary>
+      <div class="metric"><span>Path</span><b style="font-size:.68rem">MRMS QPE Ida</b></div>
+      <div class="metric" id="timeWindowMetric"><span>Window</span><b style="font-size:.62rem" id="timeWindowVal">+0…+36h</b></div>
+      <div class="storm-toggles">
+        <label class="layer-btn"><input id="lyDepthTot" type="checkbox" checked>Depth</label>
+        <label class="layer-btn"><input id="lyE2" type="checkbox" checked>Precip</label>
+      </div>
+      <div class="opacity-row"><span>Precip</span><input id="opPrecip" type="range" min="10" max="85" value="34"><span id="opPrecipVal">34%</span></div>
+      <div class="opacity-row"><span>Depth</span><input id="opDepth" type="range" min="15" max="90" value="68"><span id="opDepthVal">68%</span></div>
+      <div class="legend-swatch precip" title="Precip"></div>
+      <div class="legend-swatch depth" title="Depth"></div>
+      <span id="depthTimelineNote" hidden></span>
+      <span id="pathHonesty" hidden></span>
+    </details>
+  </section>
+
+  <section class="section">
+    <details class="drawer" id="screeningDetails">
+      <summary>Screening</summary>
+      <p class="drawer-note">Uncalibrated index — not probability or depth.</p>
+      <div class="opacity-row"><span>Susc.</span><input id="opSusc" type="range" min="10" max="90" value="48"><span id="opSuscVal">48%</span></div>
+      <div class="legend-swatch susc"></div>
+      <label class="layer-btn"><input id="lySusc" type="checkbox">Show screening</label>
+    </details>
+  </section>
+
+  <section class="section">
+    <details class="drawer">
+      <summary>Advanced</summary>
       <div class="filters" style="grid-template-columns:1fr 1fr">
         <div><label class="caption" for="extentSelect">Extent</label><select id="extentSelect"></select></div>
         <div><label class="caption" for="eventSelect">Event</label><select id="eventSelect"></select></div>
       </div>
-      <label class="caption" for="stormPathSelect" style="margin-top:8px">Scenario path (Advanced)</label>
+      <label class="caption" for="stormPathSelect" style="margin-top:6px">Scenario path</label>
       <select id="stormPathSelect" aria-label="Scenario path"></select>
       <div class="layer-grid" style="margin-top:8px">
-        <div class="group-label">Alternate hydro / scenario</div>
-        <label class="layer-btn"><input id="lySfincs" type="checkbox">Queens SFINCS (labeled alternate)</label>
-        <label class="layer-btn"><input id="lyE2Tot" type="checkbox">Storm-total precip</label>
-        <div class="group-label">Exposure / obs</div>
-        <label class="layer-btn"><input id="lySta" type="checkbox">All stations</label>
-        <label class="layer-btn"><input id="lyRoads" type="checkbox">All roads</label>
-        <label class="layer-btn"><input id="lyFac" type="checkbox">All facilities</label>
-        <label class="layer-btn"><input id="ly311" type="checkbox">311 reports</label>
-        <div class="group-label">Reference context</div>
+        <div class="group-label">Alternate</div>
+        <label class="layer-btn"><input id="lySfincs" type="checkbox">SFINCS Queens</label>
+        <label class="layer-btn"><input id="lyE2Tot" type="checkbox">Storm-total</label>
+        <div class="group-label">Exposure</div>
+        <label class="layer-btn"><input id="lySta" type="checkbox">Stations</label>
+        <label class="layer-btn"><input id="lyRoads" type="checkbox">Roads</label>
+        <label class="layer-btn"><input id="lyFac" type="checkbox">Facilities</label>
+        <label class="layer-btn"><input id="ly311" type="checkbox">311</label>
+        <div class="group-label">Context</div>
         <label class="layer-btn"><input id="lyFema" type="checkbox">FEMA NFHL</label>
-        <label class="layer-btn"><input id="lyNwm" type="checkbox">NWM reaches</label>
-        <label class="layer-btn"><input id="lyGauges" type="checkbox">AHPS gauges</label>
-        <label class="layer-btn"><input id="lyBuilt" type="checkbox">Built surface</label>
+        <label class="layer-btn"><input id="lyNwm" type="checkbox">NWM</label>
+        <label class="layer-btn"><input id="lyGauges" type="checkbox">AHPS</label>
+        <label class="layer-btn"><input id="lyBuilt" type="checkbox">Built</label>
       </div>
-      <div id="validationPanel" class="honesty" style="margin-top:8px">Limitations-first: exploratory collocation only — not certified skill; do not lead with hit-rate.</div>
+      <div id="validationPanel" class="drawer-note" style="margin-top:8px">Limitations-first · exploratory only.</div>
     </details>
-  </div>
-
-  <div class="panel">
-    <details class="about">
-      <summary>Science notes</summary>
-      <p>
-        <b>Product</b> = Asset Decision Desk for infrastructure/response <i>research</i> screening.<br>
-        <b>Primary depth</b> = unified pysheds HAND/bathtub on metro DEM × spatial MRMS QPE Ida after open drainage capacity proxy (NLCD + metro open catch-basin / inlet density + literature mm/hr sink with surcharge; soft land mask). NOT DEP sewer model / NOT SWMM — cells without inlet credit use NLCD base only.<br>
-        <b>FloodNet Ida reproduction</b> = separate transparent hotspot hydro (runoff × excess precip + fitted scale/bias at the sparse 2021 posts). Does <i>not</i> rescale citywide HAND. First-step peak OOM at sensors only — residual error documented; not citywide perfection.<br>
-        <b>Map + data domain</b> = metro continuous soft-edge overlays (no hard citywide crop); SFINCS Queens remains alternate hydro track under Advanced (shared excess-rate sink when rebuilt; not a peer depth toggle).<br>
-        <b>Time window</b> = Ida MRMS native hourly +0h…+36h from 2021-09-01T12:00 UTC (valid 12:00 Sep 1 → 00:00 Sep 3). Depth cum every 3h with buildup + recession.<br>
-        <b>Bands</b> = research ≥3 / ≥8 / ≥15 cm — not NWS watch/warning language. 10&nbsp;m HAND nest is a documented experiment only — product default stays ~30&nbsp;m metro HAND.<br>
-        <b>Cannot claim</b> = official NWS warning, calibrated DEP sewer / SWMM, decision-grade guidance, Enterprise/HENS.
-      </p>
-    </details>
-  </div>
+  </section>
 </aside>
 
 <div class="map-stage" id="mapStage">
-  <div class="pane-label" id="leftLabel">Asset Decision Desk · Ida research</div>
+  <div class="pane-label" id="leftLabel">Decision Desk · Ida</div>
   <div id="mapLeft" class="map-el"></div>
   <div class="selected-card" id="selectedCard">
+    <button type="button" class="sel-close" id="selClose" aria-label="Close">×</button>
+    <div class="sel-kicker" id="selKicker">Selected asset</div>
     <h3 id="selName">—</h3>
     <p id="selBody">—</p>
   </div>
-  <div class="footer-note">Research prototype — NOT NWS / NOT decision-grade. Metro pysheds × MRMS primary; FloodNet peaks = post-level hotspot cal (not citywide HAND).</div>
-  <div class="radar-hud">
-    <button type="button" class="play" id="hudPlay">▶</button>
+  <div class="radar-hud" id="radarHud">
+    <button type="button" class="play" id="hudPlay" aria-label="Play or pause storm loop">▶</button>
     <div>
       <div class="clock" id="hudClock">—</div>
-      <div class="sub" id="hudSub">MRMS soft metro · +0…+36h native · not NEXRAD</div>
+      <div class="sub" id="hudSub">MRMS soft metro · +0…+36h · not NEXRAD</div>
     </div>
     <div class="legend">
-      <span id="hudLegendLabel">Precip (mm) · context</span>
+      <span id="hudLegendLabel">Precip · context</span>
       <div class="bar" id="hudLegendBar"></div>
     </div>
+    <input class="scrub" id="hudScrub" type="range" min="0" max="{n - 1}" value="0" aria-label="Storm lead scrubber">
   </div>
 </div>
 
@@ -414,7 +471,7 @@ function depthOpacity() {{ return (+document.getElementById("opDepth").value) / 
 let activePath = stormPaths.find(p => p.id === pathSel.value) || stormPaths[0];
 let frames = [], suscFrames = [], depthCumFrames = [], e2Layers = [], suscLayers = [], depthLayers = [];
 let activeE2 = null, activeSusc = null, activeDepth = null, e2Total = null, depthTotal = null, sfincsLayer = null;
-let playing = false, playTimer = null;
+let playing = false, playTimer = null, leadIndex = 0;
 let desk = null, wetLayer = null, selectedLayer = null, selectedId = null;
 let floodnetLayer = null, floodnetStations = [], selectedFloodnetId = null;
 let typeFilter = "all";
@@ -552,27 +609,27 @@ function setLead(i) {{
     e2Total.setOpacity(precipOpacity());
     if (!mapLeft.hasLayer(e2Total)) e2Total.addTo(mapLeft);
   }}
+  leadIndex = i;
+  const scrub = document.getElementById("hudScrub");
+  if (scrub) {{ scrub.max = Math.max(frames.length - 1, 0); scrub.value = String(i); }}
   const clock = (f.valid_time || "").replace("T", " ");
   document.getElementById("hudClock").textContent = clock + " UTC";
   const depthLead = (di >= 0 && depthCumFrames[di]) ? depthCumFrames[di].lead_hours : null;
-  const depthBit = depthLead != null
-    ? (" · depth cum +" + depthLead + "h")
-    : (depthTotal ? " · depth storm-total (static)" : "");
+  const depthBit = depthLead != null ? (" · depth +" + depthLead + "h") : "";
   document.getElementById("hudSub").textContent =
-    activePath.label + " · +" + f.lead_hours + "h · " + (f.temporal_blend ? "blend" : "native") +
-    depthBit + " · awareness only";
-  document.getElementById("leftLabel").textContent = "Asset Decision Desk · " + (activePath.label || "Ida");
+    "+" + f.lead_hours + "h · " + (f.temporal_blend ? "blend" : "native") + depthBit + " · awareness";
+  document.getElementById("leftLabel").textContent = "Decision Desk · " + (activePath.label || "Ida");
 }}
 
 function setPlaying(on) {{
   playing = on;
   document.getElementById("hudPlay").textContent = on ? "❚❚" : "▶";
+  document.getElementById("radarHud").classList.toggle("playing", !!on);
   if (playTimer) {{ clearInterval(playTimer); playTimer = null; }}
   if (!on || !frames.length) return;
-  let i = 0;
   playTimer = setInterval(() => {{
-    i = (i + 1) % frames.length;
-    setLead(i);
+    leadIndex = (leadIndex + 1) % frames.length;
+    setLead(leadIndex);
   }}, 450);
 }}
 
@@ -655,12 +712,21 @@ function selectAsset(id) {{
     }}).addTo(mapLeft);
   }}
   const card = document.getElementById("selectedCard");
+  document.getElementById("selKicker").textContent = typeLabel(a.asset_type) + " · #" + a.rank;
   document.getElementById("selName").textContent = a.name;
   document.getElementById("selBody").innerHTML =
-    typeLabel(a.asset_type) + " · max <b>" + a.max_depth_cm.toFixed(1) + " cm</b> · research band <b>" + a.band_label + "</b><br>" +
-    leadLabel(a) + (a.first_exceedance_note ? " — " + a.first_exceedance_note : "") + "<br>" +
-    "<span style='color:#8d3d14'>" + (a.action_hint || "Research only — not an SOP trigger.") + "</span>";
+    "<b>" + a.max_depth_cm.toFixed(1) + " cm</b> · " + a.band_label + " · " + leadLabel(a) +
+    "<br><span style='color:#9a4a12'>Research only — not an SOP trigger.</span>";
+  card.classList.remove("on");
+  void card.offsetWidth;
   card.classList.add("on");
+}}
+
+function clearSelection() {{
+  selectedId = null;
+  if (selectedLayer) {{ mapLeft.removeLayer(selectedLayer); selectedLayer = null; }}
+  document.getElementById("selectedCard").classList.remove("on");
+  renderAssetList();
 }}
 
 function loadDecisionDesk() {{
@@ -677,7 +743,7 @@ function loadDecisionDesk() {{
     desk = json;
     const c = json.counts || {{}};
     document.getElementById("deskSummary").innerHTML =
-      `<span>Wet assets (metro · MRMS)</span><b>${{c.wet_total||0}} · R ${{c.roads||0}} / S ${{c.stations||0}} / F ${{c.facilities||0}}</b>`;
+      `<span>Wet · metro HAND</span><b>${{c.wet_total||0}} · R${{c.roads||0}} S${{c.stations||0}} F${{c.facilities||0}}</b>`;
     renderAssetList();
     if (geo && geo.features) {{
       wetLayer = L.geoJSON(geo, {{
@@ -735,7 +801,7 @@ function loadOptionalLayers() {{
   }}).catch(()=>{{}});
   fetchGeoJSON("critical_facilities.geojson").then(geo => {{
     bindToggle("lyFac", L.geoJSON(geo, {{
-      pointToLayer: (f,ll) => L.circleMarker(ll, {{ radius:6, fillColor:"#a855f7", color:"#5b21b6", weight:1, fillOpacity:0.95, pane:"pointPane" }})
+      pointToLayer: (f,ll) => L.circleMarker(ll, {{ radius:6, fillColor:"#c45c26", color:"#7c2d12", weight:1, fillOpacity:0.95, pane:"pointPane" }})
     }}));
   }}).catch(()=>{{}});
   fetchGeoJSON(manifest.reports?.geojson || "observed_311.geojson").then(geo => {{
@@ -763,7 +829,7 @@ function loadOptionalLayers() {{
     if (el.dataset.floodnetWired === "1") return;
     const conf = scores.confidence ? scores.confidence.level : "low";
     const note = (scores.confidence && scores.confidence.note) || "Exploratory collocation only.";
-    el.innerHTML = `<b>Limitations-first</b> — exploratory collocation (${{conf}}); ${{note}} Never lead with 311 hit-rate. FloodNet peaks: see desk panel.`;
+    el.innerHTML = `Exploratory (${{conf}}) · ${{note}}`;
   }});
 }}
 
@@ -773,9 +839,8 @@ function fmtM(x) {{
 
 function floodnetPopupHtml(p) {{
   return `<b>${{p.sensor_name || p.sensor_id || "FloodNet"}}</b><br>` +
-    `obs peak ${{fmtM(p.obs_peak_m)}} m · hotspot cal ${{fmtM(p.hotspot_cal_m)}} m<br>` +
-    `residual ${{fmtM(p.residual_m)}} m · HAND@post ${{fmtM(p.primary_hand_m)}} m<br>` +
-    `<span style="opacity:.8">Ida post reproduction — not primary citywide depth</span>`;
+    `obs ${{fmtM(p.obs_peak_m)}} m · cal ${{fmtM(p.hotspot_cal_m)}} m · resid ${{fmtM(p.residual_m)}} m` +
+    `<br><span style="opacity:.75">Post OOM check · not citywide HAND</span>`;
 }}
 
 function selectFloodnetStation(sensorId) {{
@@ -808,11 +873,10 @@ function renderFloodnetList(stations) {{
     const resCm = p.residual_m == null ? "—" : ((Number(p.residual_m) >= 0 ? "+" : "") + (Number(p.residual_m) * 100).toFixed(1));
     return `<button type="button" class="asset-row${{selectedFloodnetId === p.sensor_id ? " selected" : ""}}" data-id="${{p.sensor_id}}">` +
       `<div class="top"><span class="name">${{p.sensor_name || p.sensor_id}}</span>` +
-      `<span class="depth">obs ${{obsCm}} cm</span></div>` +
+      `<span class="depth">${{obsCm}} cm</span></div>` +
       `<div class="meta"><span class="type-pill">${{p.borough || "NYC"}}</span>` +
-      `<span class="band ${{ok ? "oom-ok" : "oom-miss"}}">${{ok ? "OOM ok" : "OOM miss"}}</span>` +
-      `<span>cal ${{calCm}} cm</span><span>resid ${{resCm}} cm</span>` +
-      `<span>HAND ${{fmtM(p.primary_hand_m)}} m</span></div></button>`;
+      `<span class="band ${{ok ? "oom-ok" : "oom-miss"}}">${{ok ? "OOM" : "miss"}}</span>` +
+      `<span>cal ${{calCm}}</span><span>${{resCm}}</span></div></button>`;
   }}).join("");
   list.querySelectorAll(".asset-row").forEach(btn => {{
     btn.onclick = () => selectFloodnetStation(btn.dataset.id);
@@ -888,8 +952,7 @@ function loadFloodNetProduct() {{
       if (advEl) {{
         advEl.dataset.floodnetWired = "1";
         advEl.innerHTML =
-          `<b>Ida @ FloodNet posts</b> — desk panel owns this story. Hotspot RMSE ${{fmtM(h.rmse_m)}} m · bias ${{fmtM(h.bias_m)}} m · OOM ${{h.oom_ok_n || 0}}/${{h.n || 0}}` +
-          ` (scale ${{fmtM(cal.scale)}}, LOO RMSE ${{fmtM(loo.rmse_m)}} m). Primary HAND RMSE ${{fmtM(hand.rmse_m)}} m unchanged — not rescaled citywide. Research only; never lead with 311.`;
+          `FloodNet hotspot RMSE ${{fmtM(h.rmse_m)}} m · OOM ${{h.oom_ok_n || 0}}/${{h.n || 0}} · LOO ${{fmtM(loo.rmse_m)}} m · HAND unchanged.`;
       }}
       if ((!geo || !geo.features) && Array.isArray(repro.stations)) {{
         floodnetStations = repro.stations;
@@ -907,7 +970,7 @@ function loadFloodNetProduct() {{
       }}
       if (advEl) {{
         advEl.dataset.floodnetWired = "1";
-        advEl.innerHTML = `<b>FloodNet vs primary HAND</b> — n=${{n}} sensors · peak RMSE ${{fmtM(rmse)}} m · bias ${{fmtM(bias)}} m (model−obs). Research only; cm-scale HAND ≪ street peaks. Never lead with 311 hit-rate.`;
+        advEl.innerHTML = `FloodNet vs HAND · n=${{n}} · RMSE ${{fmtM(rmse)}} m · bias ${{fmtM(bias)}} m.`;
       }}
       return;
     }}
@@ -946,6 +1009,26 @@ document.getElementById("assetSearch").oninput = () => {{
   renderAssetList();
 }};
 document.getElementById("hudPlay").onclick = () => setPlaying(!playing);
+document.getElementById("hudScrub").oninput = (e) => {{
+  setPlaying(false);
+  setLead(+e.target.value);
+}};
+document.getElementById("selClose").onclick = clearSelection;
+document.addEventListener("keydown", (e) => {{
+  if (e.key === "Escape") clearSelection();
+  if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "SELECT" || e.target.tagName === "TEXTAREA")) return;
+  if (e.key === "ArrowRight" || e.key === "ArrowLeft") {{
+    e.preventDefault();
+    setPlaying(false);
+    const step = e.key === "ArrowRight" ? 1 : -1;
+    if (!frames.length) return;
+    setLead((leadIndex + step + frames.length) % frames.length);
+  }}
+  if (e.key === " " && e.target === document.body) {{
+    e.preventDefault();
+    setPlaying(!playing);
+  }}
+}});
 document.getElementById("extentSelect").onchange = () => fitMapFrame();
 document.getElementById("eventSelect").onchange = () => {{ if (!EVENTS[eventSel.value].available) alert("Only Ida is loaded."); }};
 document.getElementById("stormPathSelect").onchange = () => {{
@@ -981,7 +1064,7 @@ document.getElementById("lySfincs").onchange = () => {{
     const b = document.getElementById("assetBanner");
     if (b) {{
       b.style.display = "block";
-      b.innerHTML = "<b>SFINCS Queens is an alternate hydro track</b> — not peer-authoritative with primary pysheds metro ranking. Magnitudes are not comparable.";
+      b.innerHTML = "<b>SFINCS Queens</b> — alternate hydro track; magnitudes not comparable to primary HAND.";
     }}
   }} else {{
     mapLeft.removeLayer(sfincsLayer);
