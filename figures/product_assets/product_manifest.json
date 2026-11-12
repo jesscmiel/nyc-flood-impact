@@ -3521,9 +3521,10 @@
     "png": "depth_sfincs_queens_ida_m.png",
     "meta": "depth_sfincs_queens_ida_meta.json",
     "engine": "sfincs_docker_v2.1.1_Dollerup",
-    "role": "alternate_hydro_track",
+    "role": "advanced_research_hydro_nest",
     "honesty": "NOT peer-authoritative with pysheds citywide.",
-    "extent": "south_queens"
+    "extent": "south_queens",
+    "parent": "inundation_sfincs_nested"
   },
   "asset_decision_desk": {
     "assets_json": "decision_desk_assets.json",
@@ -3543,7 +3544,7 @@
     "official_nws": false,
     "decision_grade": false,
     "not_dep_sewer": true,
-    "sfincs_role": "alternate_hydro_track",
+    "sfincs_role": "advanced_research_hydro",
     "events": {
       "ida-2021": {
         "assets_json": "decision_desk_assets.json",
@@ -3566,7 +3567,8 @@
       "stormwater": "9i7c-xyvv",
       "lion_tunnels": "2v4z-66xt",
       "bes": "bsin-59hv"
-    }
+    },
+    "not_swmm": true
   },
   "depth_engines": {
     "primary": {
@@ -3576,11 +3578,13 @@
       "use_for": "Default Asset Decision Desk ranking (primary depth)"
     },
     "alternate": {
-      "id": "sfincs_docker_queens",
-      "extent": "Queens spike domain",
-      "forcing": "spatial MRMS precip grid (HydroMT setup_precip_forcing_from_grid)",
-      "use_for": "Alternate hydro track only \u2014 magnitudes not peer-comparable to primary pysheds",
-      "honesty": "SFINCS Queens and pysheds metro are NOT equally authoritative. Different domain/physics \u2014 do not treat as peer depth products until calibrated."
+      "id": "sfincs_metro_nested_v1",
+      "extent": "metro + south_queens nest",
+      "forcing": "spatial MRMS precip grid + drainage_capacity_proxy_v1 sink",
+      "use_for": "Advanced research hydro only \u2014 magnitudes not peer-comparable to HAND",
+      "honesty": "Metro nested SFINCS is Advanced research hydro. HAND stays primary. No SWMM / no fake DEP network. NOT NWS / NOT decision-grade.",
+      "not_swmm": true,
+      "primary": false
     },
     "strata_spike": {
       "id": "strata_sfincs_spike",
@@ -3991,5 +3995,42 @@
       "env_var": "MTA_BUS_TIME_API_KEY",
       "note": "Subway GTFS-RT VehiclePositions are keyless; Bus Time vehiclePositions requires a developer key. Live access path uses DOT speeds + 511-style closures + MTA service alerts only."
     }
+  },
+  "inundation_sfincs_nested": {
+    "png": "depth_sfincs_metro_nested_ida_m.png",
+    "meta": "depth_sfincs_metro_nested_ida_meta.json",
+    "engine": "sfincs_metro_nested_v1",
+    "engine_label": "SFINCS metro nested (coarse + Queens fine) \u2014 Advanced research only",
+    "extent": "metro",
+    "nest_extent": "south_queens",
+    "bounds": [
+      [
+        40.4,
+        -74.45
+      ],
+      [
+        41.05,
+        -73.5
+      ]
+    ],
+    "role": "advanced_research_hydro",
+    "primary": false,
+    "not_swmm": true,
+    "compare_with": "inundation_citywide",
+    "honesty": "Metro nested SFINCS composite (100 m coarse + Queens 50 m nest). Advanced research hydro only \u2014 HAND remains primary. No SWMM.",
+    "metro_res_m": 100,
+    "nest_res_m": 50,
+    "metro_png": "depth_sfincs_metro_ida_m.png",
+    "nest_png": "depth_sfincs_queens_ida_m.png"
+  },
+  "advanced_research_hydro": {
+    "id": "sfincs_metro_nested_v1",
+    "label": "SFINCS metro nested (coarse + Queens fine) \u2014 Advanced research only",
+    "png": "depth_sfincs_metro_nested_ida_m.png",
+    "meta": "depth_sfincs_metro_nested_ida_meta.json",
+    "docker_image": "deltares/sfincs-cpu:sfincs-v2.1.1-Dollerup-Release",
+    "shared_sink": true,
+    "not_swmm": true,
+    "primary_remains": "pysheds_hand_bathtub_v2"
   }
 }

@@ -524,9 +524,11 @@ details.drawer[open] > summary::after {{ content:"–"; }}
         <select id="stormPathSelect" aria-label="Scenario path"></select>
       </details>
       <details class="drawer">
-        <summary>Alternate hydro</summary>
+        <summary>Advanced research hydro</summary>
+        <p class="drawer-note">HAND stays primary. SFINCS = research 2D SWE only — spatial MRMS + open drainage sink. <b>No SWMM</b> / no fake DEP pipes. Magnitudes not peer with HAND.</p>
         <div class="layer-grid">
-          <label class="layer-btn"><input id="lySfincs" type="checkbox">SFINCS Queens</label>
+          <label class="layer-btn"><input id="lySfincsNested" type="checkbox">Metro nested SFINCS</label>
+          <label class="layer-btn"><input id="lySfincs" type="checkbox">SFINCS Queens nest</label>
           <label class="layer-btn"><input id="lyE2Tot" type="checkbox">Storm-total</label>
         </div>
       </details>
@@ -725,7 +727,7 @@ function depthOpacity() {{ return (+document.getElementById("opDepth").value) / 
 
 let activePath = stormPaths.find(p => p.id === pathSel.value) || stormPaths[0];
 let frames = [], suscFrames = [], depthCumFrames = [], e2Layers = [], suscLayers = [], depthLayers = [];
-let activeE2 = null, activeSusc = null, activeDepth = null, e2Total = null, depthTotal = null, sfincsLayer = null;
+let activeE2 = null, activeSusc = null, activeDepth = null, e2Total = null, depthTotal = null, sfincsLayer = null, sfincsNestedLayer = null;
 let fadeE2 = null, fadeDepth = null, fadeSusc = null, fadeTimer = null;
 let playing = false, playTimer = null, leadIndex = 0;
 let desk = null, wetLayer = null, selectedLayer = null, selectedId = null;
@@ -825,6 +827,13 @@ function rebuildPathLayers() {{
           opacity: 0, interactive:false, pane:"depthPane", className:"depth-radar"
         }})
       : null;
+  if (manifest.inundation_sfincs_nested && manifest.inundation_sfincs_nested.png) {{
+    const nb = (manifest.inundation_sfincs_nested.bounds)
+      || overlayBoundsPreferMetro(dataDomainBounds());
+    sfincsNestedLayer = L.imageOverlay(assets + manifest.inundation_sfincs_nested.png, nb, {{
+      opacity: Math.min(depthOpacity(), 0.50), interactive:false, pane:"depthPane"
+    }});
+  }}
   if (manifest.inundation_sfincs && manifest.inundation_sfincs.png) {{
     const b = EXTENTS.south_queens?.bounds || EXTENTS.citywide.bounds;
     sfincsLayer = L.imageOverlay(assets + manifest.inundation_sfincs.png, [[b.ymin,b.xmin],[b.ymax,b.xmax]], {{
@@ -904,6 +913,9 @@ function setLead(i) {{
     activeDepth = a; fadeDepth = fprev;
   }});
 
+  if (document.getElementById("lySfincsNested")?.checked && sfincsNestedLayer) {{
+    if (!mapLeft.hasLayer(sfincsNestedLayer)) sfincsNestedLayer.addTo(mapLeft);
+  }}
   if (document.getElementById("lySfincs").checked && sfincsLayer) {{
     if (!mapLeft.hasLayer(sfincsLayer)) sfincsLayer.addTo(mapLeft);
   }}
@@ -1958,6 +1970,19 @@ document.getElementById("lyDepthTot").onchange = () => {{
   activeDepth = null;
   if (document.getElementById("lyDepthTot").checked) setLead(leadIndex);
 }};
+document.getElementById("lySfincsNested").onchange = () => {{
+  if (!sfincsNestedLayer) return;
+  if (document.getElementById("lySfincsNested").checked) {{
+    sfincsNestedLayer.addTo(mapLeft);
+    const b = document.getElementById("assetBanner");
+    if (b) {{
+      b.style.display = "block";
+      b.innerHTML = "<b>Metro nested SFINCS</b> — Advanced research hydro (spatial MRMS + drainage sink). HAND stays primary. No SWMM.";
+    }}
+  }} else {{
+    mapLeft.removeLayer(sfincsNestedLayer);
+  }}
+}};
 document.getElementById("lySfincs").onchange = () => {{
   if (!sfincsLayer) return;
   if (document.getElementById("lySfincs").checked) {{
@@ -1965,7 +1990,7 @@ document.getElementById("lySfincs").onchange = () => {{
     const b = document.getElementById("assetBanner");
     if (b) {{
       b.style.display = "block";
-      b.innerHTML = "<b>SFINCS Queens</b> — alternate hydro track; magnitudes not comparable to primary HAND.";
+      b.innerHTML = "<b>SFINCS Queens nest</b> — Advanced research hydro nest only; magnitudes not comparable to primary HAND. No SWMM.";
     }}
   }} else {{
     mapLeft.removeLayer(sfincsLayer);

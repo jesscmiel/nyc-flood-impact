@@ -1,0 +1,29 @@
+{
+  "engine": "sfincs_metro_nested_v1",
+  "engine_label": "SFINCS metro nested (coarse + Queens fine) \u2014 Advanced research only",
+  "image": "deltares/sfincs-cpu:sfincs-v2.1.1-Dollerup-Release",
+  "label": "metro_coarse",
+  "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_sfincs_metro_ida_m.tif",
+  "png": "depth_sfincs_metro_ida_m.png",
+  "max_m": 5.526747703552246,
+  "p50_m": 0.019654326140880585,
+  "p90_m": 0.3316769003868103,
+  "wet_fraction": 0.9769975708502024,
+  "extent_bounds": {
+    "xmin": -74.45,
+    "ymin": 40.4,
+    "xmax": -73.5,
+    "ymax": 41.05
+  },
+  "forcing": "spatial_mrms_precip_2d_plus_drainage_sink",
+  "role": "advanced_research_hydro",
+  "primary": false,
+  "official_nws": false,
+  "decision_grade": false,
+  "not_swmm": true,
+  "enterprise": false,
+  "hens": false,
+  "source_nc": "/home/jesscmiel/projects/nyc-flood-impact/outputs/sfincs_metro_ida/sfincs_map.nc",
+  "variable": "hmax",
+  "honesty": "SFINCS Advanced research hydro \u2014 spatial MRMS + open drainage sink. NOT peer with primary HAND; NOT SWMM; NOT DEP; NOT NWS / NOT decision-grade."
+}

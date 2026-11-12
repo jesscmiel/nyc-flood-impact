@@ -74,10 +74,35 @@ def main() -> dict:
                 "meta": "depth_sfincs_queens_ida_meta.json",
                 "engine": sfincs_meta.get("engine", "sfincs_docker"),
                 "extent": "south_queens",
-                "role": "alternate_hydro_track",
+                "role": "advanced_research_hydro_nest",
                 "primary": False,
                 "honesty": sfincs_meta.get("honesty")
-                or "Alternate hydro track — not peer-authoritative with primary pysheds.",
+                or "Advanced research hydro nest — not peer-authoritative with primary HAND.",
+            }
+        nested_png = ASSETS / "depth_sfincs_metro_nested_ida_m.png"
+        if nested_png.exists():
+            nested_meta = (
+                json.loads((ASSETS / "depth_sfincs_metro_nested_ida_meta.json").read_text())
+                if (ASSETS / "depth_sfincs_metro_nested_ida_meta.json").exists()
+                else {}
+            )
+            m["inundation_sfincs_nested"] = {
+                "png": nested_png.name,
+                "meta": "depth_sfincs_metro_nested_ida_meta.json",
+                "engine": nested_meta.get("engine", "sfincs_metro_nested_v1"),
+                "extent": "metro",
+                "bounds": leaflet,
+                "role": "advanced_research_hydro",
+                "primary": False,
+                "not_swmm": True,
+                "honesty": nested_meta.get("honesty")
+                or "Metro nested SFINCS — Advanced research hydro; HAND stays primary; no SWMM.",
+            }
+            m["advanced_research_hydro"] = {
+                "id": "sfincs_metro_nested_v1",
+                "png": nested_png.name,
+                "primary_remains": "pysheds_hand_bathtub_v2",
+                "not_swmm": True,
             }
         lb = m.get("layer_bounds") or {}
         lb.update(

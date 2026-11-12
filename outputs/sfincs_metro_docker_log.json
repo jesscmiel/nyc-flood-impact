@@ -1,0 +1,26 @@
+{
+  "image": "deltares/sfincs-cpu:sfincs-v2.1.1-Dollerup-Release",
+  "commands": [
+    "sg docker -c 'docker pull deltares/sfincs-cpu:sfincs-v2.1.1-Dollerup-Release'",
+    "sg docker -c 'docker run --rm -v /home/jesscmiel/projects/nyc-flood-impact/outputs/sfincs_metro_ida:/data deltares/sfincs-cpu:sfincs-v2.1.1-Dollerup-Release'"
+  ],
+  "pull_returncode": 0,
+  "run_returncode": 0,
+  "pull_stdout_tail": "sfincs-v2.1.1-Dollerup-Release: Pulling from deltares/sfincs-cpu\nDigest: sha256:20eec911fd32c90876944566fbab3a89d127a550255451dcd3c1e590817b2691\nStatus: Image is up to date for deltares/sfincs-cpu:sfincs-v2.1.1-Dollerup-Release\ndocker.io/deltares/sfincs-cpu:sfincs-v2.1.1-Dollerup-Release\n",
+  "pull_stderr_tail": "",
+  "run_stdout_tail": "\n ----------- Welcome to SFINCS -----------\n\n  @@@@@  @@@@@@@ @@ @@  @@   @@@@   @@@@@ \n @@@ @@@ @@@@@@@ @@ @@@ @@ @@@@@@@ @@@ @@@\n @@@     @@      @@ @@@ @@ @@   @@ @@@    \n  @@@@@  @@@@@@  @@ @@@@@@ @@       @@@@@ \n     @@@ @@      @@ @@ @@@ @@   @@     @@@\n @@@ @@@ @@      @@ @@  @@  @@@@@@ @@@ @@@\n  @@@@@  @@      @@ @@   @   @@@@   @@@@@ \n\n              ..............              \n          ......:@@@@@@@@:......          \n       ..::::..@@........@@.:::::..       \n     ..:::::..@@..::..::..@@.::::::..     \n    .::::::..@@............@@.:::::::.    \n   .::::::..@@..............@@.:::::::.   \n  .::::::::..@@............@@..::::::::.  \n .:::::::::...@@.@..@@..@.@@..::::::::::. \n .:::::::::...:@@@..@@..@@@:..:::::::::.. \n ............@@.@@..@@..@@.@@............ \n ^^^~~^^~~^^@@..............@@^^^~^^^~~^^ \n .::::::::::@@..............@@.:::::::::. \n  .......:.@@.....@.....@....@@.:.......  \n   .::....@@......@.@@@.@....@@.....::.   \n    .:::~@@.:...:.@@...@@.:.:.@@~::::.    \n     .::~@@@@@@@@@@.....@@@@@@@@@~::.     \n       ..:~~~~~~~:.......:~~~~~~~:..      \n          ......................          \n              ..............              \n\n -----------------------------------------\n\n Build-Revision: $Rev: v2.1.1-Dollerup\n Build-Date:     $Date: 2024-08-28\n\n Reading input file ...\n Info : Running SFINCS in regular mode ...\n Turning on process: Viscosity\n Advection scheme : First-order upwind\n Reading meteo data ...\n Reading FEWS compatible NetCDF type precipitation input ...\n Info : Preparing SFINCS grid on regular mesh ...\n Turning on process: Precipitation\n Turning on flag: meteo3d\n Reading index file : sfincs.ind ...\n Reading mask file : sfincs.msk ...\n Number of active z points    :       592841\n Number of active u/v points  :      1184140\n Viscosity - nuvisc  =    1.00000000    \n Reading dep file : sfincs.dep\n Initializing output ...\n\n ---------- Starting simulation ----------\n ---- Using 32 of 32 available threads -----\n\n   0% complete,       - s remaining ...\n   5% complete,    98.8 s remaining ...\n  10% complete,    79.9 s remaining ...\n  15% complete,    84.2 s remaining ...\n  20% complete,    82.0 s remaining ...\n  25% complete,    75.1 s remaining ...\n  30% complete,    67.0 s remaining ...\n  35% complete,    57.0 s remaining ...\n  40% complete,    50.3 s remaining ...\n  45% complete,    47.6 s remaining ...\n  50% complete,    48.2 s remaining ...\n  55% complete,    40.7 s remaining ...\n  60% complete,    38.1 s remaining ...\n  65% complete,    33.8 s remaining ...\n  70% complete,    29.5 s remaining ...\n  75% complete,    25.4 s remaining ...\n  80% complete,    20.9 s remaining ...\n  85% complete,    16.7 s remaining ...\n  90% complete,    11.4 s remaining ...\n  95% complete,     6.0 s remaining ...\n 100% complete,     0.0 s remaining ...\n\n ---------- Simulation finished ----------\n\n Total time             :    126.451\n Total simulation time  :    126.293\n Time in input          :      0.158\n Time in meteo fields   :      1.778 (  1.4%)\n Time in meteo forcing  :     32.110 ( 25.4%)\n Time in momentum       :     69.201 ( 54.8%)\n Time in continuity     :     22.378 ( 17.7%)\n Time in output         :      0.818 (  0.6%)\n\n Average time step (s)  :      8.391\n\n ---------- Closing off SFINCS -----------\n",
+  "run_stderr_tail": "",
+  "model_dir": "/home/jesscmiel/projects/nyc-flood-impact/outputs/sfincs_metro_ida",
+  "files_after": [
+    "build_meta.json",
+    "forcing",
+    "gis",
+    "hydromt.log",
+    "precip_2d.nc",
+    "sfincs.dep",
+    "sfincs.ind",
+    "sfincs.inp",
+    "sfincs.msk",
+    "sfincs_map.nc"
+  ]
+}

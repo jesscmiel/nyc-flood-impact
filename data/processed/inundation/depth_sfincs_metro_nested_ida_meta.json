@@ -1,0 +1,17 @@
+{
+  "engine": "sfincs_metro_nested_v1",
+  "engine_label": "SFINCS metro nested (coarse + Queens fine) \u2014 Advanced research only",
+  "png": "depth_sfincs_metro_nested_ida_m.png",
+  "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_sfincs_metro_nested_ida_m.tif",
+  "coarse_tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_sfincs_metro_ida_m.tif",
+  "nest_tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_sfincs_queens_ida_m.tif",
+  "max_m": 5.526747703552246,
+  "wet_fraction": 0.9790218623481781,
+  "nest_cells_overwritten": 71000,
+  "role": "advanced_research_hydro",
+  "primary": false,
+  "not_swmm": true,
+  "official_nws": false,
+  "decision_grade": false,
+  "honesty": "Metro nested SFINCS composite (100 m coarse + Queens 50 m nest). Advanced research hydro only \u2014 HAND remains primary. No SWMM."
+}
