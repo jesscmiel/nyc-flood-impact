@@ -3520,6 +3520,12 @@
   "asset_decision_desk": {
     "assets_json": "decision_desk_assets.json",
     "assets_geojson": "decision_desk_assets.geojson",
+    "access_signals_fixture": "access_signals_ida_fixture.json",
+    "access_signals_live": "access_signals_live.json",
+    "access_signals_default": "fixture",
+    "lead_frames": "metro_cum_3h_0_36",
+    "auto_highlight_top_n": 3,
+    "demo_geography": "prefer_nyc_demote_nj_turnpike",
     "primary_depth_engine": "pysheds_hand_bathtub_v2",
     "primary_depth_extent": "metro",
     "primary_forcing": "spatial_mrms_qpe_ida_minus_drainage_capacity_proxy",
@@ -3530,8 +3536,16 @@
     "decision_grade": false,
     "not_dep_sewer": true,
     "sfincs_role": "alternate_hydro_track",
-    "access_signals_fixture": "access_signals_ida_fixture.json",
-    "demo_geography": "prefer_nyc_demote_nj_turnpike"
+    "events": {
+      "ida-2021": {
+        "assets_json": "decision_desk_assets.json",
+        "assets_geojson": "decision_desk_assets.geojson"
+      },
+      "henri-2021": {
+        "assets_json": "decision_desk_assets_henri.json",
+        "assets_geojson": "decision_desk_assets_henri.geojson"
+      }
+    }
   },
   "depth_engines": {
     "primary": {
@@ -3760,5 +3774,48 @@
       "citywide_hand_rescaled"
     ],
     "demo_honesty": "Primary product depth remains metro HAND (cm-scale screening). Hotspot hydro is a transparent FloodNet-post calibration for Ida reproduction only \u2014 not DEP / not SWMM / not citywide depth / not decision-grade. SFINCS Queens may already be OOM at Queens posts without calib; Brooklyn posts need hotspot."
+  },
+  "second_storm": {
+    "event_id": "henri-2021",
+    "available": true,
+    "meta": "second_storm_henri_meta.json",
+    "desk": {
+      "assets_json": "decision_desk_assets_henri.json",
+      "assets_geojson": "decision_desk_assets_henri.geojson",
+      "wet_total": 447,
+      "top": [
+        {
+          "name": "Smith\u20139th Streets",
+          "cm": 9.9,
+          "band": "\u22658 cm",
+          "lead_h": 24.0
+        },
+        {
+          "name": "DeKalb Avenue",
+          "cm": 9.2,
+          "band": "\u22658 cm",
+          "lead_h": 24.0
+        },
+        {
+          "name": "Nevins Street",
+          "cm": 9.2,
+          "band": "\u22658 cm",
+          "lead_h": 24.0
+        },
+        {
+          "name": "Atlantic Avenue\u2013Barclays Center",
+          "cm": 9.1,
+          "band": "\u22658 cm",
+          "lead_h": 24.0
+        },
+        {
+          "name": "Barclays Center",
+          "cm": 9.1,
+          "band": "\u22658 cm",
+          "lead_h": 24.0
+        }
+      ]
+    },
+    "honesty": "Tropical Storm Henri research desk via MRMS\u00d7HAND \u2014 NOT NWS / NOT decision-grade. Lead chips use 6/12/18/24h cum frames for this event."
   }
 }

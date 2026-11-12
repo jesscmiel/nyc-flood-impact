@@ -89,6 +89,10 @@ __pycache__/
 # Native hourly + cum metro GeoTIFFs are ~1 GB regenerable — keep meta + storm_total + legacy 6h only.
 /data/processed/mrms_qpe_metro/mrms_qpe_metro_1h_lead_*.tif
 /data/processed/mrms_qpe_metro/mrms_qpe_metro_cum_lead_*.tif
+# Henri second-storm MRMS + depth rasters regenerable via scripts/build_second_storm_desk.py
+/data/processed/mrms_qpe_metro_henri/
+/data/processed/inundation/depth_metro_mrms_henri_*.tif
+/data/processed/inundation/depth_metro_mrms_qpe_henri_*.tif
 !/data/processed/land_mask_metro.tif
 !/data/processed/susceptibility_factors/
 !/data/processed/susceptibility_factors/**
