@@ -3529,7 +3529,9 @@
     "official_nws": false,
     "decision_grade": false,
     "not_dep_sewer": true,
-    "sfincs_role": "alternate_hydro_track"
+    "sfincs_role": "alternate_hydro_track",
+    "access_signals_fixture": "access_signals_ida_fixture.json",
+    "demo_geography": "prefer_nyc_demote_nj_turnpike"
   },
   "depth_engines": {
     "primary": {

@@ -35,12 +35,14 @@ def main() -> None:
         (24.0, PROCESSED_DIR / "inundation" / "depth_mrms_cum_lead_24h_m.tif"),
     ]
 
+    access_fixture = ASSETS / "access_signals_ida_fixture.json"
     print("Building ranked wet assets (pysheds citywide × GPKG)…")
     payload = build_ranked_assets(
         gpkg=gpkg,
         depth_tif=depth,
         lead_tifs=lead_tifs,
         top_n=None,  # all wet assets for filterable desk
+        access_fixture=access_fixture if access_fixture.exists() else None,
     )
     out_json = ASSETS / "decision_desk_assets.json"
     out_geo = ASSETS / "decision_desk_assets.geojson"
@@ -56,6 +58,8 @@ def main() -> None:
         manifest["asset_decision_desk"] = {
             "assets_json": "decision_desk_assets.json",
             "assets_geojson": "decision_desk_assets.geojson",
+            "access_signals_fixture": "access_signals_ida_fixture.json",
+            "demo_geography": "prefer_nyc_demote_nj_turnpike",
             "primary_depth_engine": "pysheds_hand_bathtub_v2",
             "primary_depth_extent": "metro",
             "primary_forcing": "spatial_mrms_qpe_ida_minus_drainage_capacity_proxy",

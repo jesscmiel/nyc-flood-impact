@@ -1,0 +1,129 @@
+{
+  "id": "ida_access_signals_v1",
+  "replay": "Hurricane Ida remnants 2021-09-01 (research fixture)",
+  "honesty": "Open DOT / 511-style / MTA signals + research HAND depth — NOT official closures. Synthetic timestamps for Ida replay demos.",
+  "sources": [
+    "nyc_dot_speeds",
+    "nysdot_511_events",
+    "mta_alerts"
+  ],
+  "buffer_m": 100,
+  "dot_speeds": [
+    {
+      "id": "dot:van_wyck_queens",
+      "label": "Van Wyck Expwy · speed ≪ free-flow (research replay)",
+      "lon": -73.8371,
+      "lat": 40.7401,
+      "speed_mph": 8,
+      "free_flow_mph": 45,
+      "speed_ratio": 0.18,
+      "link_name": "Van Wyck Expressway"
+    },
+    {
+      "id": "dot:myrtle_bk",
+      "label": "Myrtle Ave · slowed arterial (research replay)",
+      "lon": -73.98045,
+      "lat": 40.69354,
+      "speed_mph": 6,
+      "free_flow_mph": 25,
+      "speed_ratio": 0.24,
+      "link_name": "Myrtle Avenue"
+    }
+  ],
+  "events_511": [
+    {
+      "id": "511:van_wyck_ponding",
+      "label": "511-style · lanes affected near Van Wyck (research replay)",
+      "lon": -73.8371,
+      "lat": 40.7401,
+      "closure": true,
+      "event_type": "incident",
+      "road": "Van Wyck Expressway"
+    },
+    {
+      "id": "511:siuh_access",
+      "label": "511-style · local access watch near SIUH (research replay)",
+      "lon": -74.1000,
+      "lat": 40.5850,
+      "closure": false,
+      "event_type": "alert",
+      "road": "Seaview Avenue area"
+    }
+  ],
+  "mta_alerts": [
+    {
+      "id": "mta:smith9_suspend",
+      "label": "MTA alert · Smith–9th Streets entrance / service stress (research replay)",
+      "access": "limited",
+      "station_names": ["Smith–9th Streets"],
+      "asset_ids": ["stations:194:Smith–9th Streets"],
+      "effect": "station_access_limited"
+    },
+    {
+      "id": "mta:myrtle_wyckoff_delay",
+      "label": "MTA alert · delays near Myrtle corridor (research replay)",
+      "access": "watch",
+      "station_names": [],
+      "asset_ids": [],
+      "effect": "line_delay"
+    }
+  ],
+  "joins": [
+    {
+      "asset_id": "stations:194:Smith–9th Streets",
+      "access": "limited",
+      "signals": [
+        {
+          "source": "mta_alerts",
+          "id": "mta:smith9_suspend",
+          "label": "MTA alert · Smith–9th Streets entrance / service stress (research replay)",
+          "access": "limited"
+        }
+      ]
+    },
+    {
+      "asset_id": "road:25430129",
+      "access": "limited",
+      "signals": [
+        {
+          "source": "nyc_dot_speeds",
+          "id": "dot:van_wyck_queens",
+          "label": "Van Wyck Expwy · speed ≪ free-flow (research replay)",
+          "speed_ratio": 0.18,
+          "access": "limited"
+        },
+        {
+          "source": "nysdot_511_events",
+          "id": "511:van_wyck_ponding",
+          "label": "511-style · lanes affected near Van Wyck (research replay)",
+          "access": "limited"
+        }
+      ]
+    },
+    {
+      "asset_id": "facilities:40:Staten Island University Hospital",
+      "access": "watch",
+      "signals": [
+        {
+          "source": "nysdot_511_events",
+          "id": "511:siuh_access",
+          "label": "511-style · local access watch near SIUH (research replay)",
+          "access": "watch"
+        }
+      ]
+    },
+    {
+      "asset_id": "road:37394898",
+      "access": "watch",
+      "signals": [
+        {
+          "source": "nyc_dot_speeds",
+          "id": "dot:myrtle_bk",
+          "label": "Myrtle Ave · slowed arterial (research replay)",
+          "speed_ratio": 0.24,
+          "access": "watch"
+        }
+      ]
+    }
+  ]
+}

@@ -13,12 +13,12 @@ from pathlib import Path
 from nyc_flash_flood_case_study.config import FIGURES_DIR
 from nyc_flash_flood_case_study.extents import DEFAULT_MAP_EXTENT, EVENTS, EXTENTS
 
-# Curated named click targets for the 60s demo (wet under 250 m point sample / road line max).
+# Curated named NYC click targets — all ≥8 cm deep ponding on current desk.
 DEMO_SHORTLIST_IDS = (
-    "road:37394898",  # Myrtle Avenue
-    "stations:146:36th Street",  # 36th Street
-    "facilities:40:Staten Island University Hospital",
-    "road:5681925",  # Brooklyn–Battery Tunnel
+    "stations:194:Smith–9th Streets",  # 11.1 cm — iconic Ida station
+    "road:25430129",  # Van Wyck Expressway 9.4 cm
+    "facilities:40:Staten Island University Hospital",  # 8.7 cm
+    "road:37394898",  # Myrtle Avenue 8.2 cm
 )
 
 
@@ -240,6 +240,25 @@ details.drawer[open] > summary::after {{ content:"–"; }}
   background:rgba(8,40,52,.06); color:var(--ink-soft); cursor:pointer; font:700 .8rem Figtree,sans-serif;
 }}
 .selected-card .sel-close:hover {{ background:rgba(8,40,52,.12); }}
+.selected-card .sel-chips {{ display:flex; flex-wrap:wrap; gap:5px; margin:8px 0 6px; }}
+.selected-card .sel-chip {{
+  font:600 .62rem "IBM Plex Mono",monospace; padding:3px 7px; border-radius:6px;
+  border:1px solid var(--line); background:rgba(8,40,52,.04); color:var(--ink-soft);
+}}
+.selected-card .sel-chip.access-open {{ border-color:rgba(13,143,156,.35); color:var(--accent-deep); }}
+.selected-card .sel-chip.access-watch {{ border-color:rgba(154,74,18,.35); color:var(--warn); background:var(--warn-bg); }}
+.selected-card .sel-chip.access-limited {{ border-color:rgba(185,28,28,.4); color:#9f1239; background:rgba(185,28,28,.08); }}
+.selected-card .sel-hint {{
+  margin-top:6px; padding-top:6px; border-top:1px solid var(--line-soft);
+  font-size:.72rem; color:var(--ink-soft); line-height:1.4; font-weight:600;
+}}
+.selected-card .sel-access-note {{ margin-top:4px; font-size:.66rem; color:var(--muted); line-height:1.35; }}
+.asset-row .meta .access-pill {{
+  font:600 .58rem "IBM Plex Mono",monospace; padding:1px 5px; border-radius:4px;
+  border:1px solid var(--line-soft); color:var(--muted);
+}}
+.asset-row .meta .access-pill.limited {{ color:#9f1239; border-color:rgba(185,28,28,.35); }}
+.asset-row .meta .access-pill.watch {{ color:var(--warn); border-color:rgba(154,74,18,.3); }}
 .empty {{ padding:16px 8px; text-align:center; color:var(--muted); font-size:.78rem; }}
 .leaflet-image-layer.precip-radar,
 .leaflet-image-layer.depth-radar,
@@ -334,9 +353,9 @@ details.drawer[open] > summary::after {{ content:"–"; }}
   </section>
 
   <section class="section">
-    <details class="drawer" id="screeningDetails" open>
+    <details class="drawer" id="screeningDetails">
       <summary>Screening</summary>
-      <p class="drawer-note">Real MRMS×terrain susceptibility frames (37). Uncalibrated — not probability or depth. Draws above Depth when on.</p>
+      <p class="drawer-note">Real MRMS×terrain susceptibility frames (37). Uncalibrated — not probability or depth. Draws above Depth when on. Demo default: closed / off.</p>
       <div class="opacity-row"><span>Susc.</span><input id="opSusc" type="range" min="10" max="90" value="62"><span id="opSuscVal">62%</span></div>
       <div class="legend-swatch susc"></div>
       <label class="layer-btn"><input id="lySusc" type="checkbox">Show screening</label>
@@ -356,6 +375,8 @@ details.drawer[open] > summary::after {{ content:"–"; }}
         <div class="group-label">Alternate</div>
         <label class="layer-btn"><input id="lySfincs" type="checkbox">SFINCS Queens</label>
         <label class="layer-btn"><input id="lyE2Tot" type="checkbox">Storm-total</label>
+        <div class="group-label">Access (research)</div>
+        <label class="layer-btn"><input id="lyAccess" type="checkbox">Access signals (open data / research)</label>
         <div class="group-label">Exposure</div>
         <label class="layer-btn"><input id="lySta" type="checkbox">Stations</label>
         <label class="layer-btn"><input id="lyRoads" type="checkbox">Roads</label>
@@ -380,6 +401,9 @@ details.drawer[open] > summary::after {{ content:"–"; }}
     <div class="sel-kicker" id="selKicker">Selected asset</div>
     <h3 id="selName">—</h3>
     <p id="selBody">—</p>
+    <div class="sel-chips" id="selChips"></div>
+    <div class="sel-hint" id="selHint"></div>
+    <div class="sel-access-note" id="selAccessNote"></div>
   </div>
   <div class="radar-hud" id="radarHud">
     <button type="button" class="play" id="hudPlay" aria-label="Play or pause storm loop">▶</button>
@@ -487,6 +511,7 @@ let fadeE2 = null, fadeDepth = null, fadeSusc = null, fadeTimer = null;
 let playing = false, playTimer = null, leadIndex = 0;
 let desk = null, wetLayer = null, selectedLayer = null, selectedId = null;
 let floodnetLayer = null, floodnetStations = [], selectedFloodnetId = null;
+let accessFixture = null, accessLayer = null;
 let typeFilter = "all";
 let listMode = "shortlist";
 const PLAY_MS = 520;
@@ -699,6 +724,14 @@ function typeLabel(t) {{
   if (t === "facility") return "Facility";
   return t;
 }}
+function accessStatus(a) {{
+  return (a && a.access_status) ? a.access_status : "open";
+}}
+function accessChipLabel(status) {{
+  if (status === "limited") return "access: limited (research)";
+  if (status === "watch") return "access: watch (research)";
+  return "access: open (research)";
+}}
 function filteredAssets() {{
   if (!desk || !desk.assets) return [];
   const q = (document.getElementById("assetSearch").value || "").trim().toLowerCase();
@@ -710,10 +743,12 @@ function filteredAssets() {{
     return true;
   }});
   if (listMode === "shortlist" && !q) {{
-    const byId = Object.fromEntries(rows.map(a => [a.id, a]));
-    const curated = DEMO_SHORTLIST.map(id => byId[id] || (desk.assets || []).find(a => a.id === id)).filter(Boolean);
+    const byId = Object.fromEntries((desk.assets || []).map(a => [a.id, a]));
+    const curated = DEMO_SHORTLIST.map(id => byId[id]).filter(Boolean);
+    // Shortlist ignores band filter so demo rows always appear; numbers still honest.
     if (curated.length) return curated;
   }}
+  // All mode already uses demoted ranks from desk JSON (NJ Turnpike pushed down).
   return rows;
 }}
 function renderAssetList() {{
@@ -723,7 +758,11 @@ function renderAssetList() {{
     list.innerHTML = '<div class="empty">No wet assets match these filters.</div>';
     return;
   }}
-  list.innerHTML = rows.map(a => `
+  list.innerHTML = rows.map(a => {{
+    const acc = accessStatus(a);
+    const accPill = (acc === "limited" || acc === "watch")
+      ? `<span class="access-pill ${{acc}}">${{acc}}</span>` : "";
+    return `
     <button type="button" class="asset-row${{selectedId === a.id ? " selected" : ""}}" data-id="${{a.id}}">
       <div class="top">
         <span class="name">#${{a.rank}} · ${{a.name}}</span>
@@ -733,8 +772,10 @@ function renderAssetList() {{
         <span class="type-pill">${{typeLabel(a.asset_type)}}</span>
         <span class="band ${{bandClass(a.band)}}">${{a.band_label}}</span>
         <span>${{leadLabel(a)}}</span>
+        ${{accPill}}
       </div>
-    </button>`).join("");
+    </button>`;
+  }}).join("");
   list.querySelectorAll(".asset-row").forEach(btn => {{
     btn.addEventListener("click", () => selectAsset(btn.dataset.id));
   }});
@@ -766,11 +807,20 @@ function selectAsset(id) {{
     }}).addTo(mapLeft);
   }}
   const card = document.getElementById("selectedCard");
+  const acc = accessStatus(a);
   document.getElementById("selKicker").textContent = typeLabel(a.asset_type) + " · #" + a.rank;
   document.getElementById("selName").textContent = a.name;
   document.getElementById("selBody").innerHTML =
-    "<b>" + a.max_depth_cm.toFixed(1) + " cm</b> · " + a.band_label + " · " + leadLabel(a) +
-    "<br><span style='color:#9a4a12'>Research only — not an SOP trigger.</span>";
+    "<b>" + a.max_depth_cm.toFixed(1) + " cm</b> · " + a.band_label + " · " + leadLabel(a);
+  document.getElementById("selChips").innerHTML =
+    `<span class="sel-chip access-${{acc}}">${{accessChipLabel(acc)}}</span>` +
+    `<span class="sel-chip">${{a.band_label}}</span>`;
+  document.getElementById("selHint").textContent = a.action_hint ||
+    "Research depth only — not an SOP trigger.";
+  const sigs = (a.access_signals || []).map(s => s.label || s.source).filter(Boolean);
+  document.getElementById("selAccessNote").textContent = sigs.length
+    ? ("Signals: " + sigs.slice(0, 2).join(" · ") + " — not official closures.")
+    : "Open DOT/MTA signals + research depth — not official closures.";
   card.classList.remove("on");
   void card.offsetWidth;
   card.classList.add("on");
@@ -829,6 +879,68 @@ async function fetchGeoJSON(path) {{
   const r = await fetch(assets + path, {{ cache:"no-cache" }});
   if (!r.ok) throw new Error(path + " HTTP " + r.status);
   return r.json();
+}}
+function accessPointStyle(kind) {{
+  if (kind === "limited" || kind === "closure") return {{ color: "#9f1239", dash: "6 4" }};
+  if (kind === "watch" || kind === "slow") return {{ color: "#b45309", dash: "4 4" }};
+  return {{ color: "#0d8f9c", dash: null }};
+}}
+function rebuildAccessOverlay() {{
+  if (accessLayer) {{ mapLeft.removeLayer(accessLayer); accessLayer = null; }}
+  const on = document.getElementById("lyAccess") && document.getElementById("lyAccess").checked;
+  if (!on || !accessFixture) return;
+  const feats = [];
+  (accessFixture.dot_speeds || []).forEach(sp => {{
+    if (sp.lon == null || sp.lat == null) return;
+    const limited = sp.speed_ratio != null && Number(sp.speed_ratio) < 0.35;
+    feats.push({{
+      type: "Feature",
+      properties: {{ kind: limited ? "limited" : "watch", label: sp.label || "DOT speed", source: "nyc_dot_speeds" }},
+      geometry: {{ type: "Point", coordinates: [sp.lon, sp.lat] }}
+    }});
+  }});
+  (accessFixture.events_511 || []).forEach(ev => {{
+    if (ev.lon == null || ev.lat == null) return;
+    feats.push({{
+      type: "Feature",
+      properties: {{ kind: ev.closure ? "limited" : "watch", label: ev.label || "511 event", source: "nysdot_511_events" }},
+      geometry: {{ type: "Point", coordinates: [ev.lon, ev.lat] }}
+    }});
+  }});
+  (accessFixture.mta_alerts || []).forEach(al => {{
+    const ids = al.asset_ids || [];
+    ids.forEach(aid => {{
+      const a = (desk && desk.assets || []).find(x => x.id === aid);
+      if (!a) return;
+      feats.push({{
+        type: "Feature",
+        properties: {{ kind: al.access || "watch", label: al.label || "MTA alert", source: "mta_alerts" }},
+        geometry: {{ type: "Point", coordinates: [a.lon, a.lat] }}
+      }});
+    }});
+  }});
+  if (!feats.length) return;
+  accessLayer = L.geoJSON({{ type: "FeatureCollection", features: feats }}, {{
+    pane: "selectPane",
+    pointToLayer: (f, ll) => {{
+      const st = accessPointStyle(f.properties.kind);
+      return L.circleMarker(ll, {{
+        radius: 9, color: st.color, weight: 2, dashArray: st.dash,
+        fillColor: st.color, fillOpacity: 0.25, pane: "selectPane"
+      }});
+    }},
+    onEachFeature: (f, layer) => {{
+      layer.bindTooltip((f.properties.source || "") + " · " + (f.properties.label || ""));
+    }}
+  }}).addTo(mapLeft);
+}}
+function loadAccessSignals() {{
+  const name = (manifest.asset_decision_desk && manifest.asset_decision_desk.access_signals_fixture)
+    || "access_signals_ida_fixture.json";
+  fetch(assets + name, {{ cache: "no-cache" }}).then(r => r.ok ? r.json() : null).then(fx => {{
+    accessFixture = fx;
+    rebuildAccessOverlay();
+  }}).catch(() => {{ accessFixture = null; }});
 }}
 function bindToggle(id, layer) {{
   const el = document.getElementById(id);
@@ -1142,11 +1254,13 @@ document.getElementById("lyE2Tot").onchange = () => {{
   if (document.getElementById("lyE2Tot").checked) {{ e2Total.setOpacity(precipOpacity()); e2Total.addTo(mapLeft); }}
   else mapLeft.removeLayer(e2Total);
 }};
+document.getElementById("lyAccess").onchange = () => rebuildAccessOverlay();
 
 rebuildPathLayers();
 fitMapFrame();
 setLead(0);
 loadDecisionDesk();
+loadAccessSignals();
 loadFloodNetProduct();
 loadOptionalLayers();
 setPlaying(true);

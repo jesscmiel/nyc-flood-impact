@@ -22,6 +22,7 @@ from flood_risk.exposure.geopackage import (
     line_max_depth,
     point_nearby_max_depth,
 )
+from flood_risk.risk.access_signals import apply_access_and_demotion, load_access_fixture
 from flood_risk.risk.depth_asset_tables import DEPTH_BANDS
 
 # Research action hints — unofficial placeholders only
@@ -137,6 +138,8 @@ def build_ranked_assets(
     engine_id: str = "pysheds_hand_bathtub_v2",
     engine_role: str = "primary_research_depth",
     engine_label: str = "pysheds HAND/bathtub (citywide · MRMS QPE)",
+    access_fixture: Path | dict[str, Any] | None = None,
+    access_buffer_m: float = 100.0,
 ) -> dict[str, Any]:
     """Build ranked wet-asset table + GeoJSON FeatureCollections."""
 
@@ -212,11 +215,11 @@ def build_ranked_assets(
                         {"type": "Feature", "properties": props, "geometry": feat_geom}
                     )
 
+        # Depth sort first; demo geography + access join re-rank below.
         assets.sort(key=lambda a: (-a["max_depth_m"], a["name"]))
         for i, a in enumerate(assets, start=1):
             a["rank"] = i
 
-        listed = assets if top_n is None else assets[:top_n]
         counts = {
             "wet_total": len(assets),
             "roads": sum(1 for a in assets if a["layer"] == LAYER_ROADS),
@@ -227,31 +230,15 @@ def build_ranked_assets(
             },
         }
 
-        # Full line geometry for deepest roads; centroids otherwise to keep payload light.
-        full_road_ids = {
-            a["id"]
-            for a in assets
-            if a["layer"] == LAYER_ROADS and a["rank"] <= map_full_geom_roads
-        }
-        features: list[dict[str, Any]] = []
-        for layer, feats in geo_by_layer.items():
-            for ft in feats:
-                props = ft["properties"]
-                if layer == LAYER_ROADS and props["id"] not in full_road_ids:
-                    features.append(
-                        {
-                            "type": "Feature",
-                            "properties": props,
-                            "geometry": {
-                                "type": "Point",
-                                "coordinates": [props["lon"], props["lat"]],
-                            },
-                        }
-                    )
-                else:
-                    features.append(ft)
+        fixture_obj: dict[str, Any] | None
+        if isinstance(access_fixture, Path):
+            fixture_obj = load_access_fixture(access_fixture) if access_fixture.exists() else None
+        elif isinstance(access_fixture, dict):
+            fixture_obj = access_fixture
+        else:
+            fixture_obj = None
 
-        return {
+        payload: dict[str, Any] = {
             "product": "asset_decision_desk",
             "official_nws": False,
             "decision_grade": False,
@@ -313,15 +300,49 @@ def build_ranked_assets(
             "band_action_hints": BAND_ACTION_HINTS,
             "lead_frames_h": [h for h, _ in lead_tifs if Path(_).exists()],
             "counts": counts,
-            "listed_n": len(listed),
-            "assets": listed,
+            "assets": assets,
             "all_wet_summary": {
                 "n": len(assets),
                 "max_depth_m": assets[0]["max_depth_m"] if assets else None,
                 "deepest_name": assets[0]["name"] if assets else None,
             },
-            "geojson": {"type": "FeatureCollection", "features": features},
         }
+        apply_access_and_demotion(payload, fixture_obj, buffer_m=access_buffer_m)
+        listed = payload["assets"] if top_n is None else payload["assets"][:top_n]
+        payload["assets"] = listed
+        payload["listed_n"] = len(listed)
+
+        # Full line geometry for deepest roads; centroids otherwise to keep payload light.
+        full_road_ids = {
+            a["id"]
+            for a in payload["assets"]
+            if a["layer"] == LAYER_ROADS and a["rank"] <= map_full_geom_roads
+        }
+        # Refresh feature properties from re-ranked assets
+        by_id = {a["id"]: a for a in payload["assets"]}
+        features: list[dict[str, Any]] = []
+        for layer, feats in geo_by_layer.items():
+            for ft in feats:
+                props = ft["properties"]
+                aid = props["id"]
+                if aid in by_id:
+                    props = dict(by_id[aid])
+                if layer == LAYER_ROADS and aid not in full_road_ids:
+                    features.append(
+                        {
+                            "type": "Feature",
+                            "properties": props,
+                            "geometry": {
+                                "type": "Point",
+                                "coordinates": [props["lon"], props["lat"]],
+                            },
+                        }
+                    )
+                else:
+                    features.append({"type": "Feature", "properties": props, "geometry": ft["geometry"]})
+
+        payload["geojson"] = {"type": "FeatureCollection", "features": features}
+        return payload
     finally:
         for _, ds in lead_handles:
             ds.close()
