@@ -20,9 +20,9 @@
       "drain_points_path": "/home/jesscmiel/projects/nyc-flood-impact/data/raw/infrastructure/osm_drains_south_queens.geojson",
       "nlcd": "/home/jesscmiel/projects/nyc-flood-impact/data/raw/landcover/nlcd_2021_impervious_citywide.tif",
       "capacity_mean_mm_hr_land": 9.468585014343262,
-      "excess_mean_mm_land": 10.70113754272461,
-      "undrained_max_m": 0.13966062664985657,
-      "drained_max_m": 0.13148795068264008,
+      "excess_mean_mm_land": 111.51988220214844,
+      "undrained_max_m": 0.15981748700141907,
+      "drained_max_m": 0.1560627669095993,
       "label": "Open drainage capacity proxy (NLCD + optional drain density + mm/hr sink)",
       "cap_base_mm_hr": 10.0,
       "cap_max_mm_hr": 22.0,
@@ -204,11 +204,11 @@
       -73.5,
       41.05
     ],
-    "max_m": 0.13966062664985657,
-    "p50_wet_m": 0.08126077800989151,
-    "p90_wet_m": 0.1126604676246643,
-    "wet_fraction_ge_3cm": 0.009340348530496418,
-    "wet_fraction_ge_5cm": 0.007795057067493406
+    "max_m": 0.15981748700141907,
+    "p50_wet_m": 0.09346689656376839,
+    "p90_wet_m": 0.1261452004313469,
+    "wet_fraction_ge_3cm": 0.08434019226682335,
+    "wet_fraction_ge_5cm": 0.07683437925818509
   },
   "extents": {
     "default_map_extent": "metro",
@@ -232,13 +232,35 @@
       "ymax": 40.73
     }
   },
-  "validation": {
+  "validation_lead": {
+    "preferred": "floodnet_peak_rmse_bias_timing",
+    "bury": [
+      "311_hit_rate"
+    ],
+    "note": "Lead with FloodNet magnitude/timing (or random-land baseline). 311 hit\u22481 is spatial concentration only \u2014 never hero copy."
+  },
+  "floodnet_validation": {
+    "n_events": 5,
+    "n_sensors": 5,
+    "boroughs": [
+      "Brooklyn",
+      "Queens"
+    ],
+    "peak_rmse_m": 0.5273024216739385,
+    "peak_bias_mean_m": -0.39659560000000005,
+    "timing_error_mean_h": null,
+    "obs_peak_max_m": 0.9039860000000001,
+    "model_peak_max_m": 0.0,
+    "path": "/home/jesscmiel/projects/nyc-flood-impact/outputs/floodnet_validation.json",
+    "role": "magnitude_timing_primary_reference"
+  },
+  "validation_311_gauges_exploratory": {
     "product": "flood_risk_research_prototype",
     "official_nws": false,
     "decision_grade": false,
     "enterprise": false,
     "hens": false,
-    "updated_utc": "2026-11-11T16:34:05Z",
+    "updated_utc": "2026-11-12T14:20:47Z",
     "depth_tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_metro_mrms_qpe_ida_storm_total_m.tif",
     "scores": {
       "reports_311": {
@@ -248,33 +270,75 @@
         "n_hits_depth_ge": 191,
         "depth_threshold_m": 0.03,
         "hit_rate": 0.9794871794871794,
-        "mean_depth_at_points_m": 0.07908729255581513,
-        "max_depth_at_points_m": 0.11612450331449509
+        "mean_depth_at_points_m": 0.07885234692157843,
+        "max_depth_at_points_m": 0.11415542662143707
       },
       "gauges": {
         "name": "ahps_gauges",
         "n_points": 21,
-        "n_sampled": 1,
-        "n_hits_depth_ge": 0,
+        "n_sampled": 7,
+        "n_hits_depth_ge": 6,
         "depth_threshold_m": 0.03,
-        "hit_rate": 0.0,
-        "mean_depth_at_points_m": 0.018147965893149376,
-        "max_depth_at_points_m": 0.018147965893149376
+        "hit_rate": 0.8571428571428571,
+        "mean_depth_at_points_m": 0.08023453024881226,
+        "max_depth_at_points_m": 0.10606933385133743
       }
     },
     "summary": {
       "hit_rate_311": 0.9794871794871794,
-      "hit_rate_gauges": 0.0,
+      "hit_rate_gauges": 0.8571428571428571,
       "n_311": 195,
-      "n_gauges": 1
+      "n_gauges": 7
     },
     "confidence": {
-      "level": "low",
-      "note": "Low hit rates vs depth \u2014 expect false alarms / misses; research only."
+      "level": "moderate_research",
+      "note": "Higher hit rates on this fixture only \u2014 still not decision-grade validation."
     },
     "honesty": "Exploratory collocation of 311/AHPS points on research depth. Not certified verification skill. NOT NWS validation."
   },
-  "random_land_hit_rate_ge_3cm": 0.0115,
+  "validation": {
+    "product": "flood_risk_research_prototype",
+    "official_nws": false,
+    "decision_grade": false,
+    "enterprise": false,
+    "hens": false,
+    "updated_utc": "2026-11-12T14:20:47Z",
+    "depth_tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_metro_mrms_qpe_ida_storm_total_m.tif",
+    "scores": {
+      "reports_311": {
+        "name": "311_reports",
+        "n_points": 599,
+        "n_sampled": 195,
+        "n_hits_depth_ge": 191,
+        "depth_threshold_m": 0.03,
+        "hit_rate": 0.9794871794871794,
+        "mean_depth_at_points_m": 0.07885234692157843,
+        "max_depth_at_points_m": 0.11415542662143707
+      },
+      "gauges": {
+        "name": "ahps_gauges",
+        "n_points": 21,
+        "n_sampled": 7,
+        "n_hits_depth_ge": 6,
+        "depth_threshold_m": 0.03,
+        "hit_rate": 0.8571428571428571,
+        "mean_depth_at_points_m": 0.08023453024881226,
+        "max_depth_at_points_m": 0.10606933385133743
+      }
+    },
+    "summary": {
+      "hit_rate_311": 0.9794871794871794,
+      "hit_rate_gauges": 0.8571428571428571,
+      "n_311": 195,
+      "n_gauges": 7
+    },
+    "confidence": {
+      "level": "moderate_research",
+      "note": "Higher hit rates on this fixture only \u2014 still not decision-grade validation."
+    },
+    "honesty": "Exploratory collocation of 311/AHPS points on research depth. Not certified verification skill. NOT NWS validation."
+  },
+  "random_land_hit_rate_ge_3cm": 0.1095,
   "pysheds_metro_mrms": {
     "path": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_metro_mrms_qpe_ida_storm_total_m.tif",
     "shape": [
@@ -287,11 +351,11 @@
       -73.5,
       41.05
     ],
-    "max_m": 0.13148795068264008,
-    "p50_wet_m": 0.06601458042860031,
-    "p90_wet_m": 0.0977173462510109,
-    "wet_fraction_ge_3cm": 0.00808711387246384,
-    "wet_fraction_ge_5cm": 0.0063066455814883805
+    "max_m": 0.1560627669095993,
+    "p50_wet_m": 0.07579012960195541,
+    "p90_wet_m": 0.11303984820842744,
+    "wet_fraction_ge_3cm": 0.07848280474541522,
+    "wet_fraction_ge_5cm": 0.06538447114122485
   },
   "sfincs_queens_spatial": {
     "path": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_sfincs_queens_ida_m.tif",
@@ -312,12 +376,12 @@
     "wet_fraction_ge_5cm": 0.31760828535022084
   },
   "overlap_queens": {
-    "n_cells": 6725,
-    "mean_sfincs_m": 0.15406558279931323,
-    "mean_pysheds_m": 0.06550075470775014,
-    "ratio_mean_sfincs_over_pysheds": 2.352119200560661,
+    "n_cells": 6832,
+    "mean_sfincs_m": 0.15439729249940212,
+    "mean_pysheds_m": 0.06550267930938396,
+    "ratio_mean_sfincs_over_pysheds": 2.3571141536081113,
     "max_sfincs_m": 3.2420284748077393,
-    "max_pysheds_m": 0.1283546112526063
+    "max_pysheds_m": 0.1270965756049217
   },
   "mrms_storm_total": {
     "path": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/mrms_qpe_metro/mrms_qpe_metro_storm_total.tif",
@@ -331,12 +395,12 @@
       -73.5,
       41.05
     ],
-    "mean_pos_mm": 121.93599046328548,
-    "min_mm": 1.1347503882722099e-12,
-    "max_mm": 203.22288513183594,
-    "p10_mm": 68.42772216796875,
-    "p90_mm": 163.30290985107422,
-    "cv": 0.2997468835211135,
+    "mean_pos_mm": 124.60712720234922,
+    "min_mm": 32.65814208984375,
+    "max_mm": 228.3676300048828,
+    "p10_mm": 48.47240371704102,
+    "p90_mm": 180.6755752563477,
+    "cv": 0.38483080371060646,
     "forcing_note": "SFINCS Queens uses spatial MRMS rate field (setup_precip_forcing_from_grid); uniform domain-mean forcing removed from primary path."
   },
   "dem": {
@@ -384,5 +448,5 @@
     "official_nws": false,
     "note": "Dropped uniform setup_precip_forcing(magnitude=mean); using spatial MRMS rate field."
   },
-  "honesty": "Primary depth = metro pysheds \u00d7 spatial MRMS after open drainage capacity proxy (NLCD + optional drain density + literature mm/hr sink; NOT DEP sewer). SFINCS Queens is alternate hydro only. 311 hit rates show spatial concentration, not certified skill / magnitude skill."
+  "honesty": "Primary depth = metro pysheds \u00d7 spatial MRMS after open drainage capacity proxy (NLCD + optional drain density + literature mm/hr sink; NOT DEP sewer). SFINCS Queens is alternate hydro only. FloodNet (when present) is the magnitude + timing reference; 311 hit rates show spatial concentration only \u2014 never lead with hit\u22481."
 }

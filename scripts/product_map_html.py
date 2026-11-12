@@ -738,14 +738,28 @@ function loadOptionalLayers() {{
     }}));
   }}).catch(()=>{{}});
 
+  const fnName = (manifest.validation_dashboard && manifest.validation_dashboard.floodnet)
+    || (manifest.validation_floodnet && manifest.validation_floodnet.scores)
+    || "floodnet_validation.json";
   const scoresName = (manifest.validation_dashboard && manifest.validation_dashboard.scores) || "validation_scores.json";
-  fetch(assets + scoresName, {{ cache:"no-cache" }}).then(r => r.ok ? r.json() : null).then(scores => {{
+  Promise.all([
+    fetch(assets + fnName, {{ cache:"no-cache" }}).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch(assets + scoresName, {{ cache:"no-cache" }}).then(r => r.ok ? r.json() : null).catch(() => null),
+  ]).then(([fn, scores]) => {{
     const el = document.getElementById("validationPanel");
     if (!el) return;
+    if (fn && fn.summary) {{
+      const rmse = fn.summary.peak_rmse_m;
+      const bias = fn.summary.peak_bias_m && fn.summary.peak_bias_m.mean;
+      const n = fn.summary.n_sensors;
+      const fmt = (x) => (x == null || Number.isNaN(x)) ? "—" : Number(x).toFixed(3);
+      el.innerHTML = `<b>FloodNet vs primary HAND</b> — n=${{n}} sensors · peak RMSE ${{fmt(rmse)}} m · bias ${{fmt(bias)}} m (model−obs). Research only; cm-scale HAND ≪ street peaks. Never lead with 311 hit-rate.`;
+      return;
+    }}
     const conf = scores && scores.confidence ? scores.confidence.level : "low";
     const note = (scores && scores.confidence && scores.confidence.note) || "Exploratory collocation only.";
     el.innerHTML = `<b>Limitations-first</b> — exploratory collocation (${{conf}}); ${{note}} Never lead with 311 hit-rate.`;
-  }}).catch(()=>{{}});
+  }});
 }}
 
 document.getElementById("listModeChips").addEventListener("click", e => {{

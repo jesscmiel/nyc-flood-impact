@@ -188,6 +188,26 @@ def main() -> None:
     depth_meta_path = INUN / "depth_metro_mrms_qpe_ida_meta.json"
     depth_meta = json.loads(depth_meta_path.read_text()) if depth_meta_path.exists() else {}
 
+    floodnet_path = PROJECT_ROOT / "outputs" / "floodnet_validation.json"
+    if not floodnet_path.exists():
+        floodnet_path = ASSETS / "floodnet_validation.json"
+    floodnet = json.loads(floodnet_path.read_text()) if floodnet_path.exists() else None
+    floodnet_summary = None
+    if floodnet:
+        s = floodnet.get("summary") or {}
+        floodnet_summary = {
+            "n_events": s.get("n_events"),
+            "n_sensors": s.get("n_sensors"),
+            "boroughs": s.get("boroughs"),
+            "peak_rmse_m": s.get("peak_rmse_m"),
+            "peak_bias_mean_m": (s.get("peak_bias_m") or {}).get("mean"),
+            "timing_error_mean_h": (s.get("timing_error_h") or {}).get("mean"),
+            "obs_peak_max_m": s.get("obs_peak_max_m"),
+            "model_peak_max_m": s.get("model_peak_max_m"),
+            "path": str(floodnet_path),
+            "role": "magnitude_timing_primary_reference",
+        }
+
     report = {
         "product": "flood_risk_research_prototype",
         "official_nws": False,
@@ -224,7 +244,17 @@ def main() -> None:
             "legacy_citywide": EXTENTS["citywide"]["bounds"],
             "sfincs_spike": EXTENTS["south_queens"]["bounds"],
         },
-        "validation": scores,
+        "validation_lead": {
+            "preferred": "floodnet_peak_rmse_bias_timing" if floodnet_summary else "random_land_wet_fraction",
+            "bury": ["311_hit_rate"],
+            "note": (
+                "Lead with FloodNet magnitude/timing (or random-land baseline). "
+                "311 hit≈1 is spatial concentration only — never hero copy."
+            ),
+        },
+        "floodnet_validation": floodnet_summary,
+        "validation_311_gauges_exploratory": scores,
+        "validation": scores,  # legacy key; prefer floodnet_validation / validation_lead
         "random_land_hit_rate_ge_3cm": random_hit,
         "pysheds_metro_mrms": pysheds,
         "sfincs_queens_spatial": sfincs,
@@ -236,18 +266,22 @@ def main() -> None:
             "Primary depth = metro pysheds × spatial MRMS after open drainage capacity proxy "
             "(NLCD + optional drain density + literature mm/hr sink; NOT DEP sewer). "
             "SFINCS Queens is alternate hydro only. "
-            "311 hit rates show spatial concentration, not certified skill / magnitude skill."
+            "FloodNet (when present) is the magnitude + timing reference; "
+            "311 hit rates show spatial concentration only — never lead with hit≈1."
         ),
     }
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(report, indent=2))
+    (ASSETS / "science_audit_recompute.json").write_text(json.dumps(report, indent=2))
     print(
         json.dumps(
             {
                 "wrote": str(OUT),
-                "hit_rate_311": scores["summary"]["hit_rate_311"],
-                "hit_rate_gauges": scores["summary"]["hit_rate_gauges"],
+                "floodnet_peak_rmse_m": (floodnet_summary or {}).get("peak_rmse_m"),
+                "floodnet_peak_bias_mean_m": (floodnet_summary or {}).get("peak_bias_mean_m"),
+                "floodnet_n_sensors": (floodnet_summary or {}).get("n_sensors"),
                 "random_land_hit_rate_ge_3cm": random_hit,
+                "hit_rate_311_exploratory": scores["summary"]["hit_rate_311"],
                 "ratio_mean_sfincs_over_pysheds": (overlap or {}).get("ratio_mean_sfincs_over_pysheds"),
                 "primary_max_m": pysheds.get("max_m"),
                 "sfincs_max_m": (sfincs or {}).get("max_m"),

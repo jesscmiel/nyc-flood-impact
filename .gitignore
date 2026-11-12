@@ -88,6 +88,12 @@ __pycache__/
 !/data/processed/susceptibility_factors/
 !/data/processed/susceptibility_factors/**
 !/outputs/science_audit_recompute.json
+!/outputs/floodnet_validation.json
+!/data/processed/floodnet/
+!/data/processed/floodnet/**
+# Full NYC Open Data FloodNet dumps stay local; Ida extract is under processed/.
+!/data/raw/floodnet/
+!/data/raw/floodnet/README.md
 !/data/forecasts/nyc_precip_ida_ens2_citywide.nc
 
 # STRATA aux / spike outputs (HF weights + generated SCRIP; local only)

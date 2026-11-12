@@ -3565,7 +3565,10 @@
   "validation_dashboard": {
     "scores": "validation_scores.json",
     "official": false,
-    "certified_skill": false
+    "certified_skill": false,
+    "floodnet": "floodnet_validation.json",
+    "lead_metric": "floodnet_peak_rmse_bias_timing",
+    "bury_311_hit_rate": true
   },
   "inundation_sfincs": {
     "png": "depth_sfincs_queens_ida_m.png",
@@ -3710,5 +3713,27 @@
     ],
     "note": "Ida MRMS awareness loop covers +0h\u2026+36h from 2021-09-01T12:00 UTC (valid 2021-09-01T12:00 \u2192 2021-09-03T00:00) with native hourly MultiSensor QPE when cached; depth cum frames step through buildup and post-peak recession.",
     "longer_modeling_recommendation": "Native hourly is live for 0\u201336h. Next: 15-min MRMS where available, and time-continuous HAND/SFINCS depth forced on the same clock (not discrete cum snapshots)."
+  },
+  "validation_floodnet": {
+    "scores": "floodnet_validation.json",
+    "stations_geojson": "floodnet_ida_stations.geojson",
+    "role": "magnitude_timing_primary_reference",
+    "official": false,
+    "certified_skill": false,
+    "lead_with": [
+      "FloodNet peak RMSE / mean bias (m)",
+      "FloodNet peak timing error (h, model cum peak lead \u2212 sensor peak lead)",
+      "series bias at FloodNet samples vs nearest cum HAND frame"
+    ],
+    "do_not_lead_with": [
+      "311_hit_rate"
+    ],
+    "summary": {
+      "n_events": 5,
+      "n_sensors": 5,
+      "peak_rmse_m": 0.5273024216739385,
+      "peak_bias_mean_m": -0.39659560000000005,
+      "timing_error_mean_h": null
+    }
   }
 }
