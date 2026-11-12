@@ -1,0 +1,15 @@
+{
+  "updated_utc": "2026-11-12T19:27:45Z",
+  "source": "39hk-dx4f",
+  "source_label": "MTA Subway Stations (NYS Open Data)",
+  "n": 496,
+  "structure_counts": {
+    "Subway": 283,
+    "Elevated": 145,
+    "Open Cut": 39,
+    "At Grade": 11,
+    "Viaduct": 12,
+    "Embankment": 6
+  },
+  "official_nws": false
+}

@@ -1,0 +1,16 @@
+{
+  "updated_utc": "2026-11-12T18:49:33Z",
+  "n_events_post_ida": 3539,
+  "n_sensors_post_ida": 318,
+  "ida_window_events": 5,
+  "years": {
+    "2023": 362,
+    "2025": 682,
+    "2024": 662,
+    "2026": 1673,
+    "2022": 142,
+    "2021": 58,
+    "2020": 2
+  },
+  "product_asset": "floodnet_later_events.geojson"
+}

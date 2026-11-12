@@ -3443,7 +3443,8 @@
   "infra": {
     "roads_geojson": "roads.geojson",
     "roads_note": "Citywide OSM majors (trunk/primary/motorway mix), web-capped",
-    "stations_geojson": "subway_stations.geojson"
+    "stations_geojson": "subway_stations.geojson",
+    "facilities_geojson": "critical_facilities.geojson"
   },
   "case_study": {
     "event": "ida-2021",
@@ -3492,12 +3493,18 @@
   "exposure": {
     "gpkg": "exposure_citywide.gpkg",
     "meta": "exposure_citywide.json",
-    "intersects": "exposure_depth_intersects.json",
     "layers": [
       "roads",
       "stations",
       "facilities"
     ],
+    "inventory": {
+      "facilities": "ji82-xba5",
+      "stations": "39hk-dx4f",
+      "stormwater": "9i7c-xyvv",
+      "lion_tunnels": "2v4z-66xt",
+      "bes": "bsin-59hv"
+    },
     "official": false
   },
   "validation_dashboard": {
@@ -3545,6 +3552,19 @@
         "assets_json": "decision_desk_assets_henri.json",
         "assets_geojson": "decision_desk_assets_henri.geojson"
       }
+    },
+    "shortlist_ids": [
+      "stations:gtfs:F22",
+      "road:25430129",
+      "facilities:uid:a464e8e63eb8b2c92ab1995735cfd284",
+      "road:37394898"
+    ],
+    "inventory": {
+      "facilities": "ji82-xba5",
+      "stations": "39hk-dx4f",
+      "stormwater": "9i7c-xyvv",
+      "lion_tunnels": "2v4z-66xt",
+      "bes": "bsin-59hv"
     }
   },
   "depth_engines": {
@@ -3817,5 +3837,143 @@
       ]
     },
     "honesty": "Tropical Storm Henri research desk via MRMS\u00d7HAND \u2014 NOT NWS / NOT decision-grade. Lead chips use 6/12/18/24h cum frames for this event."
+  },
+  "ui_data_expansion": {
+    "floodnet_later_events": "floodnet_later_events.geojson",
+    "floodnet_later_meta": "floodnet_later_events_meta.json",
+    "dep_catch_basins_sample": "dep_catch_basins_sample.geojson",
+    "building_footprints_sample": "building_footprints_sample.geojson",
+    "archived_511_events": "archived_511_events.geojson",
+    "access_signals_511_archive": "access_signals_511_archive.json",
+    "features": [
+      "denser_radar_feel",
+      "selected_asset_depth_sparkline",
+      "advanced_nested_collapse",
+      "shortlist_print_share_snapshot",
+      "floodnet_ida_all_5_posts",
+      "floodnet_later_events",
+      "optional_archived_open_layers"
+    ]
+  },
+  "official_inventory_layers": {
+    "facilities_geojson": "critical_facilities.geojson",
+    "stations_geojson": "subway_stations.geojson",
+    "stormwater_geojson": "stormwater_deep_moderate_current.geojson",
+    "lion_tunnels_geojson": "lion_tunnels.geojson",
+    "bes_geojson": "bes_near_wet_facilities.geojson",
+    "metas": {
+      "facilities": {
+        "updated_utc": "2026-11-12T19:27:45Z",
+        "source": "ji82-xba5",
+        "source_label": "NYC Facilities Database",
+        "n": 1893,
+        "counts": {
+          "school": 1521,
+          "police": 80,
+          "fire": 219,
+          "hospital": 73
+        },
+        "filters": {
+          "hospitals": "HOSPITAL / ACUTE CARE HOSPITAL",
+          "fire": "FIREHOUSE",
+          "police": "POLICE STATION",
+          "schools": "PUBLIC K-12 SCHOOLS"
+        },
+        "honesty": "Official open inventory pins for research desk \u2014 not flood ops truth and not 'must stay open' guidance.",
+        "official_nws": false,
+        "decision_grade": false
+      },
+      "stations": {
+        "updated_utc": "2026-11-12T19:27:45Z",
+        "source": "39hk-dx4f",
+        "source_label": "MTA Subway Stations (NYS Open Data)",
+        "n": 496,
+        "structure_counts": {
+          "Subway": 283,
+          "Elevated": 145,
+          "Open Cut": 39,
+          "At Grade": 11,
+          "Viaduct": 12,
+          "Embankment": 6
+        },
+        "honesty": "Official MTA stop pins \u2014 station \u2260 street entrance. Structure is inventory context for research action hints.",
+        "official_nws": false
+      },
+      "stormwater": {
+        "updated_utc": "2026-11-12T19:27:47Z",
+        "product_asset": "stormwater_deep_moderate_current.geojson",
+        "n_features": 1,
+        "raw_bytes": 7967638,
+        "product_bytes": 1313777,
+        "scenario": "Moderate Flood with Current Sea Levels",
+        "source": "9i7c-xyvv"
+      },
+      "lion": {
+        "updated_utc": "2026-11-12T19:27:53Z",
+        "product_asset": "lion_tunnels.geojson",
+        "n": 358,
+        "layer": "lion",
+        "source": "2v4z-66xt"
+      },
+      "bes": {
+        "updated_utc": "2026-11-12T19:28:51Z",
+        "product_asset": "bes_near_wet_facilities.geojson",
+        "n": 400,
+        "source": "bsin-59hv",
+        "radius_m": 350.0
+      },
+      "exposure": {
+        "roads": {
+          "n": 2200,
+          "geom_types": [
+            "LineString"
+          ]
+        },
+        "stations": {
+          "n": 496,
+          "geom_types": [
+            "Point"
+          ]
+        },
+        "facilities": {
+          "n": 1893,
+          "geom_types": [
+            "Point"
+          ]
+        }
+      },
+      "desk_counts": {
+        "wet_total": 1889,
+        "roads": 555,
+        "stations": 279,
+        "facilities": 1055,
+        "by_band": {
+          "ponding": 1220,
+          "deep_ponding": 668,
+          "hazard": 1
+        }
+      },
+      "joins": {
+        "stormwater_deep_hits": 10,
+        "lion_tunnel_road_hits": 1,
+        "bes_facility_hits": 9,
+        "station_structure_hits": 279,
+        "honesty": "Research joins only \u2014 stormwater planning \u2260 Ida HAND; BES NAVD88 \u2260 HAND cm; LION tunnels \u2260 live closures."
+      },
+      "shortlist_ids": [
+        "stations:gtfs:F22",
+        "road:25430129",
+        "facilities:uid:a464e8e63eb8b2c92ab1995735cfd284",
+        "road:37394898"
+      ]
+    },
+    "joins": {
+      "stormwater_deep_hits": 10,
+      "lion_tunnel_road_hits": 1,
+      "bes_facility_hits": 9,
+      "station_structure_hits": 279,
+      "honesty": "Research joins only \u2014 stormwater planning \u2260 Ida HAND; BES NAVD88 \u2260 HAND cm; LION tunnels \u2260 live closures."
+    },
+    "honesty": "Official open inventory + planning overlays for Decision Desk. NOT NWS / NOT decision-grade / stormwater \u2260 Ida depth."
   }
 }

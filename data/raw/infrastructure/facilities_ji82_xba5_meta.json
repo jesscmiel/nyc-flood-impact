@@ -1,0 +1,21 @@
+{
+  "updated_utc": "2026-11-12T19:27:45Z",
+  "source": "ji82-xba5",
+  "source_label": "NYC Facilities Database",
+  "n": 1893,
+  "counts": {
+    "school": 1521,
+    "police": 80,
+    "fire": 219,
+    "hospital": 73
+  },
+  "filters": {
+    "hospitals": "HOSPITAL / ACUTE CARE HOSPITAL",
+    "fire": "FIREHOUSE",
+    "police": "POLICE STATION",
+    "schools": "PUBLIC K-12 SCHOOLS"
+  },
+  "honesty": "Official open inventory pins for research desk \u2014 not flood ops truth and not 'must stay open' guidance.",
+  "official_nws": false,
+  "decision_grade": false
+}
