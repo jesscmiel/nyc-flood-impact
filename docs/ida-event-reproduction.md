@@ -58,7 +58,7 @@ Queens: raw SFINCS already OOM without calib; hotspot matches closely. Brooklyn:
 ## Demo honesty (talk track)
 
 - Desk / map **primary depth** = metro HAND — still say “cm-scale screening.”  
-- FloodNet layer under Advanced = **Ida post reproduction**, not a new citywide hazard.  
+- Desk **Ida FloodNet peaks** panel = **Ida post reproduction** (default-on map markers + residual list), not a new citywide hazard.  
 - Quote hotspot RMSE **0.21 m** and LOO **0.32 m**; never 311 hit≈1.  
 - Do not claim the scale/bias transfers to other storms without a holdout event.
 
@@ -71,6 +71,6 @@ Queens: raw SFINCS already OOM without calib; hotspot matches closely. Brooklyn:
 | Skill card | `outputs/ida_floodnet_reproduction.json` · `figures/product_assets/ida_floodnet_reproduction.json` |
 | Station overlay | `figures/product_assets/floodnet_ida_hotspot_stations.geojson` |
 | Manifest | `ida_event_reproduction` · `validation_dashboard.ida_reproduction` |
-| Map | Advanced → FloodNet Ida posts + validation panel leads with hotspot RMSE/bias |
+| Map | Decision Desk core panel **Ida FloodNet peaks** (default on) — residual list + map posts; Advanced keeps limitations-only note |
 
 **Accept:** peaks OOM at FloodNet posts; residual documented; primary HAND unchanged; demo banner still research-only.

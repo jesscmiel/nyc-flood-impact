@@ -3513,9 +3513,10 @@
     "png": "depth_sfincs_queens_ida_m.png",
     "meta": "depth_sfincs_queens_ida_meta.json",
     "engine": "sfincs_docker_v2.1.1_Dollerup",
+    "extent": "south_queens",
     "role": "alternate_hydro_track",
-    "honesty": "NOT peer-authoritative with pysheds citywide.",
-    "extent": "south_queens"
+    "primary": false,
+    "honesty": "SFINCS Queens with shared open drainage-capacity sink (same proxy language as HAND). Alternate hydro track \u2014 NOT peer-authoritative with primary metro HAND."
   },
   "asset_decision_desk": {
     "assets_json": "decision_desk_assets.json",

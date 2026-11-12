@@ -110,7 +110,10 @@ select, input[type=search] {{ width:100%; appearance:none; padding:9px 11px; bor
 .band.ponding {{ background:#fef3c7; color:var(--band-3); }}
 .band.deep_ponding {{ background:#ffedd5; color:var(--band-8); }}
 .band.hazard {{ background:#fee2e2; color:var(--band-15); }}
+.band.oom-ok {{ background:#d4eef1; color:#045963; }}
+.band.oom-miss {{ background:#ffedd5; color:var(--band-8); }}
 .type-pill {{ display:inline-flex; padding:2px 7px; border-radius:999px; background:#eef3f6; font-weight:600; }}
+.floodnet-list {{ display:flex; flex-direction:column; gap:6px; max-height:min(32vh,300px); overflow:auto; padding-right:2px; margin-top:8px; }}
 .legend-swatch {{ height:8px; border-radius:999px; margin:4px 0 8px; }}
 .legend-swatch.precip {{ background:linear-gradient(90deg,#30123b,#4662d8,#1ae4b6,#a2fc3c,#f9ba38,#e8332b); }}
 .legend-swatch.susc {{ background:linear-gradient(90deg,#fff7bc,#fec44f,#d95f0e,#7f2704); }}
@@ -186,7 +189,7 @@ details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft);
   </div>
   <div class="disclaimer-bar">
     <b>NOT decision-grade. NOT an official NWS flood warning. NOT emergency guidance.</b>
-    Research depths are cm-scale HAND heuristics — not Ida street depths; sewer = open capacity proxy, not DEP.
+    Desk ranking uses cm-scale HAND heuristics — not Ida street depths. FloodNet peaks below are a separate post-level reproduction, not citywide depth.
   </div>
   <div id="assetBanner" class="disclaimer-bar" style="display:none;background:#3b0d0d;border-color:#7f1d1d;color:#fecaca"></div>
 
@@ -222,9 +225,21 @@ details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft);
     <div class="asset-list" id="assetList" aria-label="Ranked wet assets"><div class="empty">Loading ranked assets…</div></div>
   </div>
 
+  <div class="panel core" id="floodnetPeaksPanel">
+    <h2>Ida FloodNet peaks</h2>
+    <div class="honesty" style="margin-top:0">
+      Working product check — reproduce Ida <b>peaks at FloodNet posts</b> (order-of-magnitude).
+      Transparent hotspot hydro on local excess precip — <b>does not</b> rescale citywide HAND. In-sample fit on n=5; LOO is the honesty check. Not DEP / not SWMM / not decision-grade.
+    </div>
+    <div id="floodnetSummary" class="metric"><span>Loading FloodNet reproduction…</span><b>—</b></div>
+    <div id="floodnetMeta" class="metric" style="display:none"><span>Primary HAND @ posts</span><b>—</b></div>
+    <label class="layer-btn" style="margin-top:6px"><input id="lyFloodNet" type="checkbox" checked>Show FloodNet posts on map (default on)</label>
+    <div class="floodnet-list" id="floodnetList" aria-label="FloodNet Ida peak comparison"><div class="empty">Loading sensor peaks…</div></div>
+  </div>
+
   <div class="panel">
     <h2>Storm + primary depth</h2>
-    <div class="honesty" style="margin-top:0">Primary: <b>pysheds metro</b> · Alt: SFINCS (Advanced). Storm path locked to <b>MRMS QPE Ida</b>.</div>
+    <div class="honesty" style="margin-top:0">Primary: <b>pysheds metro</b> · Alt: SFINCS (Advanced). Storm path locked to <b>MRMS QPE Ida</b>. FloodNet peaks panel is separate post-level reproduction.</div>
     <div class="metric"><span>Storm path</span><b style="font-size:.68rem">MRMS QPE Ida (~1 km)</b></div>
     <div class="metric" id="timeWindowMetric"><span>Time window</span><b style="font-size:.62rem" id="timeWindowVal">+6…+24h</b></div>
     <label class="layer-btn"><input id="lyDepthTot" type="checkbox" checked>Primary research depth (evolves w/ loop)</label>
@@ -250,7 +265,7 @@ details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft);
   <div class="panel">
     <details class="advanced">
       <summary>Advanced / context layers</summary>
-      <div class="honesty" style="margin-top:0;margin-bottom:8px">Research chrome only — Earth2 scenarios, SFINCS, FEMA/NWM/gauges, validation. Keep closed for demos.</div>
+      <div class="honesty" style="margin-top:0;margin-bottom:8px">Research chrome only — Earth2 scenarios, SFINCS, FEMA/NWM/gauges. FloodNet Ida peaks live in the desk panel above (default on). Keep this closed for demos.</div>
       <div class="filters" style="grid-template-columns:1fr 1fr">
         <div><label class="caption" for="extentSelect">Extent</label><select id="extentSelect"></select></div>
         <div><label class="caption" for="eventSelect">Event</label><select id="eventSelect"></select></div>
@@ -266,7 +281,6 @@ details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft);
         <label class="layer-btn"><input id="lyRoads" type="checkbox">All roads</label>
         <label class="layer-btn"><input id="lyFac" type="checkbox">All facilities</label>
         <label class="layer-btn"><input id="ly311" type="checkbox">311 reports</label>
-        <label class="layer-btn"><input id="lyFloodNet" type="checkbox">FloodNet Ida posts (hotspot cal)</label>
         <div class="group-label">Reference context</div>
         <label class="layer-btn"><input id="lyFema" type="checkbox">FEMA NFHL</label>
         <label class="layer-btn"><input id="lyNwm" type="checkbox">NWM reaches</label>
@@ -300,7 +314,7 @@ details.about summary {{ cursor:pointer; font-weight:700; color:var(--ink-soft);
     <h3 id="selName">—</h3>
     <p id="selBody">—</p>
   </div>
-  <div class="footer-note">Research prototype — NOT NWS / NOT decision-grade. Metro pysheds × MRMS primary; SFINCS only under Advanced.</div>
+  <div class="footer-note">Research prototype — NOT NWS / NOT decision-grade. Metro pysheds × MRMS primary; FloodNet peaks = post-level hotspot cal (not citywide HAND).</div>
   <div class="radar-hud">
     <button type="button" class="play" id="hudPlay">▶</button>
     <div>
@@ -402,6 +416,7 @@ let frames = [], suscFrames = [], depthCumFrames = [], e2Layers = [], suscLayers
 let activeE2 = null, activeSusc = null, activeDepth = null, e2Total = null, depthTotal = null, sfincsLayer = null;
 let playing = false, playTimer = null;
 let desk = null, wetLayer = null, selectedLayer = null, selectedId = null;
+let floodnetLayer = null, floodnetStations = [], selectedFloodnetId = null;
 let typeFilter = "all";
 let listMode = "shortlist";
 
@@ -740,6 +755,71 @@ function loadOptionalLayers() {{
     }}));
   }}).catch(()=>{{}});
 
+  const scoresName = (manifest.validation_dashboard && manifest.validation_dashboard.scores) || "validation_scores.json";
+  fetch(assets + scoresName, {{ cache:"no-cache" }}).then(r => r.ok ? r.json() : null).catch(() => null).then(scores => {{
+    const el = document.getElementById("validationPanel");
+    if (!el || !scores) return;
+    // Desk FloodNet panel owns the primary reproduction story; Advanced keeps limitations-only fallback.
+    if (el.dataset.floodnetWired === "1") return;
+    const conf = scores.confidence ? scores.confidence.level : "low";
+    const note = (scores.confidence && scores.confidence.note) || "Exploratory collocation only.";
+    el.innerHTML = `<b>Limitations-first</b> — exploratory collocation (${{conf}}); ${{note}} Never lead with 311 hit-rate. FloodNet peaks: see desk panel.`;
+  }});
+}}
+
+function fmtM(x) {{
+  return (x == null || Number.isNaN(Number(x))) ? "—" : Number(x).toFixed(3);
+}}
+
+function floodnetPopupHtml(p) {{
+  return `<b>${{p.sensor_name || p.sensor_id || "FloodNet"}}</b><br>` +
+    `obs peak ${{fmtM(p.obs_peak_m)}} m · hotspot cal ${{fmtM(p.hotspot_cal_m)}} m<br>` +
+    `residual ${{fmtM(p.residual_m)}} m · HAND@post ${{fmtM(p.primary_hand_m)}} m<br>` +
+    `<span style="opacity:.8">Ida post reproduction — not primary citywide depth</span>`;
+}}
+
+function selectFloodnetStation(sensorId) {{
+  selectedFloodnetId = sensorId;
+  document.querySelectorAll("#floodnetList .asset-row").forEach(btn => {{
+    btn.classList.toggle("selected", btn.dataset.id === sensorId);
+  }});
+  if (!floodnetLayer) return;
+  floodnetLayer.eachLayer(layer => {{
+    const p = layer.feature && layer.feature.properties;
+    if (!p || p.sensor_id !== sensorId) return;
+    const ll = layer.getLatLng();
+    mapLeft.flyTo(ll, Math.max(mapLeft.getZoom(), 14), {{ duration: 0.65 }});
+    layer.openPopup();
+  }});
+}}
+
+function renderFloodnetList(stations) {{
+  const list = document.getElementById("floodnetList");
+  if (!list) return;
+  if (!stations.length) {{
+    list.innerHTML = '<div class="empty">No FloodNet Ida peaks loaded.</div>';
+    return;
+  }}
+  const ranked = stations.slice().sort((a, b) => (b.obs_peak_m || 0) - (a.obs_peak_m || 0));
+  list.innerHTML = ranked.map(p => {{
+    const ok = !!p.oom_ok;
+    const obsCm = p.obs_peak_m == null ? "—" : (Number(p.obs_peak_m) * 100).toFixed(1);
+    const calCm = p.hotspot_cal_m == null ? "—" : (Number(p.hotspot_cal_m) * 100).toFixed(1);
+    const resCm = p.residual_m == null ? "—" : ((Number(p.residual_m) >= 0 ? "+" : "") + (Number(p.residual_m) * 100).toFixed(1));
+    return `<button type="button" class="asset-row${{selectedFloodnetId === p.sensor_id ? " selected" : ""}}" data-id="${{p.sensor_id}}">` +
+      `<div class="top"><span class="name">${{p.sensor_name || p.sensor_id}}</span>` +
+      `<span class="depth">obs ${{obsCm}} cm</span></div>` +
+      `<div class="meta"><span class="type-pill">${{p.borough || "NYC"}}</span>` +
+      `<span class="band ${{ok ? "oom-ok" : "oom-miss"}}">${{ok ? "OOM ok" : "OOM miss"}}</span>` +
+      `<span>cal ${{calCm}} cm</span><span>resid ${{resCm}} cm</span>` +
+      `<span>HAND ${{fmtM(p.primary_hand_m)}} m</span></div></button>`;
+  }}).join("");
+  list.querySelectorAll(".asset-row").forEach(btn => {{
+    btn.onclick = () => selectFloodnetStation(btn.dataset.id);
+  }});
+}}
+
+function loadFloodNetProduct() {{
   const fnName = (manifest.validation_dashboard && manifest.validation_dashboard.floodnet)
     || (manifest.validation_floodnet && manifest.validation_floodnet.scores)
     || "floodnet_validation.json";
@@ -748,62 +828,98 @@ function loadOptionalLayers() {{
     || "ida_floodnet_reproduction.json";
   const hotspotGeo = (manifest.ida_event_reproduction && manifest.ida_event_reproduction.stations_geojson)
     || "floodnet_ida_hotspot_stations.geojson";
-  const scoresName = (manifest.validation_dashboard && manifest.validation_dashboard.scores) || "validation_scores.json";
-  fetchGeoJSON(hotspotGeo).then(geo => {{
-    bindToggle("lyFloodNet", L.geoJSON(geo, {{
-      pointToLayer: (f, ll) => {{
-        const p = f.properties || {{}};
-        const ok = !!p.oom_ok;
-        return L.circleMarker(ll, {{
-          radius: 7,
-          fillColor: ok ? "#0a8a96" : "#8d3d14",
-          color: "#071018",
-          weight: 1.5,
-          fillOpacity: 0.92,
-          pane: "pointPane",
-        }});
-      }},
-      onEachFeature: (f, layer) => {{
-        const p = f.properties || {{}};
-        const fmt = (x) => (x == null || Number.isNaN(Number(x))) ? "—" : Number(x).toFixed(3);
-        layer.bindPopup(
-          `<b>${{p.sensor_name || p.sensor_id || "FloodNet"}}</b><br>` +
-          `obs peak ${{fmt(p.obs_peak_m)}} m · hotspot cal ${{fmt(p.hotspot_cal_m)}} m<br>` +
-          `residual ${{fmt(p.residual_m)}} m · HAND@post ${{fmt(p.primary_hand_m)}} m<br>` +
-          `<span style="opacity:.8">Ida reproduction only — not primary depth</span>`
-        );
-      }},
-    }}));
-  }}).catch(()=>{{}});
+
   Promise.all([
-    fetch(assets + fnName, {{ cache:"no-cache" }}).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetchGeoJSON(hotspotGeo).catch(() => null),
     fetch(assets + reproName, {{ cache:"no-cache" }}).then(r => r.ok ? r.json() : null).catch(() => null),
-    fetch(assets + scoresName, {{ cache:"no-cache" }}).then(r => r.ok ? r.json() : null).catch(() => null),
-  ]).then(([fn, repro, scores]) => {{
-    const el = document.getElementById("validationPanel");
-    if (!el) return;
-    const fmt = (x) => (x == null || Number.isNaN(x)) ? "—" : Number(x).toFixed(3);
+    fetch(assets + fnName, {{ cache:"no-cache" }}).then(r => r.ok ? r.json() : null).catch(() => null),
+  ]).then(([geo, repro, fn]) => {{
+    const summaryEl = document.getElementById("floodnetSummary");
+    const metaEl = document.getElementById("floodnetMeta");
+    const advEl = document.getElementById("validationPanel");
+
+    if (geo && geo.features) {{
+      floodnetStations = geo.features.map(f => Object.assign({{}}, f.properties || {{}}, {{
+        lon: f.geometry && f.geometry.coordinates ? f.geometry.coordinates[0] : null,
+        lat: f.geometry && f.geometry.coordinates ? f.geometry.coordinates[1] : null,
+      }}));
+      floodnetLayer = L.geoJSON(geo, {{
+        pointToLayer: (f, ll) => {{
+          const p = f.properties || {{}};
+          const ok = !!p.oom_ok;
+          return L.circleMarker(ll, {{
+            radius: 8,
+            fillColor: ok ? "#0a8a96" : "#8d3d14",
+            color: "#071018",
+            weight: 2,
+            fillOpacity: 0.95,
+            pane: "pointPane",
+          }});
+        }},
+        onEachFeature: (f, layer) => {{
+          const p = f.properties || {{}};
+          layer.bindPopup(floodnetPopupHtml(p));
+          layer.bindTooltip((p.sensor_name || p.sensor_id || "FloodNet") + " · obs " + fmtM(p.obs_peak_m) + " m");
+          layer.on("click", () => {{ selectedFloodnetId = p.sensor_id; renderFloodnetList(floodnetStations); }});
+        }},
+      }});
+      bindToggle("lyFloodNet", floodnetLayer);
+      renderFloodnetList(floodnetStations);
+    }} else {{
+      document.getElementById("floodnetList").innerHTML = '<div class="empty">floodnet_ida_hotspot_stations.geojson missing — run scripts/calibrate_ida_floodnet_hotspot.py</div>';
+    }}
+
     if (repro && repro.summary && repro.summary.hotspot_calibrated) {{
       const h = repro.summary.hotspot_calibrated;
       const hand = repro.summary.primary_hand || {{}};
       const cal = repro.calibration || {{}};
       const loo = repro.leave_one_out || {{}};
-      el.innerHTML =
-        `<b>Ida @ FloodNet posts</b> — hotspot cal RMSE ${{fmt(h.rmse_m)}} m · bias ${{fmt(h.bias_m)}} m · OOM ${{h.oom_ok_n || 0}}/${{h.n || 0}}` +
-        ` (scale ${{fmt(cal.scale)}}, bias ${{fmt(cal.bias_m)}} m; LOO RMSE ${{fmt(loo.rmse_m)}} m).` +
-        ` Primary HAND still dry/cm-scale (RMSE ${{fmt(hand.rmse_m)}} m) — not rescaled citywide. Research only; never lead with 311.`;
+      if (summaryEl) {{
+        summaryEl.innerHTML =
+          `<span>Hotspot cal @ posts</span>` +
+          `<b>RMSE ${{fmtM(h.rmse_m)}} m · OOM ${{h.oom_ok_n || 0}}/${{h.n || 0}}</b>`;
+      }}
+      if (metaEl) {{
+        metaEl.style.display = "flex";
+        metaEl.innerHTML =
+          `<span>HAND dry/cm · LOO ${{fmtM(loo.rmse_m)}} m</span>` +
+          `<b>bias ${{fmtM(h.bias_m)}} · scale ${{fmtM(cal.scale)}}</b>`;
+      }}
+      if (advEl) {{
+        advEl.dataset.floodnetWired = "1";
+        advEl.innerHTML =
+          `<b>Ida @ FloodNet posts</b> — desk panel owns this story. Hotspot RMSE ${{fmtM(h.rmse_m)}} m · bias ${{fmtM(h.bias_m)}} m · OOM ${{h.oom_ok_n || 0}}/${{h.n || 0}}` +
+          ` (scale ${{fmtM(cal.scale)}}, LOO RMSE ${{fmtM(loo.rmse_m)}} m). Primary HAND RMSE ${{fmtM(hand.rmse_m)}} m unchanged — not rescaled citywide. Research only; never lead with 311.`;
+      }}
+      if ((!geo || !geo.features) && Array.isArray(repro.stations)) {{
+        floodnetStations = repro.stations;
+        renderFloodnetList(floodnetStations);
+      }}
       return;
     }}
+
     if (fn && fn.summary) {{
       const rmse = fn.summary.peak_rmse_m;
       const bias = fn.summary.peak_bias_m && fn.summary.peak_bias_m.mean;
       const n = fn.summary.n_sensors;
-      el.innerHTML = `<b>FloodNet vs primary HAND</b> — n=${{n}} sensors · peak RMSE ${{fmt(rmse)}} m · bias ${{fmt(bias)}} m (model−obs). Research only; cm-scale HAND ≪ street peaks. Never lead with 311 hit-rate.`;
+      if (summaryEl) {{
+        summaryEl.innerHTML = `<span>FloodNet vs primary HAND</span><b>RMSE ${{fmtM(rmse)}} m · n=${{n}}</b>`;
+      }}
+      if (advEl) {{
+        advEl.dataset.floodnetWired = "1";
+        advEl.innerHTML = `<b>FloodNet vs primary HAND</b> — n=${{n}} sensors · peak RMSE ${{fmtM(rmse)}} m · bias ${{fmtM(bias)}} m (model−obs). Research only; cm-scale HAND ≪ street peaks. Never lead with 311 hit-rate.`;
+      }}
       return;
     }}
-    const conf = scores && scores.confidence ? scores.confidence.level : "low";
-    const note = (scores && scores.confidence && scores.confidence.note) || "Exploratory collocation only.";
-    el.innerHTML = `<b>Limitations-first</b> — exploratory collocation (${{conf}}); ${{note}} Never lead with 311 hit-rate.`;
+
+    if (summaryEl) {{
+      summaryEl.innerHTML = `<span>FloodNet reproduction</span><b>unavailable</b>`;
+    }}
+  }}).catch(err => {{
+    const summaryEl = document.getElementById("floodnetSummary");
+    if (summaryEl) summaryEl.innerHTML = `<span>FloodNet load failed</span><b>—</b>`;
+    document.getElementById("floodnetList").innerHTML = '<div class="empty">Failed to load FloodNet reproduction assets.</div>';
+    console.warn(err);
   }});
 }}
 
@@ -881,6 +997,7 @@ rebuildPathLayers();
 fitMapFrame();
 setLead(0);
 loadDecisionDesk();
+loadFloodNetProduct();
 loadOptionalLayers();
 setPlaying(true);
 </script>

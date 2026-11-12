@@ -2,7 +2,7 @@
 """Calibrate FloodNet Ida hotspot hydro (transparent scale+bias on excess ponding).
 
 Does NOT rescale primary HAND citywide. Writes reproduction skill card + station
-GeoJSON for the product map Advanced validation panel.
+GeoJSON for the Decision Desk FloodNet peaks panel (working product, default on).
 """
 
 from __future__ import annotations
