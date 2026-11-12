@@ -4,34 +4,34 @@
   "layers": {
     "roads": {
       "n": 2200,
-      "wet": 428,
-      "max_depth_m": 0.13832485675811768,
-      "mean_wet_m": 0.09953794914741661,
+      "wet": 555,
+      "max_depth_m": 0.1554109752178192,
+      "mean_wet_m": 0.08787182201002096,
       "band_counts": {
-        "ponding": 79,
-        "deep_ponding": 349,
-        "hazard": 0
+        "ponding": 239,
+        "deep_ponding": 315,
+        "hazard": 1
       }
     },
     "stations": {
       "n": 309,
-      "wet": 304,
-      "max_depth_m": 0.13607600331306458,
-      "mean_wet_m": 0.09972239023466643,
+      "wet": 32,
+      "max_depth_m": 0.0983453318476677,
+      "mean_wet_m": 0.06007402460090816,
       "band_counts": {
         "ponding": 30,
-        "deep_ponding": 274,
+        "deep_ponding": 2,
         "hazard": 0
       }
     },
     "facilities": {
-      "n": 26,
-      "wet": 15,
-      "max_depth_m": 0.12651056051254272,
-      "mean_wet_m": 0.09409758895635605,
+      "n": 47,
+      "wet": 4,
+      "max_depth_m": 0.07634828984737396,
+      "mean_wet_m": 0.05868814047425985,
       "band_counts": {
-        "ponding": 2,
-        "deep_ponding": 13,
+        "ponding": 4,
+        "deep_ponding": 0,
         "hazard": 0
       }
     }

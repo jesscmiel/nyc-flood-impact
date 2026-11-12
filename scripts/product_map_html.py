@@ -13,11 +13,12 @@ from pathlib import Path
 from nyc_flash_flood_case_study.config import FIGURES_DIR
 from nyc_flash_flood_case_study.extents import DEFAULT_MAP_EXTENT, EVENTS, EXTENTS
 
-# Curated ≥8 cm named click targets for the 60s demo (facility story is thin; tunnel substitutes).
+# Curated named click targets for the 60s demo (wet under 250 m point sample / road line max).
 DEMO_SHORTLIST_IDS = (
-    "road:37394898",  # Myrtle Avenue · 10.7 cm
-    "stations:146:36th Street",  # 36th Street · 10.2 cm
-    "road:5681925",  # Brooklyn–Battery Tunnel · 9.8 cm
+    "road:37394898",  # Myrtle Avenue
+    "stations:146:36th Street",  # 36th Street
+    "facilities:40:Staten Island University Hospital",
+    "road:5681925",  # Brooklyn–Battery Tunnel
 )
 
 
@@ -247,10 +248,16 @@ details.drawer[open] > summary::after {{ content:"–"; }}
   mask-image: radial-gradient(ellipse 92% 88% at 50% 50%, #000 58%, transparent 100%);
   image-rendering: auto;
   filter: saturate(1.1) contrast(1.05);
-  transition:opacity .25s ease;
+  transition:opacity .32s ease;
 }}
 .leaflet-image-layer.precip-radar {{ mix-blend-mode: screen; }}
+.leaflet-image-layer.susc-radar {{ mix-blend-mode: multiply; filter: saturate(1.25) contrast(1.12); }}
 .leaflet-control-zoom a {{ border-radius:8px !important; }}
+.marker-key {{
+  margin:8px 0 0; padding:8px 10px; border-radius:10px; font-size:.68rem; line-height:1.35;
+  color:var(--muted); background:rgba(8,40,52,.04); border:1px solid var(--line-soft);
+}}
+.marker-key b {{ color:var(--ink-soft); font-weight:700; }}
 </style>
 </head>
 <body>
@@ -292,6 +299,9 @@ details.drawer[open] > summary::after {{ content:"–"; }}
       </div>
     </div>
     <div class="asset-list" id="assetList" aria-label="Ranked wet assets"><div class="empty">Loading ranked assets…</div></div>
+    <div class="marker-key" id="markerKey">
+      <b>Map dots (no Advanced toggles):</b> wet desk assets (amber/orange/red by band) + FloodNet posts (cyan, on by default). Inventory Stations/Facilities live under Advanced.
+    </div>
   </section>
 
   <section class="section" id="floodnetPeaksPanel">
@@ -324,10 +334,10 @@ details.drawer[open] > summary::after {{ content:"–"; }}
   </section>
 
   <section class="section">
-    <details class="drawer" id="screeningDetails">
+    <details class="drawer" id="screeningDetails" open>
       <summary>Screening</summary>
-      <p class="drawer-note">Uncalibrated index — not probability or depth.</p>
-      <div class="opacity-row"><span>Susc.</span><input id="opSusc" type="range" min="10" max="90" value="48"><span id="opSuscVal">48%</span></div>
+      <p class="drawer-note">Real MRMS×terrain susceptibility frames (37). Uncalibrated — not probability or depth. Draws above Depth when on.</p>
+      <div class="opacity-row"><span>Susc.</span><input id="opSusc" type="range" min="10" max="90" value="62"><span id="opSuscVal">62%</span></div>
       <div class="legend-swatch susc"></div>
       <label class="layer-btn"><input id="lySusc" type="checkbox">Show screening</label>
     </details>
@@ -411,6 +421,8 @@ const mapLeft = L.map("mapLeft", {{ zoomControl: true }});
 window.mapLeft = mapLeft;
 mapLeft.createPane("rasterPane"); mapLeft.getPane("rasterPane").style.zIndex = 350;
 mapLeft.createPane("depthPane"); mapLeft.getPane("depthPane").style.zIndex = 400;
+// Screening above depth so "Show screening" is actually visible (was buried under Depth).
+mapLeft.createPane("suscPane"); mapLeft.getPane("suscPane").style.zIndex = 450;
 mapLeft.createPane("vectorPane"); mapLeft.getPane("vectorPane").style.zIndex = 650;
 mapLeft.createPane("pointPane"); mapLeft.getPane("pointPane").style.zIndex = 670;
 mapLeft.createPane("selectPane"); mapLeft.getPane("selectPane").style.zIndex = 700;
@@ -471,11 +483,14 @@ function depthOpacity() {{ return (+document.getElementById("opDepth").value) / 
 let activePath = stormPaths.find(p => p.id === pathSel.value) || stormPaths[0];
 let frames = [], suscFrames = [], depthCumFrames = [], e2Layers = [], suscLayers = [], depthLayers = [];
 let activeE2 = null, activeSusc = null, activeDepth = null, e2Total = null, depthTotal = null, sfincsLayer = null;
+let fadeE2 = null, fadeDepth = null, fadeSusc = null, fadeTimer = null;
 let playing = false, playTimer = null, leadIndex = 0;
 let desk = null, wetLayer = null, selectedLayer = null, selectedId = null;
 let floodnetLayer = null, floodnetStations = [], selectedFloodnetId = null;
 let typeFilter = "all";
 let listMode = "shortlist";
+const PLAY_MS = 520;
+const FADE_MS = 300;
 
 function depthSetForPath(pathId) {{
   const inundation = manifest.inundation || null;
@@ -519,6 +534,10 @@ function syncTimeWindowLabel() {{
 }}
 
 function rebuildPathLayers() {{
+  [activeE2, fadeE2, activeSusc, fadeSusc, activeDepth, fadeDepth].forEach(l => {{
+    if (l && mapLeft.hasLayer(l)) mapLeft.removeLayer(l);
+  }});
+  activeE2 = fadeE2 = activeSusc = fadeSusc = activeDepth = fadeDepth = null;
   e2Layers.forEach(l => mapLeft.removeLayer(l));
   suscLayers.forEach(l => mapLeft.removeLayer(l));
   depthLayers.forEach(l => mapLeft.removeLayer(l));
@@ -529,11 +548,14 @@ function rebuildPathLayers() {{
   const precipBounds = overlayBoundsPreferMetro(activePath.precip && activePath.precip.bounds);
   const suscBounds = overlayBoundsPreferMetro((activePath.susceptibility && activePath.susceptibility.bounds) || precipBounds);
   e2Layers = frames.map(f => L.imageOverlay(assets + f.png, precipBounds, {{
-    opacity: precipOpacity(), interactive:false, pane:"rasterPane", className:"precip-radar"
+    opacity: 0, interactive:false, pane:"rasterPane", className:"precip-radar"
   }}));
   suscLayers = suscFrames.map(f => L.imageOverlay(assets + f.png, suscBounds, {{
-    opacity: suscOpacity(), interactive:false, pane:"rasterPane", className:"susc-radar"
+    opacity: 0, interactive:false, pane:"suscPane", className:"susc-radar"
   }}));
+  // Prefetch a few radar frames so crossfades are less stuttery.
+  frames.slice(0, 8).forEach(f => {{ const im = new Image(); im.src = assets + f.png; }});
+  suscFrames.slice(0, 4).forEach(f => {{ const im = new Image(); im.src = assets + f.png; }});
   e2Total = activePath.precip?.storm_total_png
     ? L.imageOverlay(assets + activePath.precip.storm_total_png, precipBounds, {{
         opacity: precipOpacity(), pane:"rasterPane", interactive:false, className:"precip-radar"
@@ -543,15 +565,15 @@ function rebuildPathLayers() {{
   const depthBounds = overlayBoundsPreferMetro((ds && ds.bounds) || precipBounds);
   depthCumFrames = (ds && ds.cumulative_frames) ? ds.cumulative_frames.slice() : [];
   depthLayers = depthCumFrames.map(fr => L.imageOverlay(assets + fr.png, depthBounds, {{
-    opacity: depthOpacity(), interactive:false, pane:"depthPane", className:"depth-radar"
+    opacity: 0, interactive:false, pane:"depthPane", className:"depth-radar"
   }}));
   depthTotal = (ds && ds.storm_total && ds.storm_total.png)
     ? L.imageOverlay(assets + ds.storm_total.png, depthBounds, {{
-        opacity: depthOpacity(), interactive:false, pane:"depthPane", className:"depth-radar"
+        opacity: 0, interactive:false, pane:"depthPane", className:"depth-radar"
       }})
     : (manifest.inundation_citywide && manifest.inundation_citywide.png)
       ? L.imageOverlay(assets + manifest.inundation_citywide.png, dataDomainBounds(), {{
-          opacity: depthOpacity(), interactive:false, pane:"depthPane", className:"depth-radar"
+          opacity: 0, interactive:false, pane:"depthPane", className:"depth-radar"
         }})
       : null;
   if (manifest.inundation_sfincs && manifest.inundation_sfincs.png) {{
@@ -578,30 +600,61 @@ function rebuildPathLayers() {{
   }});
 }}
 
+function screeningOn() {{ return !!document.getElementById("lySusc").checked; }}
+function effectiveDepthOpacity() {{
+  const base = depthOpacity();
+  return screeningOn() ? Math.min(base, 0.32) : base;
+}}
+function swapOverlay(prev, next, getOpacity, onDone) {{
+  if (!next) {{
+    if (prev && mapLeft.hasLayer(prev)) mapLeft.removeLayer(prev);
+    onDone(null, null);
+    return;
+  }}
+  if (prev === next) {{
+    next.setOpacity(getOpacity());
+    if (!mapLeft.hasLayer(next)) next.addTo(mapLeft);
+    onDone(next, null);
+    return;
+  }}
+  next.setOpacity(0);
+  next.addTo(mapLeft);
+  requestAnimationFrame(() => {{
+    next.setOpacity(getOpacity());
+    if (prev && mapLeft.hasLayer(prev)) prev.setOpacity(0);
+  }});
+  setTimeout(() => {{
+    if (prev && mapLeft.hasLayer(prev) && prev !== next) mapLeft.removeLayer(prev);
+  }}, FADE_MS);
+  onDone(next, prev);
+}}
+
 function setLead(i) {{
   if (!frames.length) return;
   i = Math.max(0, Math.min(frames.length - 1, i));
   const f = frames[i];
-  if (activeE2 && mapLeft.hasLayer(activeE2)) mapLeft.removeLayer(activeE2);
-  activeE2 = e2Layers[i];
-  if (document.getElementById("lyE2").checked && activeE2) {{
-    activeE2.setOpacity(precipOpacity()); activeE2.addTo(mapLeft);
-  }}
-  if (activeSusc && mapLeft.hasLayer(activeSusc)) mapLeft.removeLayer(activeSusc);
-  if (suscLayers[i]) {{
-    activeSusc = suscLayers[i];
-    if (document.getElementById("lySusc").checked) {{
-      activeSusc.setOpacity(suscOpacity()); activeSusc.addTo(mapLeft);
-    }}
-  }}
-  if (activeDepth && mapLeft.hasLayer(activeDepth)) mapLeft.removeLayer(activeDepth);
-  if (depthTotal && mapLeft.hasLayer(depthTotal)) mapLeft.removeLayer(depthTotal);
+  [i + 1, i + 2].forEach(j => {{
+    const fr = frames[j % frames.length];
+    if (fr) {{ const im = new Image(); im.src = assets + fr.png; }}
+  }});
+
+  const wantPrecip = document.getElementById("lyE2").checked;
+  swapOverlay(activeE2, wantPrecip ? e2Layers[i] : null, precipOpacity, (a, fprev) => {{
+    activeE2 = a; fadeE2 = fprev;
+  }});
+
+  const wantSusc = screeningOn() && !!suscLayers[i];
+  swapOverlay(activeSusc, wantSusc ? suscLayers[i] : null, suscOpacity, (a, fprev) => {{
+    activeSusc = a; fadeSusc = fprev;
+  }});
+
   const di = nearestDepthIndex(f.lead_hours);
-  activeDepth = (di >= 0 && depthLayers[di]) ? depthLayers[di] : depthTotal;
-  if (document.getElementById("lyDepthTot").checked && activeDepth) {{
-    activeDepth.setOpacity(depthOpacity());
-    activeDepth.addTo(mapLeft);
-  }}
+  const nextDepth = (di >= 0 && depthLayers[di]) ? depthLayers[di] : depthTotal;
+  const wantDepth = document.getElementById("lyDepthTot").checked;
+  swapOverlay(activeDepth, wantDepth ? nextDepth : null, effectiveDepthOpacity, (a, fprev) => {{
+    activeDepth = a; fadeDepth = fprev;
+  }});
+
   if (document.getElementById("lySfincs").checked && sfincsLayer) {{
     if (!mapLeft.hasLayer(sfincsLayer)) sfincsLayer.addTo(mapLeft);
   }}
@@ -616,8 +669,9 @@ function setLead(i) {{
   document.getElementById("hudClock").textContent = clock + " UTC";
   const depthLead = (di >= 0 && depthCumFrames[di]) ? depthCumFrames[di].lead_hours : null;
   const depthBit = depthLead != null ? (" · depth +" + depthLead + "h") : "";
+  const suscBit = wantSusc ? " · screening on" : "";
   document.getElementById("hudSub").textContent =
-    "+" + f.lead_hours + "h · " + (f.temporal_blend ? "blend" : "native") + depthBit + " · awareness";
+    "+" + f.lead_hours + "h · " + (f.temporal_blend ? "blend" : "native") + depthBit + suscBit + " · awareness";
   document.getElementById("leftLabel").textContent = "Decision Desk · " + (activePath.label || "Ida");
 }}
 
@@ -630,7 +684,7 @@ function setPlaying(on) {{
   playTimer = setInterval(() => {{
     leadIndex = (leadIndex + 1) % frames.length;
     setLead(leadIndex);
-  }}, 450);
+  }}, PLAY_MS);
 }}
 
 function bandClass(band) {{ return band || "ponding"; }}
@@ -998,6 +1052,15 @@ document.getElementById("typeChips").addEventListener("click", e => {{
   if (!btn) return;
   typeFilter = btn.dataset.type;
   document.querySelectorAll("#typeChips .chip").forEach(c => c.classList.toggle("active", c === btn));
+  // Stations/facilities are sparse at ≥8 cm — open All wet + full list so the chip is usable.
+  if (typeFilter === "station" || typeFilter === "facility") {{
+    listMode = "all";
+    document.querySelectorAll("#listModeChips .chip").forEach(c => c.classList.toggle("active", c.dataset.mode === "all"));
+    const band = document.getElementById("bandFilter");
+    if (band && band.value === "deep_ponding") {{
+      band.value = "all";
+    }}
+  }}
   renderAssetList();
 }});
 document.getElementById("bandFilter").onchange = renderAssetList;
@@ -1047,15 +1110,19 @@ document.getElementById("opSusc").oninput = () => {{
 }};
 document.getElementById("opDepth").oninput = () => {{
   document.getElementById("opDepthVal").textContent = document.getElementById("opDepth").value + "%";
-  if (activeDepth) activeDepth.setOpacity(depthOpacity());
-  else if (depthTotal) depthTotal.setOpacity(depthOpacity());
+  if (activeDepth) activeDepth.setOpacity(effectiveDepthOpacity());
+  else if (depthTotal) depthTotal.setOpacity(effectiveDepthOpacity());
 }};
-document.getElementById("lyE2").onchange = () => setLead(0);
-document.getElementById("lySusc").onchange = () => setLead(0);
+document.getElementById("lyE2").onchange = () => setLead(leadIndex);
+document.getElementById("lySusc").onchange = () => {{
+  // Dim depth under screening so the amber index reads; keep current lead.
+  setLead(leadIndex);
+}};
 document.getElementById("lyDepthTot").onchange = () => {{
   if (activeDepth && mapLeft.hasLayer(activeDepth)) mapLeft.removeLayer(activeDepth);
   if (depthTotal && mapLeft.hasLayer(depthTotal)) mapLeft.removeLayer(depthTotal);
-  if (document.getElementById("lyDepthTot").checked) setLead(0);
+  activeDepth = null;
+  if (document.getElementById("lyDepthTot").checked) setLead(leadIndex);
 }};
 document.getElementById("lySfincs").onchange = () => {{
   if (!sfincsLayer) return;

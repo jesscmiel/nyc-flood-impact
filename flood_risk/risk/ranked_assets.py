@@ -20,7 +20,7 @@ from flood_risk.exposure.geopackage import (
     LAYER_ROADS,
     LAYER_STATIONS,
     line_max_depth,
-    point_depth,
+    point_nearby_max_depth,
 )
 from flood_risk.risk.depth_asset_tables import DEPTH_BANDS
 
@@ -84,10 +84,19 @@ def _centroid_lonlat(geom) -> tuple[float, float] | None:
     return float(c.x), float(c.y)
 
 
-def _sample_depth(ds: rasterio.io.DatasetReader, geom, layer: str) -> float:
+POINT_NEAR_SEARCH_M = 250.0
+
+
+def _sample_depth(
+    ds: rasterio.io.DatasetReader, geom, layer: str
+) -> tuple[float, float | None]:
+    """Return (depth_m, sample_offset_m). Offset is set for point layers only."""
     if layer == LAYER_ROADS:
-        return line_max_depth(ds, geom)
-    return point_depth(ds, geom)
+        return line_max_depth(ds, geom), None
+    depth, offset = point_nearby_max_depth(
+        ds, geom, search_m=POINT_NEAR_SEARCH_M, wet_m=0.005
+    )
+    return depth, offset
 
 
 def _first_exceedance_lead(
@@ -104,7 +113,7 @@ def _first_exceedance_lead(
     """
     thr = _band_min(band)
     for lead_h, ds in lead_datasets:
-        d = _sample_depth(ds, geom, layer)
+        d, _off = _sample_depth(ds, geom, layer)
         if np.isfinite(d) and d >= thr:
             return float(lead_h), f"band first met by +{int(lead_h)}h cum. depth frame"
     if np.isfinite(storm_total_depth) and storm_total_depth >= thr:
@@ -150,7 +159,7 @@ def build_ranked_assets(
                 gdf = gpd.read_file(gpkg, layer=layer)
                 for idx, row in gdf.iterrows():
                     geom = row.geometry
-                    depth = _sample_depth(ds, geom, layer)
+                    depth, sample_offset_m = _sample_depth(ds, geom, layer)
                     band = _band_id(float(depth)) if np.isfinite(depth) else None
                     if not band:
                         continue
@@ -185,6 +194,16 @@ def build_ranked_assets(
                         "lat": lat,
                         "highway": str(row.get("highway") or "") if layer == LAYER_ROADS else None,
                         "facility_type": str(row.get("facility_type") or "") if layer == LAYER_FACILITIES else None,
+                        "sample_offset_m": (
+                            None
+                            if sample_offset_m is None
+                            else round(float(sample_offset_m), 1)
+                        ),
+                        "sample_method": (
+                            "line_max"
+                            if layer == LAYER_ROADS
+                            else f"point_nearby_max_{int(POINT_NEAR_SEARCH_M)}m"
+                        ),
                         "engine": engine_id,
                     }
                     assets.append(props)
@@ -240,8 +259,18 @@ def build_ranked_assets(
             "hens": False,
             "honesty": (
                 "Ranked wet assets from research inundation × OSM/demo exposure. "
+                "Stations/facilities use max HAND depth within 250 m of the pin "
+                "(cell misalignment), not only the single cell under the point. "
                 "NOT official NWS thresholds. NOT decision-grade infrastructure guidance."
             ),
+            "point_sample": {
+                "method": f"point_nearby_max_{int(POINT_NEAR_SEARCH_M)}m",
+                "search_m": POINT_NEAR_SEARCH_M,
+                "note": (
+                    "Point assets often sit off the HAND wet channel; ranking uses "
+                    "nearby max depth within search_m (same idea as FloodNet nearest-wet)."
+                ),
+            },
             "scenario": {
                 "id": "ida_mrms_metro",
                 "label": "Ida · MRMS QPE · NYC metro (research)",
