@@ -1,17 +1,48 @@
 {
-  "engine": "sfincs_metro_nested_v1",
-  "engine_label": "SFINCS metro nested (coarse + Queens fine) \u2014 Advanced research only",
+  "engine": "sfincs_metro_nested_exchange_v1",
+  "engine_label": "SFINCS metro nested + feathered boundary exchange \u2014 Advanced research only",
   "png": "depth_sfincs_metro_nested_ida_m.png",
   "tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_sfincs_metro_nested_ida_m.tif",
   "coarse_tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_sfincs_metro_ida_m.tif",
   "nest_tif": "/home/jesscmiel/projects/nyc-flood-impact/data/processed/inundation/depth_sfincs_queens_ida_m.tif",
   "max_m": 5.526747703552246,
-  "wet_fraction": 0.9790218623481781,
-  "nest_cells_overwritten": 71000,
+  "wet_fraction": 0.9754429149797571,
   "role": "advanced_research_hydro",
   "primary": false,
   "not_swmm": true,
   "official_nws": false,
   "decision_grade": false,
-  "honesty": "Metro nested SFINCS composite (100 m coarse + Queens 50 m nest). Advanced research hydro only \u2014 HAND remains primary. No SWMM."
+  "never_blend_into_hand": true,
+  "exchange": {
+    "mode": "feathered_boundary_exchange",
+    "feather_px": 8,
+    "nest_cells": 71000,
+    "exchange_band_cells": 10954,
+    "boundary_residual_m": {
+      "n": 1762,
+      "mean": 0.00019853962294291705,
+      "rmse": 0.2773711383342743,
+      "p90_abs": 0.3775980472564697
+    }
+  },
+  "hand_overlap_calib_non_peer": {
+    "n": 5655,
+    "hand_mean_m": 0.05362163111567497,
+    "sfincs_mean_m": 0.12921810150146484,
+    "rmse_m": 0.3200863301753998,
+    "bias_sfincs_minus_hand_m": 0.07559647411108017,
+    "non_peer": true,
+    "note": "Overlap diagnostics only \u2014 magnitudes not peer; do NOT rescale HAND to SFINCS or blend engines into primary ranks."
+  },
+  "bounds": [
+    [
+      40.4,
+      -74.45
+    ],
+    [
+      41.05,
+      -73.5
+    ]
+  ],
+  "honesty": "Feathered nest\u2194coarse boundary exchange for Advanced SFINCS visualization. HAND stays primary; engines are non-peer; NOT SWMM / NOT DEP / NOT NWS."
 }

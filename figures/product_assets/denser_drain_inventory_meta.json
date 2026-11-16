@@ -1,0 +1,51 @@
+{
+  "product": "drainage_capacity_proxy",
+  "engine": "drainage_capacity_proxy_v1",
+  "extent": "metro",
+  "shape": [
+    2395,
+    2672
+  ],
+  "updated_at_utc": "2026-11-16T15:21:15.165217+00:00",
+  "p25_denser_inventory": true,
+  "drain_buffer_deg": 0.0022,
+  "drain_buffer_deg_legacy": 0.0015,
+  "drain_points": {
+    "n": 154786,
+    "status": "open_points",
+    "path": "/home/jesscmiel/projects/nyc-flood-impact/data/raw/infrastructure/osm_drains_metro.geojson",
+    "coverage": {
+      "n_land": 4390390,
+      "n_with_drain_credit": 694909,
+      "fraction_with_drain_credit": 0.15827956058573384
+    },
+    "coverage_legacy_buffer": {
+      "n_land": 4390390,
+      "n_with_drain_credit": 653715,
+      "fraction_with_drain_credit": 0.14889679504554265
+    },
+    "fetch": {
+      "n_features_merged": 154766,
+      "n_dep": 154212,
+      "n_osm": 570
+    },
+    "note": "Open NYC catch-basin inventory (CSV) + OSM inlet/manhole points. P2.5 widens influence buffer for coverage densification; does not invent basins."
+  },
+  "product_sample": {
+    "geojson": "dep_catch_basins_dense_sample.geojson",
+    "legacy_alias": "dep_catch_basins_sample.geojson",
+    "n_sample": 5000,
+    "n_full": 154766
+  },
+  "not_dep_sewer": true,
+  "not_swmm": true,
+  "official_nws": false,
+  "decision_grade": false,
+  "honesty": "Denser open catch-basin inventory for capacity proxy screening \u2014 NOT DEP sewer ops / NOT SWMM / NOT official closures.",
+  "stats_on_land": {
+    "coverage_fraction": 0.15827956058573384,
+    "coverage_fraction_legacy": 0.14889679504554265,
+    "capacity_mm_hr_mean": 11.064749717712402,
+    "excess_mm_mean": 106.07276916503906
+  }
+}

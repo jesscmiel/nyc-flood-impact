@@ -29,7 +29,7 @@ See [RELEASE.md](./RELEASE.md) for `demo-ida-v1` tag instructions.
 - HAND screening cm vs FloodNet street peaks honesty chip
 - All-mode = decision classes; schools opt-in
 - SFINCS Advanced only — non-peer banner + HAND auto-dim
-- Henri event picker hidden until radar + inventory parity
+- Henri Event switch available after `make henri-parity` (radar + official inventory + shortlist + compare strip)
 
 ## Rebuild DAG (Decision Desk)
 
@@ -37,7 +37,8 @@ See [RELEASE.md](./RELEASE.md) for `demo-ida-v1` tag instructions.
 DEM → MRMS → drainage proxy → HAND depth → exposure GPKG
   → build_decision_desk_assets → expand_ida_access_replay_pack
   → build_engine_disagreement → apply_desk_demo_curation
+  → make henri-parity (optional second storm)
   → relativize_product_paths → vendor (once) → html (make html)
 ```
 
-`make desk` / `make html` / `make test` / `make access-pack` / `make disagreement` / `make vendor` / `make demo-tag`.
+`make desk` / `make html` / `make henri-parity` / `make test` / `make access-pack` / `make disagreement` / `make vendor` / `make demo-tag`.

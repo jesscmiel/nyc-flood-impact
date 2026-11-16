@@ -422,6 +422,16 @@ details.drawer[open] > summary::after {{ content:"–"; }}
 .access-marker.mta {{ border-radius:50%; background:rgba(13,143,156,.94); border-color:#045963; border-style:solid; }}
 .access-marker.mta.limited {{ background:rgba(159,18,57,.94); border-color:#7f1d1d; border-style:dashed; }}
 .access-marker.mta.watch {{ border-style:dashed; border-color:#b45309; background:rgba(180,83,9,.9); }}
+.compare-strip {{
+  margin:8px 0 4px; padding:8px 10px; border-radius:8px;
+  background:rgba(8,40,52,.06); border:1px solid rgba(8,40,52,.1);
+  font:500 .72rem/1.35 Figtree,sans-serif; color:var(--ink-muted);
+}}
+.compare-strip b {{ color:var(--ink); font-weight:700; }}
+.compare-strip .compare-kicker {{
+  font:700 .62rem Syne,sans-serif; letter-spacing:.06em; text-transform:uppercase;
+  color:var(--accent-deep); margin-bottom:4px;
+}}
 </style>
 </head>
 <body>
@@ -543,15 +553,25 @@ details.drawer[open] > summary::after {{ content:"–"; }}
         <summary>Event / path</summary>
         <div class="filters" style="grid-template-columns:1fr 1fr">
           <div><label class="caption" for="extentSelect">Extent</label><select id="extentSelect"></select></div>
-          <div><label class="caption" for="eventSelect">Event</label><select id="eventSelect" disabled title="Henri parity incomplete — Ida only in default demo"></select></div>
+          <div><label class="caption" for="eventSelect">Event</label><select id="eventSelect" title="Ida primary · Henri research second storm when parity is built"></select></div>
         </div>
-        <p class="drawer-note" id="eventPickerNote">Event picker hidden until Henri radar + inventory parity. Ida only.</p>
+        <p class="drawer-note" id="eventPickerNote">Henri Event switch enabled when parity is built (radar + official inventory + shortlist).</p>
         <label class="caption" for="stormPathSelect" style="margin-top:6px">Scenario path</label>
         <select id="stormPathSelect" aria-label="Scenario path"></select>
+        <p class="drawer-note" id="liveMrmsNote">MRMS desk loops are fixture replay by default.</p>
+      </details>
+      <details class="drawer" id="corridorDetails">
+        <summary>Corridor impassability (research)</summary>
+        <p class="drawer-note">LION street graph × HAND wet edges between Smith-9 · Brooklyn Hospital · Myrtle. <b>Not official DOT closures.</b></p>
+        <div id="corridorPairs" class="metric" style="flex-direction:column;align-items:stretch;gap:6px"></div>
+        <label class="layer-btn"><input id="lyCorridorWet" type="checkbox">Wet road edges (≥3 cm)</label>
+        <label class="layer-btn"><input id="lyCorridorPath" type="checkbox" checked>Research path / cut</label>
+        <p class="drawer-note" id="corridorHonesty"></p>
       </details>
       <details class="drawer">
         <summary>Advanced research hydro</summary>
-        <p class="drawer-note">HAND stays primary. SFINCS = research 2D SWE only — spatial MRMS + open drainage sink. <b>No SWMM</b> / no fake DEP pipes. Magnitudes not peer with HAND.</p>
+        <p class="drawer-note">HAND stays primary — never blended. SFINCS = Advanced research 2D SWE with feathered nest↔coarse exchange + non-peer HAND overlap calib. <b>No SWMM</b> / no fake DEP pipes.</p>
+        <p class="drawer-note" id="sfincsExchangeNote"></p>
         <div class="layer-grid">
           <label class="layer-btn"><input id="lySfincsNested" type="checkbox">Metro nested SFINCS</label>
           <label class="layer-btn"><input id="lySfincs" type="checkbox">SFINCS Queens nest</label>
@@ -576,7 +596,7 @@ details.drawer[open] > summary::after {{ content:"–"; }}
         <summary>Archived open layers</summary>
         <p class="drawer-note">Optional Open Data samples — off by default. Not sewer performance / not official closures.</p>
         <label class="layer-btn"><input id="lyArchive511" type="checkbox">Archived 511-style</label>
-        <label class="layer-btn"><input id="lyDepBasins" type="checkbox">DEP catch basins (sample)</label>
+        <label class="layer-btn"><input id="lyDepBasins" type="checkbox">Open catch basins (dense sample)</label>
         <label class="layer-btn"><input id="lyBuildings" type="checkbox">Building footprints (sample)</label>
         <div id="archiveLayersStatus" class="drawer-note" style="margin-top:4px">Load on toggle…</div>
       </details>
@@ -618,6 +638,7 @@ details.drawer[open] > summary::after {{ content:"–"; }}
     <h3 id="selName">—</h3>
     <p id="selBody">—</p>
     <div class="sel-chips" id="selChips"></div>
+    <div class="compare-strip" id="selCompareStrip" hidden role="status"></div>
     <div class="sparkline-wrap" id="selSparkWrap" hidden>
       <div class="spark-cap">Depth vs lead (HAND cm)</div>
       <svg id="selSpark" viewBox="0 0 220 44" role="img" aria-label="Asset depth sparkline synced to scrubber"></svg>
@@ -739,20 +760,28 @@ const DECISION_FACILITY_TYPES = new Set(["hospital", "fire", "police"]);
 const DECISION_HIGHWAYS = new Set(["motorway", "trunk", "primary", "secondary", "motorway_link", "trunk_link"]);
 const AUTO_HIGHLIGHT_N = (manifest.asset_decision_desk && manifest.asset_decision_desk.auto_highlight_top_n) || 3;
 const secondStorm = manifest.second_storm || {{}};
-// Henri desk JSON may exist, but radar + inventory parity is incomplete — keep picker Ida-only.
+const henriParity = !!(secondStorm.parity || (manifest.asset_decision_desk && manifest.asset_decision_desk.henri_parity));
 if (EVENTS["henri-2021"]) {{
-  EVENTS["henri-2021"].available = false;
-  EVENTS["henri-2021"].label = "Henri (hidden until parity)";
+  if (henriParity && secondStorm.available) {{
+    EVENTS["henri-2021"].available = true;
+    EVENTS["henri-2021"].label = "Henri remnants (2021-08-21) · research";
+  }} else {{
+    EVENTS["henri-2021"].available = false;
+    EVENTS["henri-2021"].label = "Henri (hidden until parity)";
+  }}
 }}
 const eventSel = document.getElementById("eventSelect");
 Object.values(EVENTS).forEach(ev => {{
-  if (ev.id !== "ida-2021") return; // honest hide until dual-event ready
+  if (!ev.available && ev.id !== "ida-2021") return;
   const opt = document.createElement("option");
   opt.value = ev.id; opt.textContent = ev.label;
   eventSel.appendChild(opt);
 }});
 eventSel.value = "ida-2021";
-eventSel.disabled = true;
+eventSel.disabled = !(henriParity && secondStorm.available);
+if (!eventSel.disabled) {{
+  eventSel.title = "Switch Ida ↔ Henri research replay (radar + desk + shortlist)";
+}}
 const extentSel = document.getElementById("extentSelect");
 Object.values(EXTENTS).forEach(ex => {{
   const opt = document.createElement("option"); opt.value = ex.id; opt.textContent = ex.label; extentSel.appendChild(opt);
@@ -766,12 +795,14 @@ const stormPaths = manifest.storm_paths || [{{
 const pathSel = document.getElementById("stormPathSelect");
 stormPaths.forEach(p => {{
   const opt = document.createElement("option");
-  const isMrms = p.id === "mrms_qpe_ida" || p.ida_primary_viz;
+  const isIdaMrms = p.id === "mrms_qpe_ida" || p.ida_primary_viz;
+  const isHenri = p.id === "mrms_qpe_henri" || p.henri_event_viz;
   opt.value = p.id;
-  opt.textContent = p.label + (isMrms ? " · locked primary" : " · AI scenario");
+  opt.textContent = p.label + (isIdaMrms ? " · Ida primary" : (isHenri ? " · Henri research" : " · AI scenario"));
+  if (isHenri) opt.hidden = true; // selected via Event switch, not Advanced path menu
   pathSel.appendChild(opt);
 }});
-// Demo-locked default: MRMS; Earth2 only via Advanced scenario path
+// Demo-locked default: Ida MRMS; Earth2 only via Advanced scenario path
 pathSel.value = "mrms_qpe_ida";
 
 function currentBounds() {{
@@ -806,6 +837,7 @@ let floodnetLaterLayer = null;
 let accessFixture = null, accessLayer = null, accessFeedMode = "fixture";
 let archive511Layer = null, depBasinsLayer = null, buildingsLayer = null;
 let stormwaterLayer = null, lionTunLayer = null, besLayer = null;
+let corridorWetLayer = null, corridorPathLayer = null, corridorData = null;
 let typeFilter = "all";
 let deskLoadedMode = "none"; // shortlist | full
 let fullDeskPromise = null;
@@ -813,6 +845,7 @@ let decisionLog = [];
 let residualMode = false;
 let listMode = "shortlist";
 let activeEventId = "ida-2021";
+let compareStrip = null;
 const PLAY_MS = 380;
 const FADE_MS = 220;
 
@@ -913,9 +946,18 @@ function rebuildPathLayers() {{
       opacity: Math.min(depthOpacity(), 0.55), interactive:false, pane:"depthPane"
     }});
   }}
-  document.getElementById("pathHonesty").textContent = activePath.primary || activePath.ida_primary_viz
-    ? "Primary Ida awareness: soft-edge metro MRMS MultiSensor QPE (~1 km), native hourly 0–36h — not NEXRAD tiles."
-    : (activePath.honesty || "Labeled AI / alternate scenario — coarse cells; not the decision surface.");
+  const pathHonestyEl = document.getElementById("pathHonesty");
+  if (pathHonestyEl) {{
+    if (activePath.primary || activePath.ida_primary_viz) {{
+      pathHonestyEl.textContent = "Primary Ida awareness: soft-edge metro MRMS MultiSensor QPE (~1 km), native hourly 0–36h — not NEXRAD tiles.";
+    }} else if (activePath.henri_event_viz || activePath.id === "mrms_qpe_henri") {{
+      pathHonestyEl.textContent = activePath.honesty
+        || "Henri MRMS MultiSensor QPE research replay (~1 km), native hourly 0–24h — not NEXRAD / not NWS.";
+      pathHonestyEl.hidden = false;
+    }} else {{
+      pathHonestyEl.textContent = activePath.honesty || "Labeled AI / alternate scenario — coarse cells; not the decision surface.";
+    }}
+  }}
   const note = document.getElementById("depthTimelineNote");
   if (note) {{
     note.textContent = depthCumFrames.length
@@ -925,7 +967,12 @@ function rebuildPathLayers() {{
   }}
   syncTimeWindowLabel();
   // Prefer bilinear-ish for MRMS awareness; keep Earth2 pixelated if selected
-  const nearest = !(activePath.ida_primary_viz || activePath.id === "mrms_qpe_ida");
+  const nearest = !(
+    activePath.ida_primary_viz
+    || activePath.henri_event_viz
+    || activePath.id === "mrms_qpe_ida"
+    || activePath.id === "mrms_qpe_henri"
+  );
   document.querySelectorAll(".leaflet-image-layer").forEach(el => {{
     el.style.imageRendering = nearest ? "pixelated" : "auto";
   }});
@@ -1115,8 +1162,8 @@ function renderAssetList() {{
     return `
     <button type="button" class="asset-row${{selectedId === a.id ? " selected" : ""}}${{topHit}}" data-id="${{a.id}}">
       <div class="top">
-        <span class="name">#${{a.rank}} · ${{a.name}}</span>
-        <span class="depth">${{a.max_depth_cm.toFixed(1)}} cm</span>
+        <span class="name">#${{a.rank != null ? a.rank : "—"}} · ${{a.name}}</span>
+        <span class="depth">${{Number(a.max_depth_cm || 0).toFixed(1)}} cm</span>
       </div>
       <div class="meta">
         <span class="type-pill">${{typeLabel(a.asset_type)}}</span>
@@ -1240,10 +1287,10 @@ function selectAsset(id) {{
     lyAcc.checked = true;
     rebuildAccessOverlay();
   }}
-  document.getElementById("selKicker").textContent = typeLabel(a.asset_type) + " · #" + a.rank;
+  document.getElementById("selKicker").textContent = typeLabel(a.asset_type) + " · #" + (a.rank != null ? a.rank : "—");
   document.getElementById("selName").textContent = a.name;
   document.getElementById("selBody").innerHTML =
-    "<b>" + a.max_depth_cm.toFixed(1) + " cm</b> · " + a.band_label + " · " + leadLabel(a);
+    "<b>" + Number(a.max_depth_cm || 0).toFixed(1) + " cm</b> · " + (a.band_label || a.band || "—") + " · " + leadLabel(a);
   const extraChips = [];
   if (a.structure) extraChips.push(`<span class="sel-chip">Structure · ${{a.structure}}</span>`);
   if (a.stormwater_chip) extraChips.push(`<span class="sel-chip">${{a.stormwater_chip}}</span>`);
@@ -1266,6 +1313,7 @@ function selectAsset(id) {{
     : "Open DOT/MTA signals + research depth — not official closures.";
   renderSparkline(a);
   renderConsequenceTimeline(a);
+  renderCompareStrip(a);
   appendDecisionLog(a, "select");
   card.classList.remove("on");
   void card.offsetWidth;
@@ -1307,6 +1355,8 @@ function clearSelection() {{
   document.getElementById("selectedCard").classList.remove("on");
   const wrap = document.getElementById("selSparkWrap");
   if (wrap) wrap.hidden = true;
+  const cmp = document.getElementById("selCompareStrip");
+  if (cmp) {{ cmp.hidden = true; cmp.innerHTML = ""; }}
   renderAssetList();
 }}
 
@@ -1379,12 +1429,42 @@ function deskPathsForEvent(eventId, mode) {{
   const deskCfg = manifest.asset_decision_desk || {{}};
   const events = deskCfg.events || {{}};
   const want = mode || "shortlist";
-  if (eventId && events[eventId]) return events[eventId];
-  if (eventId === "henri-2021" && secondStorm && secondStorm.desk) {{
+  const ev = (eventId && events[eventId]) ? events[eventId] : null;
+  if (ev) {{
+    if (want === "shortlist") {{
+      return {{
+        assets_json: ev.shortlist_json || ev.assets_json,
+        assets_geojson: ev.shortlist_geojson || ev.assets_geojson,
+        mode: "shortlist",
+        full_json: ev.assets_json,
+        full_geojson: ev.assets_geojson,
+        storm_path_id: ev.storm_path_id,
+      }};
+    }}
     return {{
-      assets_json: secondStorm.desk.assets_json || "decision_desk_assets_henri.json",
-      assets_geojson: secondStorm.desk.assets_geojson || "decision_desk_assets_henri.geojson",
+      assets_json: ev.assets_json,
+      assets_geojson: ev.assets_geojson,
       mode: "full",
+      storm_path_id: ev.storm_path_id,
+    }};
+  }}
+  if (eventId === "henri-2021" && secondStorm && secondStorm.desk) {{
+    const d = secondStorm.desk;
+    if (want === "shortlist") {{
+      return {{
+        assets_json: d.shortlist_json || "decision_desk_shortlist_henri.json",
+        assets_geojson: d.shortlist_geojson || "decision_desk_shortlist_henri.geojson",
+        mode: "shortlist",
+        full_json: d.assets_json || "decision_desk_assets_henri.json",
+        full_geojson: d.assets_geojson || "decision_desk_assets_henri.geojson",
+        storm_path_id: secondStorm.storm_path_id || "mrms_qpe_henri",
+      }};
+    }}
+    return {{
+      assets_json: d.assets_json || "decision_desk_assets_henri.json",
+      assets_geojson: d.assets_geojson || "decision_desk_assets_henri.geojson",
+      mode: "full",
+      storm_path_id: secondStorm.storm_path_id || "mrms_qpe_henri",
     }};
   }}
   if (want === "shortlist") {{
@@ -1394,13 +1474,65 @@ function deskPathsForEvent(eventId, mode) {{
       mode: "shortlist",
       full_json: deskCfg.assets_json || "decision_desk_assets.json",
       full_geojson: deskCfg.assets_geojson || "decision_desk_assets.geojson",
+      storm_path_id: "mrms_qpe_ida",
     }};
   }}
   return {{
     assets_json: deskCfg.assets_json || "decision_desk_assets.json",
     assets_geojson: deskCfg.assets_geojson || "decision_desk_assets.geojson",
     mode: "full",
+    storm_path_id: "mrms_qpe_ida",
   }};
+}}
+function stormPathIdForEvent(eventId) {{
+  const paths = deskPathsForEvent(eventId, "shortlist");
+  return paths.storm_path_id || (eventId === "henri-2021" ? "mrms_qpe_henri" : "mrms_qpe_ida");
+}}
+function applyStormPathForEvent(eventId) {{
+  const want = stormPathIdForEvent(eventId);
+  const next = stormPaths.find(p => p.id === want) || stormPaths.find(p => p.primary) || stormPaths[0];
+  activePath = next;
+  // Keep Advanced path select in sync for Ida/Earth2; Henri path stays hidden there.
+  if (pathSel && next && (next.id === "mrms_qpe_ida" || String(next.id || "").startsWith("earth2"))) {{
+    pathSel.value = next.id;
+  }}
+  rebuildPathLayers();
+  setLead(0);
+}}
+async function loadCompareStrip() {{
+  const name = (manifest.ida_henri_compare && manifest.ida_henri_compare.json)
+    || (manifest.asset_decision_desk && manifest.asset_decision_desk.compare_strip_json)
+    || "ida_henri_compare_strip.json";
+  try {{
+    const r = await fetch(assets + name, {{ cache: "no-cache" }});
+    compareStrip = r.ok ? await r.json() : null;
+  }} catch (e) {{
+    compareStrip = null;
+  }}
+}}
+function renderCompareStrip(a) {{
+  const el = document.getElementById("selCompareStrip");
+  if (!el) return;
+  if (!a || !compareStrip || !compareStrip.shortlist) {{
+    el.hidden = true;
+    el.innerHTML = "";
+    return;
+  }}
+  const row = (compareStrip.shortlist || []).find(r => r.id === a.id)
+    || (compareStrip.shared_wet_sample || []).find(r => r.id === a.id);
+  if (!row || row.present_in === "neither") {{
+    el.hidden = true;
+    el.innerHTML = "";
+    return;
+  }}
+  const idaBit = (row.ida_cm != null && row.ida_cm !== "")
+    ? ("<b>" + row.ida_cm + " cm</b> Ida") : "Ida dry / n/a";
+  const henriBit = (row.henri_cm != null && row.henri_cm !== "")
+    ? ("<b>" + row.henri_cm + " cm</b> Henri") : "Henri dry / n/a";
+  el.hidden = false;
+  el.innerHTML = "<div class=\\"compare-kicker\\">Ida ↔ Henri compare</div>"
+    + idaBit + " · " + henriBit
+    + "<div style=\\"margin-top:4px;opacity:.85\\">Same official ID · research HAND — not peer-calibrated · not NWS.</div>";
 }}
 function needsFullDesk() {{
   const q = (document.getElementById("assetSearch").value || "").trim();
@@ -2012,6 +2144,84 @@ function setInventoryStatus(msg) {{
   const el = document.getElementById("inventoryLayersStatus");
   if (el) el.textContent = msg;
 }}
+function corridorStatusLabel(status) {{
+  const map = {{
+    cut_at_deep_ponding: "cut ≥8 cm",
+    cut_at_ponding: "cut ≥3 cm",
+    detour_around_deep: "detour ≥8 cm",
+    open_research: "open (research)",
+    no_network_path: "no network path",
+    unsnapped: "unsnapped",
+  }};
+  return map[status] || status || "—";
+}}
+function renderCorridorPairs() {{
+  const el = document.getElementById("corridorPairs");
+  const honesty = document.getElementById("corridorHonesty");
+  if (!el) return;
+  if (!corridorData || !(corridorData.pairs || []).length) {{
+    el.innerHTML = "<span>Corridor graph</span><b>unavailable</b>";
+    if (honesty) honesty.textContent = "";
+    return;
+  }}
+  if (honesty) honesty.textContent = corridorData.honesty || "Research only — not official closures.";
+  el.innerHTML = (corridorData.pairs || []).map(p => {{
+    const delta = p.delta_m_vs_open != null ? (" · +" + p.delta_m_vs_open + " m vs open") : "";
+    return "<div><span>" + (p.from_name || "?") + " → " + (p.to_name || "?") +
+      "</span><b>" + corridorStatusLabel(p.status) + delta + "</b></div>";
+  }}).join("");
+}}
+function loadCorridorImpassability() {{
+  const cfg = manifest.corridor_impassability || {{}};
+  if (!cfg.available && !cfg.json) {{
+    renderCorridorPairs();
+    return;
+  }}
+  const jsonName = cfg.json || "corridor_impassability.json";
+  Promise.all([
+    fetch(assets + jsonName, {{ cache: "no-cache" }}).then(r => r.ok ? r.json() : null),
+    fetchGeoJSON(cfg.wet_edges_geojson || "corridor_wet_edges.geojson").catch(() => null),
+    fetchGeoJSON(cfg.paths_geojson || "corridor_research_paths.geojson").catch(() => null),
+  ]).then(([json, wet, paths]) => {{
+    corridorData = json;
+    renderCorridorPairs();
+    if (wet) {{
+      corridorWetLayer = L.geoJSON(wet, {{
+        pane: "vectorPane",
+        style: f => ({{
+          color: (f.properties && f.properties.impassable_deep) ? "#9f1239" : "#b45309",
+          weight: (f.properties && f.properties.impassable_deep) ? 3.2 : 2,
+          opacity: 0.85,
+          dashArray: "4 5",
+        }}),
+        onEachFeature: (f, layer) => {{
+          const p = f.properties || {{}};
+          layer.bindTooltip(
+            (p.name || "wet edge") + " · " + (p.depth_cm != null ? p.depth_cm + " cm" : "") +
+            " · research impassability (not DOT)"
+          );
+        }},
+      }});
+      bindToggle("lyCorridorWet", corridorWetLayer);
+    }}
+    if (paths) {{
+      corridorPathLayer = L.geoJSON(paths, {{
+        pane: "selectPane",
+        style: {{ color: "#0d9488", weight: 4, opacity: 0.9 }},
+        onEachFeature: (f, layer) => {{
+          const p = f.properties || {{}};
+          layer.bindTooltip((p.name || "path edge") + " · research corridor");
+        }},
+      }});
+      const ly = document.getElementById("lyCorridorPath");
+      if (ly && ly.checked) corridorPathLayer.addTo(mapLeft);
+      bindToggle("lyCorridorPath", corridorPathLayer);
+    }}
+  }}).catch(err => {{
+    console.warn(err);
+    renderCorridorPairs();
+  }});
+}}
 function loadOfficialInventoryOverlays() {{
   const bits = [];
   const inv = (manifest.official_inventory_layers) || {{}};
@@ -2089,21 +2299,24 @@ function loadArchiveOpenLayers() {{
     setArchiveStatus(statusBits.join(" · ") + " ready");
   }}).catch(() => statusBits.push("511 missing"));
 
-  fetchGeoJSON("dep_catch_basins_sample.geojson").then(geo => {{
+  const basinsName = (manifest.drainage_capacity_proxy && manifest.drainage_capacity_proxy.dense_sample_geojson)
+    || "dep_catch_basins_dense_sample.geojson";
+  fetchGeoJSON(basinsName).catch(() => fetchGeoJSON("dep_catch_basins_sample.geojson")).then(geo => {{
+    if (!geo) throw new Error("basins missing");
     depBasinsLayer = L.geoJSON(geo, {{
       pointToLayer: (f, ll) => L.circleMarker(ll, {{
-        radius: 2.5, fillColor: "#6b7280", color: "#111827", weight: 0.8, fillOpacity: 0.7, pane: "pointPane"
+        radius: 2.2, fillColor: "#6b7280", color: "#111827", weight: 0.7, fillOpacity: 0.65, pane: "pointPane"
       }}),
       onEachFeature: (f, layer) => {{
         const p = f.properties || {{}};
-        layer.bindTooltip((p.unitid || p.node_id || "DEP basin") + " · open inventory");
+        layer.bindTooltip((p.unitid || p.node_id || "catch basin") + " · open inventory (not SWMM)");
       }},
     }});
     bindToggle("lyDepBasins", depBasinsLayer);
-    statusBits.push("DEP×" + ((geo.features || []).length));
+    statusBits.push("basins×" + ((geo.features || []).length));
     setArchiveStatus(statusBits.join(" · ") + " ready");
   }}).catch(() => {{
-    statusBits.push("DEP missing");
+    statusBits.push("basins missing");
     setArchiveStatus(statusBits.join(" · "));
   }});
 
@@ -2200,15 +2413,20 @@ document.getElementById("eventSelect").onchange = () => {{
     return;
   }}
   activeEventId = ev.id;
-  // Henri desk swaps asset JSON; Ida keeps MRMS awareness loop (Henri radar frames not wired yet).
-  if (activeEventId === "henri-2021") {{
-    listMode = "all";
-    document.querySelectorAll("#listModeChips .chip").forEach(c => c.classList.toggle("active", c.dataset.mode === "all"));
-    const band = document.getElementById("bandFilter");
-    if (band) band.value = "all";
-  }} else {{
-    listMode = "shortlist";
-    document.querySelectorAll("#listModeChips .chip").forEach(c => c.classList.toggle("active", c.dataset.mode === "shortlist"));
+  listMode = "shortlist";
+  document.querySelectorAll("#listModeChips .chip").forEach(c => c.classList.toggle("active", c.dataset.mode === "shortlist"));
+  const band = document.getElementById("bandFilter");
+  if (band) band.value = "all";
+  clearSelection();
+  deskLoadedMode = "none";
+  desk = null;
+  fullDeskPromise = null;
+  applyStormPathForEvent(activeEventId);
+  const brandKicker = document.querySelector(".brand-kicker");
+  if (brandKicker) {{
+    brandKicker.textContent = activeEventId === "henri-2021"
+      ? "Henri research replay"
+      : "Ida research replay";
   }}
   loadDecisionDesk();
 }};
@@ -2284,6 +2502,25 @@ function syncSfincsPeerMode() {{
     setLead(leadIndex);
   }}
 }}
+(function fillSfincsExchangeNote() {{
+  const el = document.getElementById("sfincsExchangeNote");
+  if (!el) return;
+  const ex = manifest.sfincs_nest_exchange || {{}};
+  if (!ex.available) {{ el.textContent = ""; return; }}
+  const rmse = ex.hand_rmse_m != null ? (" · non-peer HAND overlap RMSE " + Number(ex.hand_rmse_m).toFixed(2) + " m") : "";
+  el.textContent = "Exchange: " + (ex.mode || "feathered") + rmse + " — research only, never blended into HAND ranks.";
+}})();
+(function fillLiveMrmsNote() {{
+  const el = document.getElementById("liveMrmsNote");
+  if (!el) return;
+  const live = manifest.live_mrms || {{}};
+  if (live.available && live.valid_time_utc) {{
+    el.textContent = "Live MRMS QPE probe reachable @ " + String(live.valid_time_utc).replace("T", " ") +
+      " — desk loops stay Ida/Henri fixtures (ops latency probe only, not NWS).";
+  }} else {{
+    el.textContent = "Live MRMS probe unavailable — desk uses labeled Ida/Henri fixture replay. See docs/live-mrms-qpf-path.md.";
+  }}
+}})();
 document.getElementById("lySfincsNested").onchange = () => {{
   if (!sfincsNestedLayer) return;
   if (document.getElementById("lySfincsNested").checked) sfincsNestedLayer.addTo(mapLeft);
@@ -2403,11 +2640,13 @@ if (btnPrint) btnPrint.onclick = () => printShortlistSnapshot();
 rebuildPathLayers();
 fitMapFrame();
 setLead(0);
+loadCompareStrip();
 loadDecisionDesk();
 loadAccessSignals();
 loadFloodNetProduct();
 loadOptionalLayers();
 loadOfficialInventoryOverlays();
+loadCorridorImpassability();
 loadArchiveOpenLayers();
 setPlaying(true);
 </script>

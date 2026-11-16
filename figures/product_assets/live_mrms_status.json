@@ -1,0 +1,34 @@
+{
+  "product": "live_mrms_qpf_path",
+  "updated_at_utc": "2026-11-16T15:25:16.710021+00:00",
+  "qpe_product": "MultiSensor_QPE_01H_Pass1_00.00",
+  "source": "https://noaa-mrms-pds.s3.amazonaws.com/CONUS/",
+  "live_fetch": {
+    "status": "ok",
+    "chosen_valid_time_utc": "2026-11-16T13:00:00+00:00",
+    "chosen_path": "/home/jesscmiel/projects/nyc-flood-impact/data/raw/rainfall/mrms_qpe_01h/MRMS_MultiSensor_QPE_01H_Pass1_00.00_20261116-130000.grib2.gz",
+    "reachable": true,
+    "attempts_n": 1
+  },
+  "fixtures": {
+    "ida": {
+      "role": "default_decision_desk_replay",
+      "storm_path_id": "mrms_qpe_ida",
+      "init_time_utc": "2021-09-01T12:00:00Z",
+      "live": false,
+      "note": "Ida MRMS QPE hourly loop shipped in product_assets \u2014 fixture replay."
+    },
+    "henri": {
+      "role": "second_storm_research_replay",
+      "storm_path_id": "mrms_qpe_henri",
+      "init_time_utc": "2021-08-21T18:00:00Z",
+      "live": false,
+      "note": "Henri MRMS QPE loop after make henri-parity \u2014 fixture replay."
+    }
+  },
+  "ops_latency_story": "Live path smoke-fetches the latest Pass1 MultiSensor QPE hour (often ~1\u20132 h lag). Decision Desk default remains Ida fixture replay; live hour is an Advanced ops probe, not a rebuilt HAND desk.",
+  "rebuild_hook": "Future: regrid live hour \u2192 metro DEM \u2192 drainage proxy \u2192 HAND cum frame. Not wired into default UX in this ship.",
+  "official_nws": false,
+  "decision_grade": false,
+  "honesty": "Live MRMS QPE probe vs labeled Ida/Henri fixture loops \u2014 research latency path only. NOT NWS QPF watch/warning / NOT decision-grade ops."
+}

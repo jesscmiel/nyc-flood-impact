@@ -22,10 +22,10 @@ EVENTS = {
         "end": "2021-08-22T18:00:00",
         "default_extent": "metro",
         "notes": (
-            "Second-storm Decision Desk when MRMS×HAND assets are built "
-            "(scripts/build_second_storm_desk.py). Research only."
+            "Second-storm Decision Desk with MRMS radar + official inventory "
+            "(scripts/build_henri_parity.py). Research only — not peer-calibrated to Ida."
         ),
-        "available": False,  # flipped True when second_storm_henri_meta.json says available
+        "available": False,  # flipped True in HTML when second_storm.parity is set
         "desk_key": "henri-2021",
     },
     "placeholder-future": {

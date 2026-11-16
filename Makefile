@@ -4,10 +4,10 @@ ACTIVATE = . $(VENV)/bin/activate
 E2S_PYTHON ?= /home/jesscmiel/projects/earth2studio/.venv/bin/python
 DEMO_TAG ?= demo-ida-v1
 
-.PHONY: help setup install map validation live-ida live clean desk html access-pack disagreement relativize vendor test ci-guard demo-tag
+.PHONY: help setup install map validation live-ida live clean desk html access-pack disagreement henri-parity corridor denser-drains nest-exchange live-mrms relativize vendor test ci-guard demo-tag
 
 help:
-	@echo "Decision Desk: desk html access-pack disagreement vendor relativize test demo-tag"
+	@echo "Decision Desk: desk html henri-parity corridor denser-drains nest-exchange live-mrms vendor test demo-tag"
 	@echo "Legacy: validation live-ida live clean"
 	@echo "Earth2Studio is a dependency — use E2S_PYTHON for GPU forecasts."
 
@@ -30,6 +30,18 @@ access-pack:
 # HAND vs SFINCS non-peer disagreement chips (shortlist + top-100)
 disagreement:
 	$(ACTIVATE) && python scripts/build_engine_disagreement.py
+
+# Full Henri Event parity (radar + official inventory desk + shortlist + compare)
+henri-parity:
+	$(ACTIVATE) && python scripts/build_henri_parity.py
+
+# P2.3 research corridor impassability (LION × HAND; not DOT closures)
+corridor:
+	$(ACTIVATE) && python scripts/build_corridor_impassability.py
+
+# P2.5 denser open catch-basin inventory for capacity proxy (not SWMM)
+denser-drains:
+	$(ACTIVATE) && python scripts/build_denser_drain_inventory.py
 
 # Vendor Leaflet + fonts for offline serve
 vendor:
@@ -89,3 +101,11 @@ print(normalize_earth2_forecast('data/forecasts/earth2_precip_live.nc','data/for
 
 clean:
 	rm -rf $(VENV) outputs/validation_product.json outputs/live_pipeline_meta.json
+
+# P2.6 feathered nested SFINCS exchange + non-peer HAND calib (Advanced only)
+nest-exchange:
+	$(ACTIVATE) && python scripts/build_sfincs_nest_exchange.py
+
+# P2.7 live MRMS QPE probe + fixture honesty status
+live-mrms:
+	$(ACTIVATE) && python scripts/build_live_mrms_path.py

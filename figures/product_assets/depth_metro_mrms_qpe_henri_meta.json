@@ -1,0 +1,51 @@
+{
+  "product": "henri_metro_hand_depth",
+  "primary": true,
+  "role": "primary_research_depth",
+  "extent": "metro",
+  "bounds": [
+    [
+      40.4,
+      -74.45
+    ],
+    [
+      41.05,
+      -73.5
+    ]
+  ],
+  "forcing": "spatial_mrms_qpe_henri_minus_drainage_capacity_proxy",
+  "forcing_kind": "mrms_qpe_henri",
+  "event_id": "henri-2021",
+  "storm_total": {
+    "png": "depth_metro_mrms_qpe_henri_storm_total_m.png",
+    "tif": "data/processed/inundation/depth_metro_mrms_qpe_henri_storm_total_m.tif",
+    "max_depth_m": 0.10383788496255875
+  },
+  "cumulative_frames": [
+    {
+      "lead_hours": 6.0,
+      "png": "depth_metro_mrms_henri_cum_lead_06h_m.png",
+      "tif": "data/processed/inundation/depth_metro_mrms_henri_cum_lead_06h_m.tif",
+      "evolves_with_timeline": true
+    },
+    {
+      "lead_hours": 12.0,
+      "png": "depth_metro_mrms_henri_cum_lead_12h_m.png",
+      "tif": "data/processed/inundation/depth_metro_mrms_henri_cum_lead_12h_m.tif",
+      "evolves_with_timeline": true
+    },
+    {
+      "lead_hours": 18.0,
+      "png": "depth_metro_mrms_henri_cum_lead_18h_m.png",
+      "tif": "data/processed/inundation/depth_metro_mrms_henri_cum_lead_18h_m.tif",
+      "evolves_with_timeline": true
+    },
+    {
+      "lead_hours": 24.0,
+      "png": "depth_metro_mrms_henri_cum_lead_24h_m.png",
+      "tif": "data/processed/inundation/depth_metro_mrms_henri_cum_lead_24h_m.tif",
+      "evolves_with_timeline": true
+    }
+  ],
+  "honesty": "Henri HAND depth after drainage capacity proxy \u2014 research screening, NOT NWS / NOT street-truth / NOT DEP sewer."
+}

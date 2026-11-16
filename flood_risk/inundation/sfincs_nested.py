@@ -470,6 +470,52 @@ def export_depth_from_map_nc(
     return meta
 
 
+def feathered_nest_exchange(
+    coarse: np.ndarray,
+    nest: np.ndarray,
+    *,
+    feather_px: int = 8,
+) -> tuple[np.ndarray, dict[str, Any]]:
+    """Soft nest↔coarse boundary exchange (Advanced research only; never touches HAND)."""
+    from scipy import ndimage
+
+    nest_valid = np.isfinite(nest)
+    if not nest_valid.any():
+        return coarse.copy(), {"mode": "coarse_only", "nest_cells": 0}
+
+    dist_out = ndimage.distance_transform_edt(~nest_valid)
+    dist_in = ndimage.distance_transform_edt(nest_valid)
+    w = np.zeros(coarse.shape, dtype=np.float32)
+    w[nest_valid] = 1.0
+    band = (~nest_valid) & (dist_out <= feather_px)
+    w[band] = np.clip(1.0 - (dist_out[band] / max(feather_px, 1)), 0, 1).astype(np.float32)
+
+    coarse_f = np.nan_to_num(coarse, nan=0.0)
+    nest_f = np.nan_to_num(nest, nan=0.0)
+    both_missing = ~np.isfinite(coarse) & ~np.isfinite(nest)
+    composite = ((1.0 - w) * coarse_f + w * nest_f).astype(np.float32)
+    composite[both_missing] = np.nan
+    only_coarse = np.isfinite(coarse) & ~np.isfinite(nest) & (w < 1e-6)
+    composite[only_coarse] = coarse[only_coarse]
+
+    edge = nest_valid & (dist_in <= 1.5)
+    resid = nest - coarse
+    edge_resid = resid[edge & np.isfinite(resid)]
+    stats = {
+        "mode": "feathered_boundary_exchange",
+        "feather_px": feather_px,
+        "nest_cells": int(nest_valid.sum()),
+        "exchange_band_cells": int(band.sum()),
+        "boundary_residual_m": {
+            "n": int(edge_resid.size),
+            "mean": float(np.mean(edge_resid)) if edge_resid.size else None,
+            "rmse": float(np.sqrt(np.mean(edge_resid**2))) if edge_resid.size else None,
+            "p90_abs": float(np.percentile(np.abs(edge_resid), 90)) if edge_resid.size else None,
+        },
+    }
+    return composite, stats
+
+
 def composite_nest_onto_coarse(
     coarse_tif: Path,
     nest_tif: Path,

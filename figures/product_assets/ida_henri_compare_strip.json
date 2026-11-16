@@ -1,0 +1,332 @@
+{
+  "product": "ida_henri_compare_strip",
+  "honesty": "Same official inventory IDs \u00b7 research HAND depths \u2014 NOT peer-calibrated events \u00b7 NOT NWS.",
+  "shortlist": [
+    {
+      "id": "stations:gtfs:F22",
+      "name": "Smith-9 Sts",
+      "ida_cm": 11.1,
+      "henri_cm": 9.9,
+      "ida_band": "deep_ponding",
+      "henri_band": "deep_ponding",
+      "ida_lead_h": 15.0,
+      "henri_lead_h": 24.0,
+      "present_in": "both"
+    },
+    {
+      "id": "road:25430129",
+      "name": "Van Wyck Expressway",
+      "ida_cm": 9.4,
+      "henri_cm": 0.0,
+      "ida_band": "deep_ponding",
+      "henri_band": "below_band",
+      "ida_lead_h": 15.0,
+      "henri_lead_h": null,
+      "present_in": "both"
+    },
+    {
+      "id": "facilities:uid:a464e8e63eb8b2c92ab1995735cfd284",
+      "name": "Brooklyn Hospital Center - Downtown Campus",
+      "ida_cm": 8.5,
+      "henri_cm": 9.2,
+      "ida_band": "deep_ponding",
+      "henri_band": "deep_ponding",
+      "ida_lead_h": 18.0,
+      "henri_lead_h": 24.0,
+      "present_in": "both"
+    },
+    {
+      "id": "road:37394898",
+      "name": "Myrtle Avenue",
+      "ida_cm": 8.2,
+      "henri_cm": 8.8,
+      "ida_band": "deep_ponding",
+      "henri_band": "deep_ponding",
+      "ida_lead_h": 18.0,
+      "henri_lead_h": 24.0,
+      "present_in": "both"
+    }
+  ],
+  "shared_wet_sample": [
+    {
+      "id": "road:5710920",
+      "name": "West Shore Expressway",
+      "ida_cm": 15.5,
+      "henri_cm": 3.9,
+      "ida_band": "hazard",
+      "henri_band": "ponding",
+      "delta_cm": 11.6
+    },
+    {
+      "id": "road:42681320",
+      "name": "New Jersey Turnpike",
+      "ida_cm": 14.4,
+      "henri_cm": 3.1,
+      "ida_band": "deep_ponding",
+      "henri_band": "ponding",
+      "delta_cm": 11.3
+    },
+    {
+      "id": "road:42681313",
+      "name": "New Jersey Turnpike",
+      "ida_cm": 14.2,
+      "henri_cm": 3.0,
+      "ida_band": "deep_ponding",
+      "henri_band": "ponding",
+      "delta_cm": 11.2
+    },
+    {
+      "id": "road:42681317",
+      "name": "New Jersey Turnpike",
+      "ida_cm": 14.2,
+      "henri_cm": 3.0,
+      "ida_band": "deep_ponding",
+      "henri_band": "ponding",
+      "delta_cm": 11.2
+    },
+    {
+      "id": "road:42681318",
+      "name": "New Jersey Turnpike",
+      "ida_cm": 14.3,
+      "henri_cm": 3.1,
+      "ida_band": "deep_ponding",
+      "henri_band": "ponding",
+      "delta_cm": 11.2
+    },
+    {
+      "id": "road:42681328",
+      "name": "New Jersey Turnpike",
+      "ida_cm": 14.2,
+      "henri_cm": 3.0,
+      "ida_band": "deep_ponding",
+      "henri_band": "ponding",
+      "delta_cm": 11.2
+    },
+    {
+      "id": "road:42684472",
+      "name": "New Jersey Turnpike",
+      "ida_cm": 14.4,
+      "henri_cm": 3.4,
+      "ida_band": "deep_ponding",
+      "henri_band": "ponding",
+      "delta_cm": 11.0
+    },
+    {
+      "id": "road:42686549",
+      "name": "New Jersey Turnpike",
+      "ida_cm": 14.2,
+      "henri_cm": 3.2,
+      "ida_band": "deep_ponding",
+      "henri_band": "ponding",
+      "delta_cm": 11.0
+    },
+    {
+      "id": "road:38071038",
+      "name": "unnamed motorway (38071038)",
+      "ida_cm": 14.0,
+      "henri_cm": 3.1,
+      "ida_band": "deep_ponding",
+      "henri_band": "ponding",
+      "delta_cm": 10.9
+    },
+    {
+      "id": "road:42681314",
+      "name": "New Jersey Turnpike",
+      "ida_cm": 14.0,
+      "henri_cm": 3.1,
+      "ida_band": "deep_ponding",
+      "henri_band": "ponding",
+      "delta_cm": 10.9
+    },
+    {
+      "id": "road:42686643",
+      "name": "New Jersey Turnpike",
+      "ida_cm": 14.0,
+      "henri_cm": 3.1,
+      "ida_band": "deep_ponding",
+      "henri_band": "ponding",
+      "delta_cm": 10.9
+    },
+    {
+      "id": "road:60730783",
+      "name": "unnamed trunk (60730783)",
+      "ida_cm": 14.2,
+      "henri_cm": 3.4,
+      "ida_band": "deep_ponding",
+      "henri_band": "ponding",
+      "delta_cm": 10.8
+    },
+    {
+      "id": "road:60730819",
+      "name": "unnamed trunk (60730819)",
+      "ida_cm": 14.2,
+      "henri_cm": 3.4,
+      "ida_band": "deep_ponding",
+      "henri_band": "ponding",
+      "delta_cm": 10.8
+    },
+    {
+      "id": "road:23197423",
+      "name": "New Jersey Turnpike",
+      "ida_cm": 13.8,
+      "henri_cm": 3.1,
+      "ida_band": "deep_ponding",
+      "henri_band": "ponding",
+      "delta_cm": 10.7
+    },
+    {
+      "id": "road:60730794",
+      "name": "unnamed trunk (60730794)",
+      "ida_cm": 14.0,
+      "henri_cm": 3.3,
+      "ida_band": "deep_ponding",
+      "henri_band": "ponding",
+      "delta_cm": 10.7
+    },
+    {
+      "id": "road:42686657",
+      "name": "New Jersey Turnpike",
+      "ida_cm": 13.7,
+      "henri_cm": 3.1,
+      "ida_band": "deep_ponding",
+      "henri_band": "ponding",
+      "delta_cm": 10.6
+    },
+    {
+      "id": "road:60728963",
+      "name": "unnamed trunk (60728963)",
+      "ida_cm": 13.7,
+      "henri_cm": 3.1,
+      "ida_band": "deep_ponding",
+      "henri_band": "ponding",
+      "delta_cm": 10.6
+    },
+    {
+      "id": "road:38077183",
+      "name": "Dr. Martin Luther King Jr. Expressway",
+      "ida_cm": 14.9,
+      "henri_cm": 4.4,
+      "ida_band": "deep_ponding",
+      "henri_band": "ponding",
+      "delta_cm": 10.5
+    },
+    {
+      "id": "road:60728956",
+      "name": "unnamed trunk (60728956)",
+      "ida_cm": 13.9,
+      "henri_cm": 3.4,
+      "ida_band": "deep_ponding",
+      "henri_band": "ponding",
+      "delta_cm": 10.5
+    },
+    {
+      "id": "road:60728960",
+      "name": "unnamed trunk (60728960)",
+      "ida_cm": 13.7,
+      "henri_cm": 3.2,
+      "ida_band": "deep_ponding",
+      "henri_band": "ponding",
+      "delta_cm": 10.5
+    },
+    {
+      "id": "road:42686633",
+      "name": "New Jersey Turnpike",
+      "ida_cm": 13.5,
+      "henri_cm": 3.1,
+      "ida_band": "deep_ponding",
+      "henri_band": "ponding",
+      "delta_cm": 10.4
+    },
+    {
+      "id": "road:42686655",
+      "name": "New Jersey Turnpike",
+      "ida_cm": 13.5,
+      "henri_cm": 3.1,
+      "ida_band": "deep_ponding",
+      "henri_band": "ponding",
+      "delta_cm": 10.4
+    },
+    {
+      "id": "road:42686659",
+      "name": "New Jersey Turnpike",
+      "ida_cm": 13.5,
+      "henri_cm": 3.1,
+      "ida_band": "deep_ponding",
+      "henri_band": "ponding",
+      "delta_cm": 10.4
+    },
+    {
+      "id": "facilities:uid:dec013545ad18ef6d1d6fe59bc11c26b",
+      "name": "Staten Island Borough Command/Squad 8",
+      "ida_cm": 14.8,
+      "henri_cm": 4.6,
+      "ida_band": "deep_ponding",
+      "henri_band": "ponding",
+      "delta_cm": 10.2
+    },
+    {
+      "id": "road:42681424",
+      "name": "New Jersey Turnpike",
+      "ida_cm": 13.4,
+      "henri_cm": 3.2,
+      "ida_band": "deep_ponding",
+      "henri_band": "ponding",
+      "delta_cm": 10.2
+    }
+  ],
+  "n_shared_ids": 872,
+  "n_shortlist_both": 4,
+  "desk": {
+    "assets_json": "decision_desk_assets_henri.json",
+    "assets_geojson": "decision_desk_assets_henri.geojson",
+    "shortlist_json": "decision_desk_shortlist_henri.json",
+    "shortlist_geojson": "decision_desk_shortlist_henri.geojson",
+    "wet_total": 923,
+    "shortlist_present": [
+      "stations:gtfs:F22",
+      "facilities:uid:a464e8e63eb8b2c92ab1995735cfd284",
+      "road:37394898"
+    ],
+    "shortlist_below_band": [
+      "road:25430129"
+    ],
+    "shortlist_missing": [],
+    "top": [
+      {
+        "id": "facilities:uid:cf585eab1cad1b37c629de9abd85ace6",
+        "name": "Battalion 57/Engine 235",
+        "cm": 9.9,
+        "band": "\u22658 cm",
+        "lead_h": 24.0
+      },
+      {
+        "id": "stations:gtfs:F22",
+        "name": "Smith-9 Sts",
+        "cm": 9.9,
+        "band": "\u22658 cm",
+        "lead_h": 24.0
+      },
+      {
+        "id": "facilities:uid:a464e8e63eb8b2c92ab1995735cfd284",
+        "name": "Brooklyn Hospital Center - Downtown Campus",
+        "cm": 9.2,
+        "band": "\u22658 cm",
+        "lead_h": 24.0
+      },
+      {
+        "id": "stations:gtfs:R30",
+        "name": "DeKalb Av",
+        "cm": 9.2,
+        "band": "\u22658 cm",
+        "lead_h": 24.0
+      },
+      {
+        "id": "stations:gtfs:234",
+        "name": "Nevins St",
+        "cm": 9.2,
+        "band": "\u22658 cm",
+        "lead_h": 24.0
+      }
+    ]
+  }
+}
